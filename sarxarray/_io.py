@@ -7,7 +7,29 @@ import sarxarray.stack
 from .conf import _dtypes
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
-def from_binary(slc_files, shape, vlabel, dtype=np.float32, blocksize=5):
+def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=5):
+    """
+    Read a SLC stack or relabted variables from binary files
+
+    Parameters
+    ----------
+    slc_files : Iterable
+        Paths to the SLC files. 
+    shape : Tuple
+        Shape of each SLC file, in (n_azimuth, n_range)
+    vlabel : str, optional
+        Name of the variable to read, by default "complex".
+    dtype : numpy.dtype, optional
+        Data type of the file to read, by default np.float32
+    blocksize : int, optional
+        chunk size, by default 5
+
+    Returns
+    -------
+    xarray.Dataset
+        returns an xarray.Dataset with three dimensions: (azimuth, range, time).
+
+    """
 
     # Check dtype
     if not np.dtype(dtype).isbuiltin:
@@ -49,9 +71,10 @@ def from_binary(slc_files, shape, vlabel, dtype=np.float32, blocksize=5):
     
     stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs_unpack)})
 
-    stack = stack.slcstack._get_amplitude()
-
-    stack = stack.slcstack._get_phase()
+    # If reading complex data, automatically
+    if vlabel == "complex":
+        stack = stack.slcstack._get_amplitude()
+        stack = stack.slcstack._get_phase()
 
     return stack
 
