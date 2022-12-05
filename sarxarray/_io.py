@@ -65,11 +65,11 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     # unpack the customized dtype
     if not np.dtype(dtype).isbuiltin:
         meta_arr = np.array((), dtype=_dtypes['complex'])
-        slcs_unpack = da.apply_gufunc(
+        slcs = da.apply_gufunc(
             _unpack_complex, "()->()", slcs, meta=meta_arr
         )
     
-    stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs_unpack)})
+    stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
 
     # If reading complex data, automatically
     if vlabel == "complex":
