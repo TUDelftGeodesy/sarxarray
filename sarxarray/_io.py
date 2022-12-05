@@ -2,9 +2,8 @@ import dask
 import numpy as np
 import xarray as xr
 import dask.array as da
-import datetime
 
-# Example: https://docs.dask.org/en/stable/array-creation.html
+# Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 def read_stack(slc_files, shape, vlabel, dtype=np.float16, blocksize=5):
 
     coords = {
@@ -84,7 +83,7 @@ def _mmap_dask_array(filename, shape, dtype, blocksize):
     return da.concatenate(chunks, axis=0)
 
 
-def _mmap_load_chunk(self, filename, shape, dtype, sl):
+def _mmap_load_chunk(filename, shape, dtype, sl):
     """
     Memory map the given file with overall shape and dtype and return a slice
     specified by :code:`sl`.
