@@ -2,33 +2,65 @@ import dask
 import numpy as np
 import xarray as xr
 import dask.array as da
+import sarxarray.stack
+
+from .conf import _dtypes
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
-def read_stack(slc_files, shape, vlabel, dtype=np.float16, blocksize=5):
+def from_binary(slc_files, shape, vlabel, dtype=np.float32, blocksize=5):
 
+    # Check dtype
+    if not np.dtype(dtype).isbuiltin:
+        if not all([name in (("re", "im")) for name in dtype.names]):
+            raise TypeError(
+                ('The customed dtype should have only two field names: '
+                '"re" and "im". For example: '
+                'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).')
+            )
+
+    # Initialize stack as a Dataset
     coords = {
         "azimuth": range(shape[0]),
         "range": range(shape[1]),
         "time": range(len(slc_files)),
     }
     stack = xr.Dataset(coords=coords)
-    
+
+    # Read in all SLCs
     slcs = None
     for f_slc in slc_files:
         if slcs is None:
-            slcs = read_slc(f_slc, shape, dtype, blocksize).reshape((shape[0],shape[1],1))
+            slcs = read_slc(f_slc, shape, dtype, blocksize).reshape(
+                (shape[0], shape[1], 1)
+            )
         else:
-            slc = read_slc(f_slc, shape, dtype, blocksize).reshape((shape[0],shape[1],1))
+            slc = read_slc(f_slc, shape, dtype, blocksize).reshape(
+                (shape[0], shape[1], 1)
+            )
             slcs = da.concatenate([slcs, slc], axis=2)
     
-    stack = stack.assign({vlabel: (("azimuth","range","time"), slcs)})
+
+    # unpack the customized dtype
+    if not np.dtype(dtype).isbuiltin:
+        meta_arr = np.array((), dtype=_dtypes['complex'])
+        slcs_unpack = da.apply_gufunc(
+            _unpack_complex, "()->()", slcs, meta=meta_arr
+        )
+    
+    stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs_unpack)})
+
+    stack = stack.slcstack._get_amplitude()
+
+    stack = stack.slcstack._get_phase()
 
     return stack
 
 
 def read_slc(filename_or_obj, shape, dtype, blocksize):
-    
-    slc = _mmap_dask_array(filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize)
+
+    slc = _mmap_dask_array(
+        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize
+    )
 
     return slc
 
@@ -109,3 +141,7 @@ def _mmap_load_chunk(filename, shape, dtype, sl):
     """
     data = np.memmap(filename, mode="r", shape=shape, dtype=dtype)
     return data[sl]
+
+
+def _unpack_complex(complex):
+    return complex['re'] + 1j*complex['im']
