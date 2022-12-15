@@ -27,7 +27,7 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     Returns
     -------
     xarray.Dataset
-        returns an xarray.Dataset with three dimensions: (azimuth, range, time).
+        An xarray.Dataset with three dimensions: (azimuth, range, time).
 
     """
 
