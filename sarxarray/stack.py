@@ -74,6 +74,10 @@ class Stack:
         stm_reshaped = stm.dropna(dim="points", how="all").chunk(
             {"time": -1, "points": chunk_size}
         )
+
+        # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
+        stm_reshaped = stm_reshaped.reset_index("points")
+        stm_reshaped["points"] = xr.DataArray(data=range(stm_reshaped.points.size), dims=["points"])
         return stm_reshaped
 
     def _amp_disp(self):
