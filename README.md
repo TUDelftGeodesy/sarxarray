@@ -1,4 +1,4 @@
-# sarxarray
+# SarXarray
 
 `SarXarray` is an `Xarray` extension to process coregistered Single Look Complex (SLC) image stacks acquired by Synthetic Aperture Radar (SAR). It utilizes `Xarray`’s support on labeled multi-dimensional datasets to stress the space-time character of the SLC SAR stack. It also takes the benefits from `Dask` to perform lazy evaluations of the operations.
 
@@ -10,7 +10,17 @@ First, clone this repository to your local file system:
 git clone git@github.com:MotionbyLearning/sarxarray.git
 ```
 
-We strongly recommend you install `sarxarray` under an independent Python environment, e.g. an independent [conda](https://docs.conda.io/en/latest/miniconda.html) environment. 
+It is strongly recommended to install `sarxarray` under an independent Python environment, e.g. an independent [conda](https://docs.conda.io/en/latest/miniconda.html) environment. If `conda` is already installed in your system, you can create a new environment by:
+
+```bash
+conda create -n sarxarray python=3.10
+```
+
+A new environment named `sarxarray` will be created. Then you can activate it by:
+
+```bash
+conda activate sarxarray
+```
 
 After creating a new environment, you can install `SarXarray` using `pip`:
 
@@ -22,3 +32,9 @@ pip install .
 ## Usage example
 
 An [example Jupyter Notebook](examples/demo_sarxarray.ipynb) is available to demonstrate the usage of `SarXarray`.
+
+Note that to execute the Jupyter Notebook, you may need to install `ipykernel` in your current environment:
+
+```bash
+conda install ipykernel
+```
