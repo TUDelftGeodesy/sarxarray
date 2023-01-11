@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 import dask.array as da
+import warnings
 
 from .conf import _dtypes
 
@@ -62,26 +63,41 @@ class Stack:
 
         # Get space time matrix by stacking "azimuth" and "range" dimension to "points" dimension
         stm = stack_masked.stack(points=("azimuth", "range"))
-        stm = stm.transpose("points", "time") # reorder the dimensions
+        stm = stm.transpose("points", "time")  # reorder the dimensions
 
         # Evaluate the mask and rechunk
         # Rechunk is needed because after apply maksing, the chunksize will be in consistant
+        # Temporally supress RuntimeWarning bacause of the zero division in std computation
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
         stm_reshaped = stm.dropna(dim="points", how="all").chunk(
-            {"points": chunk_size, "time": -1,}
+            {
+                "points": chunk_size,
+                "time": -1,
+            }
         )
+        warnings.filterwarnings("default", category=RuntimeWarning)
 
         # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
         stm_reshaped = stm_reshaped.reset_index("points")
-        stm_reshaped["points"] = xr.DataArray(data=range(stm_reshaped.points.size), dims=["points"])
+        stm_reshaped["points"] = xr.DataArray(
+            data=range(stm_reshaped.points.size), dims=["points"]
+        )
         return stm_reshaped
 
-    def _amp_disp(self):
+    def _amp_disp(self, chunk_azimuth=500, chunk_range=500):
         # Amplitude dispersion
         t_order = list(self._obj.dims.keys()).index("time")  # Time dimension order
-        # ToDo: rechunk brefore compute in time
-        return self._obj.amplitude.mean(axis=t_order) / self._obj.amplitude.std(
+
+        # Rechunk to make temporal operation more efficient
+        amplitude = self._obj.amplitude.chunk(
+            {"azimuth": chunk_azimuth, "range": chunk_range, "time": -1}
+        )
+
+        amplitude_dispersion = amplitude.mean(axis=t_order) / amplitude.std(
             axis=t_order
         )
+
+        return amplitude_dispersion
 
 
 def _compute_amp(complex):
