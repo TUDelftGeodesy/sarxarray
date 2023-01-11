@@ -63,12 +63,6 @@ class Stack:
         # Get space time matrix by stacking "azimuth" and "range" dimension to "points" dimension
         stm = stack_masked.stack(points=("azimuth", "range"))
 
-        # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
-        stm = stm.reset_index("points")
-
-        stm["points"] = xr.DataArray(data=range(stm.points.size), dims=["points"])
-        stm = stm.chunk({"time": -1, "points": chunk_size})
-
         # Evaluate the mask and rechunk
         # Rechunk is needed because after apply maksing, the chunksize will be in consistant
         stm_reshaped = stm.dropna(dim="points", how="all").chunk(
