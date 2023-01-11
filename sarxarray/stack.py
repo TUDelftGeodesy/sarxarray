@@ -62,11 +62,12 @@ class Stack:
 
         # Get space time matrix by stacking "azimuth" and "range" dimension to "points" dimension
         stm = stack_masked.stack(points=("azimuth", "range"))
+        stm = stm.transpose("points", "time") # reorder the dimensions
 
         # Evaluate the mask and rechunk
         # Rechunk is needed because after apply maksing, the chunksize will be in consistant
         stm_reshaped = stm.dropna(dim="points", how="all").chunk(
-            {"time": -1, "points": chunk_size}
+            {"points": chunk_size, "time": -1,}
         )
 
         # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
