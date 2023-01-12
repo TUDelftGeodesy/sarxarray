@@ -7,7 +7,7 @@ import sarxarray.stack
 from .conf import _dtypes
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
-def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=5):
+def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=50):
     """
     Read a SLC stack or relabted variables from binary files
 
@@ -22,7 +22,7 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     dtype : numpy.dtype, optional
         Data type of the file to read, by default np.float32
     blocksize : int, optional
-        chunk size, by default 5
+        chunk size, by default 50
 
     Returns
     -------
