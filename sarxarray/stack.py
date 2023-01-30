@@ -68,14 +68,12 @@ class Stack:
         # Evaluate the mask and rechunk
         # Rechunk is needed because after apply maksing, the chunksize will be in consistant
         # Temporally supress RuntimeWarning bacause of the zero division in std computation
-        warnings.filterwarnings("ignore", category=RuntimeWarning)
         stm_reshaped = stm.dropna(dim="points", how="all").chunk(
             {
                 "points": chunk_size,
                 "time": -1,
             }
         )
-        warnings.filterwarnings("default", category=RuntimeWarning)
 
         # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
         stm_reshaped = stm_reshaped.reset_index("points")
@@ -85,17 +83,17 @@ class Stack:
         return stm_reshaped
 
     def _amp_disp(self, chunk_azimuth=500, chunk_range=500):
-        # Amplitude dispersion
-        t_order = list(self._obj.dims.keys()).index("time")  # Time dimension order
+        # Time dimension order
+        t_order = list(self._obj.dims.keys()).index("time")
 
         # Rechunk to make temporal operation more efficient
         amplitude = self._obj.amplitude.chunk(
             {"azimuth": chunk_azimuth, "range": chunk_range, "time": -1}
         )
 
-        amplitude_dispersion = amplitude.mean(axis=t_order) / amplitude.std(
-            axis=t_order
-        )
+        amplitude_dispersion = amplitude.mean(axis=t_order) / (
+            amplitude.std(axis=t_order) + np.finfo(amplitude.dtype).eps
+        )  # adding epsilon to avoid zero division
 
         return amplitude_dispersion
 
