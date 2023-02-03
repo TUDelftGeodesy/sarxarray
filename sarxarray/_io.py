@@ -1,10 +1,15 @@
+import logging
+
 import dask
 import numpy as np
 import xarray as xr
 import dask.array as da
+import math
 import sarxarray.stack
 
 from .conf import _dtypes
+
+logger = logging.getLogger(__name__)
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=[-1, -1], ratio=1):
@@ -50,20 +55,23 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     }
     stack = xr.Dataset(coords=coords)
 
+    # Calculate appropriate chunk size if not user-defined
+    if -1 in blocksize:
+        blocksize = _calc_chunksize(shape, dtype, blocksize, ratio)
+
     # Read in all SLCs
     slcs = None
     for f_slc in slc_files:
         if slcs is None:
-            slcs = read_slc(f_slc, shape, dtype, blocksize, ratio).reshape(
+            slcs = read_slc(f_slc, shape, dtype, blocksize).reshape(
                 (shape[0], shape[1], 1)
             )
         else:
-            slc = read_slc(f_slc, shape, dtype, blocksize, ratio).reshape(
+            slc = read_slc(f_slc, shape, dtype, blocksize).reshape(
                 (shape[0], shape[1], 1)
             )
             slcs = da.concatenate([slcs, slc], axis=2)
     
-
     # unpack the customized dtype
     if not np.dtype(dtype).isbuiltin:
         meta_arr = np.array((), dtype=_dtypes['complex'])
@@ -81,16 +89,16 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     return stack
 
 
-def read_slc(filename_or_obj, shape, dtype, blocksize, ratio):
+def read_slc(filename_or_obj, shape, dtype, blocksize):
 
     slc = _mmap_dask_array(
-        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize, ratio=ratio
+        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize
     )
 
     return slc
 
 
-def _mmap_dask_array(filename, shape, dtype, blocksize, ratio):
+def _mmap_dask_array(filename, shape, dtype, blocksize):
     """
     Create a Dask array from raw binary data in :code:`filename`
     by memory mapping.
@@ -113,8 +121,6 @@ def _mmap_dask_array(filename, shape, dtype, blocksize, ratio):
         NumPy dtype of the data in the file
     blocksize : int, optional
         Chunk size for the outermost axis. The other axes remain unchunked.
-    ratio:
-        Ratio of resolutions (azimuth/range)
 
     Returns
     -------
@@ -125,8 +131,6 @@ def _mmap_dask_array(filename, shape, dtype, blocksize, ratio):
     """
     load = dask.delayed(_mmap_load_chunk)
     range_chunks = []
-    if -1 in blocksize:
-        blocksize = _calc_chunksize(shape, dtype, blocksize, ratio)
     for azimuth_index in range(0, shape[0], blocksize[0]):
         azimuth_chunks = []
         # Truncate the last chunk if necessary
@@ -201,17 +205,17 @@ def _calc_chunksize(shape, dtype, blocksize, ratio):
     -------
 
     blocksize: tuple
-        Chunk sizes in the azimuth and range direction. Default value of [-1, -1]
-        when unmodified activates this function.
+        Chunk sizes (as multiples of 1000) in the azimuth and range direction. 
+        Default value of [-1, -1] when unmodified activates this function.
     """
-    n_elements = 200*1000*1000/dtype.itemsize #Optimal number of elements for a memory size of 200mb (first number)
-    blocksize[0] = int((n_elements*ratio)**0.5) #Chunking size in azimuth direction
-    blocksize[1] = int(n_elements/blocksize[0]) #Chunking size in range direction
+    n_elements = 100*1024*1024/dtype.itemsize #Optimal number of elements for a memory size of 200mb (first number)
+    blocksize[0] = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 #Chunking size in azimuth direction up to nearest thousand
+    blocksize[1] = int(math.ceil(n_elements/blocksize[0]/1000.0)) * 1000 #Chunking size in range direction up to nearest thousand
 
     #Raise warning when chunk sizes are too large
     if blocksize[0]*blocksize[1]/(shape[0]*shape[1]) > 0.1:
-        raise Warning(
-                ('The default chunking mechanism is too large for given file.'
+        logger.warning(
+                ('The default chunking mechanism is too large for given file. '
                 'User-defined blocksize is advised.')
             )
     return blocksize
