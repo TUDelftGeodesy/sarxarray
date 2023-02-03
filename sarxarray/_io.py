@@ -7,7 +7,7 @@ import sarxarray.stack
 from .conf import _dtypes
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
-def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=[-1, -1]):
+def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=[-1, -1], ratio=1):
     """
     Read a SLC stack or relabted variables from binary files
 
@@ -23,6 +23,8 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
         Data type of the file to read, by default np.float32
     blocksize : int, optional
         chunk size, by default 5
+    ratio:
+        Ratio of resolutions (azimuth/range), by default 1
 
     Returns
     -------
@@ -52,11 +54,11 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     slcs = None
     for f_slc in slc_files:
         if slcs is None:
-            slcs = read_slc(f_slc, shape, dtype, blocksize).reshape(
+            slcs = read_slc(f_slc, shape, dtype, blocksize, ratio).reshape(
                 (shape[0], shape[1], 1)
             )
         else:
-            slc = read_slc(f_slc, shape, dtype, blocksize).reshape(
+            slc = read_slc(f_slc, shape, dtype, blocksize, ratio).reshape(
                 (shape[0], shape[1], 1)
             )
             slcs = da.concatenate([slcs, slc], axis=2)
@@ -79,16 +81,16 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     return stack
 
 
-def read_slc(filename_or_obj, shape, dtype, blocksize):
+def read_slc(filename_or_obj, shape, dtype, blocksize, ratio):
 
     slc = _mmap_dask_array(
-        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize
+        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize, ratio=ratio
     )
 
     return slc
 
 
-def _mmap_dask_array(filename, shape, dtype, blocksize):
+def _mmap_dask_array(filename, shape, dtype, blocksize, ratio):
     """
     Create a Dask array from raw binary data in :code:`filename`
     by memory mapping.
@@ -111,6 +113,8 @@ def _mmap_dask_array(filename, shape, dtype, blocksize):
         NumPy dtype of the data in the file
     blocksize : int, optional
         Chunk size for the outermost axis. The other axes remain unchunked.
+    ratio:
+        Ratio of resolutions (azimuth/range)
 
     Returns
     -------
@@ -122,7 +126,7 @@ def _mmap_dask_array(filename, shape, dtype, blocksize):
     load = dask.delayed(_mmap_load_chunk)
     range_chunks = []
     if -1 in blocksize:
-        blocksize = _calc_chunksize(shape, dtype, blocksize)
+        blocksize = _calc_chunksize(shape, dtype, blocksize, ratio)
     for azimuth_index in range(0, shape[0], blocksize[0]):
         azimuth_chunks = []
         # Truncate the last chunk if necessary
@@ -178,11 +182,33 @@ def _mmap_load_chunk(filename, shape, dtype, sl1, sl2):
 def _unpack_complex(complex):
     return complex['re'] + 1j*complex['im']
 
-def _calc_chunksize(shape, dtype, blocksize):
-    n_elements = 200*1024*1024/dtype.itemsize
-    ratio = 1 #Ratio of resolutions (azimuth/range) to be added once it is defined in the class attributes
-    blocksize[0] = int((n_elements*ratio)**0.5)
-    blocksize[1] = int(n_elements/blocksize[0])
+def _calc_chunksize(shape, dtype, blocksize, ratio):
+    """
+    Calculate an optimal chunking size in the azimuth and range direction for
+    reading with dask and store it in variable `blocksize`
+
+    Parameters
+    ----------
+
+    shape : tuple
+        Total shape of the data in the file
+    dtype:
+        NumPy dtype of the data in the file
+    ratio:
+        Ratio of resolutions (azimuth/range)
+
+    Returns
+    -------
+
+    blocksize: tuple
+        Chunk sizes in the azimuth and range direction. Default value of [-1, -1]
+        when unmodified activates this function.
+    """
+    n_elements = 200*1000*1000/dtype.itemsize #Optimal number of elements for a memory size of 200mb (first number)
+    blocksize[0] = int((n_elements*ratio)**0.5) #Chunking size in azimuth direction
+    blocksize[1] = int(n_elements/blocksize[0]) #Chunking size in range direction
+
+    #Raise warning when chunk sizes are too large
     if blocksize[0]*blocksize[1]/(shape[0]*shape[1]) > 0.1:
         raise Warning(
                 ('The default chunking mechanism is too large for given file.'
