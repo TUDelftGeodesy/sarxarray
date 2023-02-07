@@ -12,6 +12,7 @@ from .conf import _dtypes
 logger = logging.getLogger(__name__)
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
+
 def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=[-1, -1], ratio=1):
     """
     Read a SLC stack or relabted variables from binary files
@@ -26,8 +27,8 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
         Name of the variable to read, by default "complex".
     dtype : numpy.dtype, optional
         Data type of the file to read, by default np.float32
-    blocksize : int, optional
-        chunk size, by default 5
+    blocksize : list, optional
+        2-D chunk size, by default [-1, -1]
     ratio:
         Ratio of resolutions (azimuth/range), by default 1
 
