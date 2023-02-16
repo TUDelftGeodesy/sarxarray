@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
-def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=[-1, -1], ratio=1):
+def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1, -1), ratio=1):
     """
     Read a SLC stack or relabted variables from binary files
 
@@ -27,7 +27,7 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
         Name of the variable to read, by default "complex".
     dtype : numpy.dtype, optional
         Data type of the file to read, by default np.float32
-    blocksize : list, optional
+    chunks : list, optional
         2-D chunk size, by default [-1, -1]
     ratio:
         Ratio of resolutions (azimuth/range), by default 1
@@ -57,18 +57,18 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     stack = xr.Dataset(coords=coords)
 
     # Calculate appropriate chunk size if not user-defined
-    if -1 in blocksize:
-        blocksize = _calc_chunksize(shape, dtype, blocksize, ratio)
+    if -1 in chunks:
+        chunks = _calc_chunksize(shape, dtype, chunks, ratio)
 
     # Read in all SLCs
     slcs = None
     for f_slc in slc_files:
         if slcs is None:
-            slcs = read_slc(f_slc, shape, dtype, blocksize).reshape(
+            slcs = read_slc(f_slc, shape, dtype, chunks).reshape(
                 (shape[0], shape[1], 1)
             )
         else:
-            slc = read_slc(f_slc, shape, dtype, blocksize).reshape(
+            slc = read_slc(f_slc, shape, dtype, chunks).reshape(
                 (shape[0], shape[1], 1)
             )
             slcs = da.concatenate([slcs, slc], axis=2)
@@ -90,16 +90,16 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, blocksize=
     return stack
 
 
-def read_slc(filename_or_obj, shape, dtype, blocksize):
+def read_slc(filename_or_obj, shape, dtype, chunks):
 
     slc = _mmap_dask_array(
-        filename=filename_or_obj, shape=shape, dtype=dtype, blocksize=blocksize
+        filename=filename_or_obj, shape=shape, dtype=dtype, chunks=chunks
     )
 
     return slc
 
 
-def _mmap_dask_array(filename, shape, dtype, blocksize):
+def _mmap_dask_array(filename, shape, dtype, chunks):
     """
     Create a Dask array from raw binary data in :code:`filename`
     by memory mapping.
@@ -120,7 +120,7 @@ def _mmap_dask_array(filename, shape, dtype, blocksize):
         Total shape of the data in the file
     dtype:
         NumPy dtype of the data in the file
-    blocksize : int, optional
+    chunks : int, optional
         Chunk size for the outermost axis. The other axes remain unchunked.
 
     Returns
@@ -132,13 +132,13 @@ def _mmap_dask_array(filename, shape, dtype, blocksize):
     """
     load = dask.delayed(_mmap_load_chunk)
     range_chunks = []
-    for azimuth_index in range(0, shape[0], blocksize[0]):
+    for azimuth_index in range(0, shape[0], chunks[0]):
         azimuth_chunks = []
         # Truncate the last chunk if necessary
-        azimuth_chunk_size = min(blocksize[0], shape[0] - azimuth_index)
-        for range_index in range(0, shape[1], blocksize[1]):
+        azimuth_chunk_size = min(chunks[0], shape[0] - azimuth_index)
+        for range_index in range(0, shape[1], chunks[1]):
             # Truncate the last chunk if necessary
-            range_chunk_size = min(blocksize[1], shape[1] - range_index)
+            range_chunk_size = min(chunks[1], shape[1] - range_index)
             chunk = dask.array.from_delayed(
                 load(
                     filename,
@@ -187,10 +187,10 @@ def _mmap_load_chunk(filename, shape, dtype, sl1, sl2):
 def _unpack_complex(complex):
     return complex['re'] + 1j*complex['im']
 
-def _calc_chunksize(shape, dtype, blocksize, ratio):
+def _calc_chunksize(shape, dtype, chunks, ratio):
     """
     Calculate an optimal chunking size in the azimuth and range direction for
-    reading with dask and store it in variable `blocksize`
+    reading with dask and store it in variable `chunks`
 
     Parameters
     ----------
@@ -205,18 +205,18 @@ def _calc_chunksize(shape, dtype, blocksize, ratio):
     Returns
     -------
 
-    blocksize: tuple
+    chunks: tuple
         Chunk sizes (as multiples of 1000) in the azimuth and range direction. 
         Default value of [-1, -1] when unmodified activates this function.
     """
     n_elements = 100*1024*1024/dtype.itemsize #Optimal number of elements for a memory size of 200mb (first number)
-    blocksize[0] = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 #Chunking size in azimuth direction up to nearest thousand
-    blocksize[1] = int(math.ceil(n_elements/blocksize[0]/1000.0)) * 1000 #Chunking size in range direction up to nearest thousand
+    chunks[0] = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 #Chunking size in azimuth direction up to nearest thousand
+    chunks[1] = int(math.ceil(n_elements/chunks[0]/1000.0)) * 1000 #Chunking size in range direction up to nearest thousand
 
     #Raise warning when chunk sizes are too large
-    if blocksize[0]*blocksize[1]/(shape[0]*shape[1]) > 0.1:
+    if chunks[0]*chunks[1]/(shape[0]*shape[1]) > 0.1:
         logger.warning(
                 ('The default chunking mechanism is too large for given file. '
-                'User-defined blocksize is advised.')
+                'User-defined chunks is advised.')
             )
-    return blocksize
+    return chunks
