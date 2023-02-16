@@ -209,9 +209,11 @@ def _calc_chunksize(shape, dtype, chunks, ratio):
         Chunk sizes (as multiples of 1000) in the azimuth and range direction. 
         Default value of [-1, -1] when unmodified activates this function.
     """
-    n_elements = 100*1024*1024/dtype.itemsize #Optimal number of elements for a memory size of 200mb (first number)
-    chunks[0] = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 #Chunking size in azimuth direction up to nearest thousand
-    chunks[1] = int(math.ceil(n_elements/chunks[0]/1000.0)) * 1000 #Chunking size in range direction up to nearest thousand
+    n_elements = 100*1024*1024/dtype.itemsize # Optimal number of elements for a memory size of 200mb (first number)
+    chunks_az = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 # Chunking size in azimuth direction up to nearest thousand
+    chunks_ra = int(math.ceil(n_elements/chunks_az/1000.0)) * 1000 # Chunking size in range direction up to nearest thousand
+
+    chunks = (chunks_az, chunks_ra)
 
     #Raise warning when chunk sizes are too large
     if chunks[0]*chunks[1]/(shape[0]*shape[1]) > 0.1:
