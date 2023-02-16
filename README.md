@@ -31,25 +31,4 @@ pip install .
 
 ## Usage example
 
-An [example Jupyter Notebook](examples/demo_sarxarray.ipynb) is available to demonstrate the usage of `SarXarray`.
-
-Note that to execute the Jupyter Notebook, you may need to install two more packages:
-
-- `jupyterlab`
-- `matplotlib`
-
-You can install them in your current `conda` environment by:
-
-```bash
-conda install jupyterlab matplotlib
-```
-
-After installation, execute the notebook in a JupyterLab session, which can be started by running `jupyterlab` command in your command line:
-
-```bash
-jupyter-lab
-```
-
-A new tab will be opened in your default browser. If it does not open automatically, you need to find the URL of the JupyterLab session in your command line, then open it manually.
-
-In this tab, you will see the file structure inside the `sarxarray` directory. You can open the example Notebook at `examples/demo_sarxarray.ipynb` and execute it.
+An [example Jupyter Notebook](examples/demo_sarxarray.ipynb) is available to demonstrate the usage of `SarXarray`. Please follow the instructions inside the notebook to excute the demo.

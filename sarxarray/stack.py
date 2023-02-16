@@ -33,54 +33,76 @@ class Stack:
         t_order = list(self._obj.dims.keys()).index("time")  # Time dimension order
         return self._obj.amplitude.mean(axis=t_order)
 
-    def point_selection(
-        self, threshold, method="amplitude_dispersion", chunk_size=1000
-    ):
+    def point_selection(self, threshold, method="amplitude_dispersion", chunks=1000):
         """
-        Select pixels by thresholding, and return
+        Select pixels from a Stack, and return a Space-Time Matrix.
+
+        The selection method is defined by `method` and `threshold`. The selected pixels will be reshaped to (points, time), where `points` is the number of selected pixels. The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
 
         Parameters
         ----------
         threshold : float
-            _description_
+            Threshold value for selection
         method : str, optional
             Method of selection, by default "amplitude_dispersion"
+        chunks : int, optional
+            Chunk size in the points dimension, by default 1000
 
         Returns
         -------
         xarray.Dataset
-            An xarray.Dataset with two dimensions: (point, time).
+            An xarray.Dataset with two dimensions: (points, time).
         """
+
         match method:
             case "amplitude_dispersion":
                 mask = self._amp_disp() > threshold
             case other:
                 raise NotImplementedError
 
-        # Apply mask
-        # ToDo: make sure the mask has the same order of dimension, apart from time
-        stack_masked = self._obj.where(mask)
+        # Get the 1D index on points dimension
+        mask_1d = mask.stack(points=("azimuth", "range")).drop_vars(
+            ["azimuth", "range", "points"]
+        )
+        mask_1d["points"] = xr.DataArray(
+            data=range(mask_1d.points.size), dims=["points"]
+        )
+        index = mask_1d.points.data[mask_1d.data]  # Evaluate the mask
 
-        # Get space time matrix by stacking "azimuth" and "range" dimension to "points" dimension
-        stm = stack_masked.stack(points=("azimuth", "range"))
-        stm = stm.transpose("points", "time")  # reorder the dimensions
-
-        # Evaluate the mask and rechunk
-        # Rechunk is needed because after apply maksing, the chunksize will be in consistant
-        # Temporally supress RuntimeWarning bacause of the zero division in std computation
-        stm_reshaped = stm.dropna(dim="points", how="all").chunk(
+        # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("points", "time")
+        stacked = self._obj.stack(points=("azimuth", "range"))
+        stm = stacked.drop_vars(["points"])
+        stm = stm.assign_coords(
             {
-                "points": chunk_size,
+                "points": (["points"], range(stacked.points.size)),
+                "azimuth": (["points"], stacked.azimuth.data),
+                "range": (["points"], stacked.range.data),
+            }
+        )  # replace the MultiIndex coords "points" with a continuoues index "points"
+
+        # Apply selection
+        stm_masked = stm.sel(points=index)
+
+        # Re-index the points coordinates
+        # This re-index aims to make "points" coordinate based on a single point selection results
+        stm_masked = stm_masked.assign_coords(
+            {"points": (["points"], range(stm_masked.points.size))}
+        )
+
+        # Re-order the dimensions to community preferred ("points", "time") order
+        # Since there are dask arrays in stm_masked, this operation is lazy. Therefore its effect can be observed after evaluation
+        stm_masked = stm_masked.transpose("points", "time")
+
+        # Rechunk
+        # Rechunk is needed because after apply maksing, the chunksize will be in consistant
+        stm_masked = stm_masked.chunk(
+            {
+                "points": chunks,
                 "time": -1,
             }
         )
 
-        # Replace the MultiIndex points coordinates with an ID to make it work with Zarr
-        stm_reshaped = stm_reshaped.reset_index("points")
-        stm_reshaped["points"] = xr.DataArray(
-            data=range(stm_reshaped.points.size), dims=["points"]
-        )
-        return stm_reshaped
+        return stm_masked
 
     def _amp_disp(self, chunk_azimuth=500, chunk_range=500):
         # Time dimension order
