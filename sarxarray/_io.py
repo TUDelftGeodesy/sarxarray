@@ -13,14 +13,17 @@ logger = logging.getLogger(__name__)
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
-def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1, -1), ratio=1):
+
+def from_binary(
+    slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1, -1), ratio=1
+):
     """
     Read a SLC stack or relabted variables from binary files
 
     Parameters
     ----------
     slc_files : Iterable
-        Paths to the SLC files. 
+        Paths to the SLC files.
     shape : Tuple
         Shape of each SLC file, in (n_azimuth, n_range)
     vlabel : str, optional
@@ -43,9 +46,11 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1
     if not np.dtype(dtype).isbuiltin:
         if not all([name in (("re", "im")) for name in dtype.names]):
             raise TypeError(
-                ('The customed dtype should have only two field names: '
-                '"re" and "im". For example: '
-                'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).')
+                (
+                    "The customed dtype should have only two field names: "
+                    '"re" and "im". For example: '
+                    'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
+                )
             )
 
     # Initialize stack as a Dataset
@@ -68,18 +73,14 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1
                 (shape[0], shape[1], 1)
             )
         else:
-            slc = read_slc(f_slc, shape, dtype, chunks).reshape(
-                (shape[0], shape[1], 1)
-            )
+            slc = read_slc(f_slc, shape, dtype, chunks).reshape((shape[0], shape[1], 1))
             slcs = da.concatenate([slcs, slc], axis=2)
-    
+
     # unpack the customized dtype
     if not np.dtype(dtype).isbuiltin:
-        meta_arr = np.array((), dtype=_dtypes['complex'])
-        slcs = da.apply_gufunc(
-            _unpack_complex, "()->()", slcs, meta=meta_arr
-        )
-    
+        meta_arr = np.array((), dtype=_dtypes["complex"])
+        slcs = da.apply_gufunc(_unpack_complex, "()->()", slcs, meta=meta_arr)
+
     stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
 
     # If reading complex data, automatically
@@ -91,7 +92,6 @@ def from_binary(slc_files, shape, vlabel="complex", dtype=np.float32, chunks=(-1
 
 
 def read_slc(filename_or_obj, shape, dtype, chunks):
-
     slc = _mmap_dask_array(
         filename=filename_or_obj, shape=shape, dtype=dtype, chunks=chunks
     )
@@ -145,9 +145,9 @@ def _mmap_dask_array(filename, shape, dtype, chunks):
                     shape=shape,
                     dtype=dtype,
                     sl1=slice(azimuth_index, azimuth_index + azimuth_chunk_size),
-                    sl2=slice(range_index, range_index + range_chunk_size)
+                    sl2=slice(range_index, range_index + range_chunk_size),
                 ),
-                shape=(azimuth_chunk_size,range_chunk_size),
+                shape=(azimuth_chunk_size, range_chunk_size),
                 dtype=dtype,
             )
             azimuth_chunks.append(chunk)
@@ -185,7 +185,8 @@ def _mmap_load_chunk(filename, shape, dtype, sl1, sl2):
 
 
 def _unpack_complex(complex):
-    return complex['re'] + 1j*complex['im']
+    return complex["re"] + 1j * complex["im"]
+
 
 def _calc_chunksize(shape, dtype, chunks, ratio):
     """
@@ -206,19 +207,28 @@ def _calc_chunksize(shape, dtype, chunks, ratio):
     -------
 
     chunks: tuple
-        Chunk sizes (as multiples of 1000) in the azimuth and range direction. 
+        Chunk sizes (as multiples of 1000) in the azimuth and range direction.
         Default value of [-1, -1] when unmodified activates this function.
     """
-    n_elements = 100*1024*1024/dtype.itemsize # Optimal number of elements for a memory size of 200mb (first number)
-    chunks_az = int(math.ceil((n_elements*ratio)**0.5/1000.0)) * 1000 # Chunking size in azimuth direction up to nearest thousand
-    chunks_ra = int(math.ceil(n_elements/chunks_az/1000.0)) * 1000 # Chunking size in range direction up to nearest thousand
+
+    n_elements = (
+        100 * 1024 * 1024 / np.dtype(dtype).itemsize
+    )  # Optimal number of elements for a memory size of 200mb (first number)
+    chunks_az = (
+        int(math.ceil((n_elements * ratio) ** 0.5 / 1000.0)) * 1000
+    )  # Chunking size in azimuth direction up to nearest thousand
+    chunks_ra = (
+        int(math.ceil(n_elements / chunks_az / 1000.0)) * 1000
+    )  # Chunking size in range direction up to nearest thousand
 
     chunks = (chunks_az, chunks_ra)
 
-    #Raise warning when chunk sizes are too large
-    if chunks[0]*chunks[1]/(shape[0]*shape[1]) > 0.1:
+    # Raise warning when chunk sizes are too large
+    if chunks[0] * chunks[1] / (shape[0] * shape[1]) > 0.1:
         logger.warning(
-                ('The default chunking mechanism is too large for given file. '
-                'User-defined chunks is advised.')
+            (
+                "The default chunking mechanism is too large for given file. "
+                "User-defined chunks is advised."
             )
+        )
     return chunks
