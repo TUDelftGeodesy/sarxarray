@@ -64,30 +64,20 @@ class Stack:
         mask_1d = mask.stack(points=("azimuth", "range")).drop_vars(
             ["azimuth", "range", "points"]
         )
-        mask_1d["points"] = xr.DataArray(
-            data=range(mask_1d.points.size), dims=["points"]
-        )
         index = mask_1d.points.data[mask_1d.data]  # Evaluate the mask
 
         # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("points", "time")
         stacked = self._obj.stack(points=("azimuth", "range"))
-        stm = stacked.drop_vars(["points"])
+        stm = stacked.drop_vars(["points"]) # this will also drop azimuth and range
         stm = stm.assign_coords(
             {
-                "points": (["points"], range(stacked.points.size)),
                 "azimuth": (["points"], stacked.azimuth.data),
                 "range": (["points"], stacked.range.data),
             }
-        )  # replace the MultiIndex coords "points" with a continuoues index "points"
+        )  # keep azimuth and range index
 
         # Apply selection
         stm_masked = stm.sel(points=index)
-
-        # Re-index the points coordinates
-        # This re-index aims to make "points" coordinate based on a single point selection results
-        stm_masked = stm_masked.assign_coords(
-            {"points": (["points"], range(stm_masked.points.size))}
-        )
 
         # Re-order the dimensions to community preferred ("points", "time") order
         # Since there are dask arrays in stm_masked, this operation is lazy. Therefore its effect can be observed after evaluation
