@@ -1,5 +1,7 @@
 # SarXarray
 
+[![DOI](https://zenodo.org/badge/563781394.svg)](https://zenodo.org/badge/latestdoi/563781394)
+
 `SarXarray` is an `Xarray` extension to process coregistered Single Look Complex (SLC) image stacks acquired by Synthetic Aperture Radar (SAR). It utilizes `Xarray`’s support on labeled multi-dimensional datasets to stress the space-time character of the SLC SAR stack. It also takes the benefits from `Dask` to perform lazy evaluations of the operations.
 
 ## Installation
