@@ -56,7 +56,7 @@ class Stack:
 
         match method:
             case "amplitude_dispersion":
-                mask = self._amp_disp() > threshold
+                mask = self._amp_disp() < threshold
             case other:
                 raise NotImplementedError
 
