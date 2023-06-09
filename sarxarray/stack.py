@@ -68,7 +68,7 @@ class Stack:
 
         # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("points", "time")
         stacked = self._obj.stack(points=("azimuth", "range"))
-        stm = stacked.drop_vars(["points"]) # this will also drop azimuth and range
+        stm = stacked.drop_vars(["points"])  # this will also drop azimuth and range
         stm = stm.assign_coords(
             {
                 "azimuth": (["points"], stacked.azimuth.data),
@@ -103,8 +103,8 @@ class Stack:
             {"azimuth": chunk_azimuth, "range": chunk_range, "time": -1}
         )
 
-        amplitude_dispersion = amplitude.mean(axis=t_order) / (
-            amplitude.std(axis=t_order) + np.finfo(amplitude.dtype).eps
+        amplitude_dispersion = amplitude.std(axis=t_order) / (
+            amplitude.mean(axis=t_order) + np.finfo(amplitude.dtype).eps
         )  # adding epsilon to avoid zero division
 
         return amplitude_dispersion
