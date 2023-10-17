@@ -69,3 +69,30 @@ class TestStackMultiLook:
                 ).values
             ),
         )
+
+    def test_stack_multi_look_unequal_window_sizes(self, synthetic_dataset):
+        ds = synthetic_dataset
+        ds_ml = ds.slcstack.multi_look(
+            window_size=(2, 3), method="coarsen", statistics="mean", chunk=100
+        )
+        assert ds_ml.azimuth.size == 5
+        assert ds_ml.range.size == 3
+        assert ds_ml.time.size == 10
+        assert ds_ml.chunks == {'azimuth': (5,), 'range': (3,), 'time': (10,)}
+        assert ds_ml.attrs["multi-look"] == "coarsen-mean"
+        # assert if the data is correctly multi-looked
+        assert np.allclose(
+            ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
+            np.mean(
+                ds.complex.isel(
+                    azimuth=slice(0, 2), range=slice(0, 3), time=0
+                ).values
+            ),
+        )
+        # assert if coordinates are correctly multi-looked
+        assert ds_ml.azimuth.values[0] == np.mean(ds.azimuth.isel(azimuth=slice(0, 2)).values)
+        assert ds_ml.range.values[0] == np.mean(ds.range.isel(range=slice(0, 3)).values)
+        assert np.allclose(
+            ds_ml.time.values,
+            ds.time.values,
+        )
