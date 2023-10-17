@@ -42,6 +42,13 @@ class TestStackMultiLook:
                 ).values
             ),
         )
+        # assert if coordinates are correctly multi-looked
+        assert ds_ml.azimuth.values[0] == np.mean(ds.azimuth.isel(azimuth=slice(0, 2)).values)
+        assert ds_ml.range.values[0] == np.mean(ds.range.isel(range=slice(0, 2)).values)
+        assert np.allclose(
+            ds_ml.time.values,
+            ds.time.values,
+        )
 
     def test_stack_multi_look_median(self, synthetic_dataset):
         ds = synthetic_dataset
