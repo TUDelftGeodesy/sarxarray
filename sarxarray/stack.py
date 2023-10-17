@@ -109,6 +109,76 @@ class Stack:
 
         return amplitude_dispersion
 
+    def multi_look(self, window_size, method="coarsen", statistics="mean", chunk=1000):
+        """
+        Perform multi-looking on a Stack, and return a Stack.
+
+        Parameters
+        ----------
+        window_size : tuple
+            Window size for multi-looking, in the format of (azimuth, range)
+        method : str, optional
+            Method of multi-looking, by default "coarsen"
+        statistics : str, optional
+            Statistics method for multi-looking, by default "mean"
+        chunk : int, optional
+            Chunk size in the space dimension, by default 1000
+
+        Returns
+        -------
+        xarray.Dataset
+            An xarray.Dataset with coarsen shape.
+        """
+        # TODO: check if it can be lazy
+
+        # check if window_size is valid
+        if window_size[0] > self._obj.azimuth.size or window_size[1] > self._obj.range.size:
+            warnings.warn(
+                "Window size is larger than the data size, no multi-looking is performed."
+            )
+            return self._obj
+
+        # check if window_size is smaller than chunk size
+        if window_size[0] > chunk or window_size[1] > chunk:
+            warnings.warn(
+                "Window size is larger than chunk size, no multi-looking is performed."
+            )
+            return self._obj
+
+        match method:
+            case "coarsen":
+                # TODO: if boundary and size should be configurable
+                multi_looked = self._obj.coarsen(
+                    {"azimuth": window_size[0], "range": window_size[1]},
+                    boundary="trim",
+                    side="left",
+                )
+            case other:
+                raise NotImplementedError
+
+        match statistics:
+            case "mean":
+                multi_looked = multi_looked.mean()
+            case "median":
+                multi_looked = multi_looked.median()
+            case other:
+                raise NotImplementedError
+
+        # Rechunk is needed because shape of the data will be changed after
+        # multi-looking
+        multi_looked = multi_looked.chunk(
+            {
+                "azimuth": chunk,
+                "range": chunk,
+                "time": -1,
+            }
+        )
+
+        # add the method and statistics to attrs
+        multi_looked.attrs["multi-look"] = f"{method}-{statistics}"
+
+        return multi_looked
+
 
 def _compute_amp(complex):
     return np.abs(complex)
