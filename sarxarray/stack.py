@@ -126,13 +126,14 @@ class Stack:
             Chunk size in the space dimension, by default 1000
         compute : bool, optional
             Whether to compute the result, by default True. If False, the result
-            will be lazy. This is useful when the result is used as an
-            intermediate result.
+            will be `dask.delayed.Delayed`. This is useful when the multi_look
+            is used as an intermediate result.
 
         Returns
         -------
         xarray.Dataset
-            An xarray.Dataset with coarsen shape.
+            An `xarray.Dataset` with coarsen shape if `compute` is True,
+            otherwise a `dask.delayed.Delayed` object.
         """
         # check if window_size is valid
         if window_size[0] > self._obj.azimuth.size or window_size[1] > self._obj.range.size:
