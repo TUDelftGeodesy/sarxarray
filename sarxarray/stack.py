@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 import dask.array as da
+import dask.delayed as delayed
 import warnings
 
 from .conf import _dtypes
@@ -109,7 +110,7 @@ class Stack:
 
         return amplitude_dispersion
 
-    def multi_look(self, window_size, method="coarsen", statistics="mean", chunk=1000):
+    def multi_look(self, window_size, method="coarsen", statistics="mean", chunk=1000, compute=True):
         """
         Perform multi-looking on a Stack, and return a Stack.
 
@@ -123,14 +124,16 @@ class Stack:
             Statistics method for multi-looking, by default "mean"
         chunk : int, optional
             Chunk size in the space dimension, by default 1000
+        compute : bool, optional
+            Whether to compute the result, by default True. If False, the result
+            will be lazy. This is useful when the result is used as an
+            intermediate result.
 
         Returns
         -------
         xarray.Dataset
             An xarray.Dataset with coarsen shape.
         """
-        # TODO: check if it can be lazy
-
         # check if window_size is valid
         if window_size[0] > self._obj.azimuth.size or window_size[1] > self._obj.range.size:
             warnings.warn(
@@ -145,6 +148,9 @@ class Stack:
             )
             return self._obj
 
+        # add new atrrs here because Delayed objects are immutable
+        self._obj.attrs["multi-look"] = f"{method}-{statistics}"
+
         match method:
             case "coarsen":
                 # TODO: if boundary and size should be configurable
@@ -156,13 +162,19 @@ class Stack:
             case other:
                 raise NotImplementedError
 
-        match statistics:
-            case "mean":
-                multi_looked = multi_looked.mean()
-            case "median":
-                multi_looked = multi_looked.median()
-            case other:
-                raise NotImplementedError
+        # apply statistics
+        stat_functions = {
+            "mean": multi_looked.mean,
+            "median": multi_looked.median,
+        }
+        if statistics in stat_functions:
+            stat_function = stat_functions[statistics]
+            if compute:
+                multi_looked = stat_function(keep_attrs=True)
+            else:
+                multi_looked = delayed(stat_function)(keep_attrs=True)
+        else:
+            NotImplementedError
 
         # Rechunk is needed because shape of the data will be changed after
         # multi-looking
@@ -173,9 +185,6 @@ class Stack:
                 "time": -1,
             }
         )
-
-        # add the method and statistics to attrs
-        multi_looked.attrs["multi-look"] = f"{method}-{statistics}"
 
         return multi_looked
 
