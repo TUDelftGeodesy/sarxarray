@@ -17,9 +17,9 @@ def synthetic_dataset():
             )
         },
         coords={
-            "azimuth": np.arange(10),
-            "range": np.arange(10),
-            "time": np.arange(10),
+            "azimuth": np.arange(600, 610, 1, dtype=int),
+            "range": np.arange(1400, 1410, 1, dtype=int),
+            "time": np.arange(1, 11, 1, dtype=int),
         },
     )
 
@@ -44,8 +44,14 @@ class TestStackMultiLook:
             ),
         )
         # assert if coordinates are correctly calculated
-        assert ds_ml.azimuth.values[0] == np.mean(ds.azimuth.isel(azimuth=slice(0, 2)).values)
-        assert ds_ml.range.values[0] == np.mean(ds.range.isel(range=slice(0, 2)).values)
+        assert np.allclose(
+            ds_ml.azimuth.values,
+            np.arange(0, 5, 1),
+        )
+        assert np.allclose(
+            ds_ml.range.values,
+            np.arange(0, 5, 1),
+        )
         assert np.allclose(
             ds_ml.time.values,
             ds.time.values,
@@ -91,8 +97,14 @@ class TestStackMultiLook:
             ),
         )
         # assert if coordinates are correctly calculated
-        assert ds_ml.azimuth.values[0] == np.mean(ds.azimuth.isel(azimuth=slice(0, 2)).values)
-        assert ds_ml.range.values[0] == np.mean(ds.range.isel(range=slice(0, 3)).values)
+        assert np.allclose(
+            ds_ml.azimuth.values,
+            np.arange(0, 5, 1),
+        )
+        assert np.allclose(
+            ds_ml.range.values,
+            np.arange(0, 3, 1),
+        )
         assert np.allclose(
             ds_ml.time.values,
             ds.time.values,
@@ -123,8 +135,14 @@ class TestStackMultiLook:
             ),
         )
         # assert if coordinates are correctly computed
-        assert results.azimuth.values[0] == np.mean(ds.azimuth.isel(azimuth=slice(0, 2)).values)
-        assert results.range.values[0] == np.mean(ds.range.isel(range=slice(0, 3)).values)
+        assert np.allclose(
+            results.azimuth.values,
+            np.arange(0, 5, 1),
+        )
+        assert np.allclose(
+            results.range.values,
+            np.arange(0, 3, 1),
+        )
         assert np.allclose(
             results.time.values,
             ds.time.values,

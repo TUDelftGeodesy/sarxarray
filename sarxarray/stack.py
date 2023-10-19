@@ -152,6 +152,15 @@ class Stack:
         # add new atrrs here because Delayed objects are immutable
         self._obj.attrs["multi-look"] = f"{method}-{statistics}"
 
+        # define custom coordinate function to define new coordinates starting
+        # from 0: the inputs `reshaped` and `axis` are output of
+        # `coarsen_reshape` internal function and are passed to the `coord_func`
+        def _custom_coord_func(reshaped, axis):
+            if axis[0] == 1 or 2:
+                return np.arange(0, reshaped.shape[0], 1, dtype=int)
+            else:
+                return reshaped.flatten()
+
         match method:
             case "coarsen":
                 # TODO: if boundary and size should be configurable
@@ -159,6 +168,7 @@ class Stack:
                     {"azimuth": window_size[0], "range": window_size[1]},
                     boundary="trim",
                     side="left",
+                    coord_func=_custom_coord_func,
                 )
             case other:
                 raise NotImplementedError
