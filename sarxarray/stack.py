@@ -38,7 +38,7 @@ class Stack:
         """
         Select pixels from a Stack, and return a Space-Time Matrix.
 
-        The selection method is defined by `method` and `threshold`. The selected pixels will be reshaped to (points, time), where `points` is the number of selected pixels. The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
+        The selection method is defined by `method` and `threshold`. The selected pixels will be reshaped to (space, time), where `space` is the number of selected pixels. The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
 
         Parameters
         ----------
@@ -47,12 +47,12 @@ class Stack:
         method : str, optional
             Method of selection, by default "amplitude_dispersion"
         chunks : int, optional
-            Chunk size in the points dimension, by default 1000
+            Chunk size in the space dimension, by default 1000
 
         Returns
         -------
         xarray.Dataset
-            An xarray.Dataset with two dimensions: (points, time).
+            An xarray.Dataset with two dimensions: (space, time).
         """
 
         match method:
@@ -61,34 +61,34 @@ class Stack:
             case other:
                 raise NotImplementedError
 
-        # Get the 1D index on points dimension
-        mask_1d = mask.stack(points=("azimuth", "range")).drop_vars(
-            ["azimuth", "range", "points"]
+        # Get the 1D index on space dimension
+        mask_1d = mask.stack(space=("azimuth", "range")).drop_vars(
+            ["azimuth", "range", "space"]
         )
-        index = mask_1d.points.data[mask_1d.data]  # Evaluate the mask
+        index = mask_1d.space.data[mask_1d.data]  # Evaluate the mask
 
-        # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("points", "time")
-        stacked = self._obj.stack(points=("azimuth", "range"))
-        stm = stacked.drop_vars(["points"])  # this will also drop azimuth and range
+        # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("space", "time")
+        stacked = self._obj.stack(space=("azimuth", "range"))
+        stm = stacked.drop_vars(["space"])  # this will also drop azimuth and range
         stm = stm.assign_coords(
             {
-                "azimuth": (["points"], stacked.azimuth.data),
-                "range": (["points"], stacked.range.data),
+                "azimuth": (["space"], stacked.azimuth.data),
+                "range": (["space"], stacked.range.data),
             }
         )  # keep azimuth and range index
 
         # Apply selection
-        stm_masked = stm.sel(points=index)
+        stm_masked = stm.sel(space=index)
 
-        # Re-order the dimensions to community preferred ("points", "time") order
+        # Re-order the dimensions to community preferred ("space", "time") order
         # Since there are dask arrays in stm_masked, this operation is lazy. Therefore its effect can be observed after evaluation
-        stm_masked = stm_masked.transpose("points", "time")
+        stm_masked = stm_masked.transpose("space", "time")
 
         # Rechunk
         # Rechunk is needed because after apply maksing, the chunksize will be in consistant
         stm_masked = stm_masked.chunk(
             {
-                "points": chunks,
+                "space": chunks,
                 "time": -1,
             }
         )
