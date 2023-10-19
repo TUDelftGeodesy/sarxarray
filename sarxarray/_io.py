@@ -69,11 +69,13 @@ def from_binary(
     slcs = None
     for f_slc in slc_files:
         if slcs is None:
-            slcs = read_slc(f_slc, shape, dtype, chunks).reshape(
+            slcs = _mmap_dask_array(f_slc, shape, dtype, chunks).reshape(
                 (shape[0], shape[1], 1)
             )
         else:
-            slc = read_slc(f_slc, shape, dtype, chunks).reshape((shape[0], shape[1], 1))
+            slc = _mmap_dask_array(f_slc, shape, dtype, chunks).reshape(
+                (shape[0], shape[1], 1)
+            )
             slcs = da.concatenate([slcs, slc], axis=2)
 
     # unpack the customized dtype
@@ -89,14 +91,6 @@ def from_binary(
         stack = stack.slcstack._get_phase()
 
     return stack
-
-
-def read_slc(filename_or_obj, shape, dtype, chunks):
-    slc = _mmap_dask_array(
-        filename=filename_or_obj, shape=shape, dtype=dtype, chunks=chunks
-    )
-
-    return slc
 
 
 def _mmap_dask_array(filename, shape, dtype, chunks):
