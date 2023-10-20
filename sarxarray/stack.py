@@ -110,7 +110,7 @@ class Stack:
 
         return amplitude_dispersion
 
-    def multi_look(self, window_size, method="coarsen", statistics="mean", chunk=1000, compute=True):
+    def multi_look(self, window_size, method="coarsen", statistics="mean", compute=True):
         """
         Perform multi-looking on a Stack, and return a Stack.
 
@@ -122,8 +122,6 @@ class Stack:
             Method of multi-looking, by default "coarsen"
         statistics : str, optional
             Statistics method for multi-looking, by default "mean"
-        chunk : int, optional
-            Chunk size in the space dimension, by default 1000
         compute : bool, optional
             Whether to compute the result, by default True. If False, the result
             will be `dask.delayed.Delayed`. This is useful when the multi_look
@@ -135,6 +133,16 @@ class Stack:
             An `xarray.Dataset` with coarsen shape if `compute` is True,
             otherwise a `dask.delayed.Delayed` object.
         """
+        # set the chunk size
+        if not self._obj.chunks:
+            self._obj = self._obj.chunk(
+            {
+                "azimuth": "auto",
+                "range": "auto",
+                "time": -1,
+            })
+        chunk = (self._obj.chunks["azimuth"][0], self._obj.chunks["range"][0])
+
         # check if window_size is valid
         if window_size[0] > self._obj.azimuth.size or window_size[1] > self._obj.range.size:
             warnings.warn(
@@ -143,7 +151,7 @@ class Stack:
             return self._obj
 
         # check if window_size is smaller than chunk size
-        if window_size[0] > chunk or window_size[1] > chunk:
+        if window_size[0] > chunk[0] or window_size[1] > chunk[1]:
             warnings.warn(
                 "Window size is larger than chunk size, no multi-looking is performed."
             )
@@ -189,10 +197,15 @@ class Stack:
 
         # Rechunk is needed because shape of the data will be changed after
         # multi-looking
+        # calculate new chunck size based on the window size and the existing
+        # chunk size
+        chunk = (int(np.ceil(chunk[0] / window_size[0])),
+                 int(np.ceil(chunk[1] / window_size[1])))
+
         multi_looked = multi_looked.chunk(
             {
-                "azimuth": chunk,
-                "range": chunk,
+                "azimuth": chunk[0],
+                "range": chunk[1],
                 "time": -1,
             }
         )

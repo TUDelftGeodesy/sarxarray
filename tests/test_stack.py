@@ -27,13 +27,14 @@ class TestStackMultiLook:
     def test_stack_multi_look_mean(self, synthetic_dataset):
         ds = synthetic_dataset
         ds_ml = ds.slcstack.multi_look(
-            window_size=(2, 2), method="coarsen", statistics="mean", chunk=100
+            window_size=(2, 2), method="coarsen", statistics="mean"
         )
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 5
         assert ds_ml.time.size == 10
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
         assert ds_ml.attrs["multi-look"] == "coarsen-mean"
+        # check the "auto" chunk
+        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
@@ -60,7 +61,7 @@ class TestStackMultiLook:
     def test_stack_multi_look_median(self, synthetic_dataset):
         ds = synthetic_dataset
         ds_ml = ds.slcstack.multi_look(
-            window_size=(2, 2), method="coarsen", statistics="median", chunk=100
+            window_size=(2, 2), method="coarsen", statistics="median"
         )
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 5
@@ -80,7 +81,7 @@ class TestStackMultiLook:
     def test_stack_multi_look_unequal_window_sizes(self, synthetic_dataset):
         ds = synthetic_dataset
         ds_ml = ds.slcstack.multi_look(
-            window_size=(2, 3), method="coarsen", statistics="mean", chunk=100
+            window_size=(2, 3), method="coarsen", statistics="mean"
         )
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 3
@@ -113,7 +114,7 @@ class TestStackMultiLook:
     def test_stack_multi_look_compute_false(self, synthetic_dataset):
         ds = synthetic_dataset
         ds_ml = ds.slcstack.multi_look(
-            window_size=(2, 3), method="coarsen", statistics="mean", chunk=100, compute=False
+            window_size=(2, 3), method="coarsen", statistics="mean", compute=False
         )
         # assert if ds_ml is a dask.delayed object
         assert isinstance(ds_ml, Delayed)
