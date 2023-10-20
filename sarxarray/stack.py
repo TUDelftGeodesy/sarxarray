@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import xarray as xr
 import dask.array as da
@@ -211,6 +212,58 @@ class Stack:
         )
 
         return multi_looked
+
+    def complex_coherence(self, other, window_size, compute=True):
+        """
+        Calculate complex coherence of two images.
+        # TODO: add a reference
+        assume two images reference (R), here `self` and other (O), the coherence is defined as:
+        numerator = mean(R * O`) in the window
+        denominator = mean(R * R`) * mean(O * O`) in the window
+        coherence = abs( numerator / sqrt(denominator) )
+
+        Parameters
+        ----------
+        other : xarray.Dataset
+            The other image to calculate complex coherence with.
+        window_size : tuple
+            Window size for multi-looking, in the format of (azimuth, range)
+        compute : bool, optional
+            Whether to compute the result, by default True. If False, the result
+            will be `dask.delayed.Delayed`. This is useful when the complex_coherence
+            is used as an intermediate result.
+
+        Returns
+        -------
+        xarray.Dataset
+            An `xarray.Dataset` if `compute` is True,
+            otherwise a `dask.delayed.Delayed` object.
+        """
+        # check if the two images have the same shape
+        if self._obj.azimuth.size != other.azimuth.size or self._obj.range.size != other.range.size:
+            raise ValueError("The two images have different shape.")
+
+        # copy the original data to a new object to avoid changing the original
+        # data
+        new = self._obj.copy(deep=False)
+
+        # calculate the numerator of the equation
+        self._obj = new * other.conj()
+        numerator = self.multi_look(window_size, method="coarsen", statistics="mean", compute=compute)
+
+        # calculate the denominator of the equation
+        self._obj = new * new.conj()
+        self_mean = self.multi_look(window_size, method="coarsen", statistics="mean", compute=compute)
+
+        self._obj = other * other.conj()
+        other_mean = self.multi_look(window_size, method="coarsen", statistics="mean", compute=compute)
+
+        denominator = self_mean * other_mean
+
+        # calculate the coherence
+        coherence = np.abs(numerator / np.sqrt(denominator))
+
+        return coherence
 
 
 def _compute_amp(complex):
