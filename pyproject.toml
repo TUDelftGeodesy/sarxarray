@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sarxarray"
+version = "0.1.0"
+dependencies = [
+    "dask[complete]",
+    "xarray",
+    "numpy",
+    "distributed",
+    "zarr",
+]
+description = "Xarray extension for Synthetic Aperture Radar (SAR) data"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Ou Ku", email = "o.ku@esciencecenter.nl"},
+    {name = "Pranav Chandramouli"},
+    {name = "Fakhereh Alidoost"},
+]
+keywords = ["radar", "sar", "insar", "earth observation", "distributed computing"]
+classifiers=[
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+]
+
+[project.urls]
+repository = "https://github.com/MotionbyLearning/sarxarray"
+doi = "https://doi.org/10.5281/zenodo.7717112"
+documentation = "https://sarxarray.readthedocs.io"
+changelog = "https://github.com/MotionbyLearning/sarxarray/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pycodestyle",
+]
+docs = [
+    "sphinx",
+    "docutils==0.16",
+    "sphinx_rtd_theme==0.5.2",
+    "recommonmark",
+]
+demo = [
+    "jupyterlab",
+    "matplotlib",
+]
+
+[tool.setuptools]
+packages = ["sarxarray"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov --cov-report term"
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["sarxarray"]
