@@ -193,3 +193,15 @@ class TestStackCoherence:
             coherence,
             decimal=8,
         )
+
+    def test_complex_coherence_compute_false(self, synthetic_dataset, synthetic_dataset_2):
+        ds = synthetic_dataset
+        ds_2 = synthetic_dataset_2
+        ds_co = ds.slcstack.complex_coherence(ds_2, window_size=(2, 2), compute=False)
+
+        # assert if ds_co is a dask.delayed object
+        assert isinstance(ds_co, Delayed)
+
+        # check if calling compute() works
+        results = ds_co.compute()
+        assert results is not None

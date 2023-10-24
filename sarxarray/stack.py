@@ -261,7 +261,13 @@ class Stack:
         denominator = self_mean * other_mean
 
         # calculate the coherence
-        coherence = np.abs(numerator / np.sqrt(denominator))
+        def _compute_coherence(numerator, denominator):
+            return np.abs(numerator / np.sqrt(denominator))
+
+        if compute:
+            coherence = _compute_coherence(numerator, denominator)
+        else:
+            coherence = delayed(_compute_coherence)(numerator, denominator)
 
         return coherence
 
