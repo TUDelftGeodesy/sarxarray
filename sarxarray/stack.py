@@ -216,11 +216,13 @@ class Stack:
     def complex_coherence(self, other, window_size, compute=True):
         """
         Calculate complex coherence of two images.
-        # TODO: add a reference
-        assume two images reference (R), here `self` and other (O), the coherence is defined as:
-        numerator = mean(R * O`) in the window
-        denominator = mean(R * R`) * mean(O * O`) in the window
-        coherence = abs( numerator / sqrt(denominator) )
+
+        Assume two images reference (R) and other (O), the complex coherence is
+        defined as:
+        numerator = mean(R * O`) in a window
+        denominator = mean(R * R`) * mean(O * O`) in a window
+        coherence = abs( numerator / sqrt(denominator) ),
+        See the equationin chapter 28 in http://doris.tudelft.nl/software/doris_v4.02.pdf
 
         Parameters
         ----------
