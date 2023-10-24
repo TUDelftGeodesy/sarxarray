@@ -134,14 +134,21 @@ class Stack:
             An `xarray.Dataset` with coarsen shape if `compute` is True,
             otherwise a `dask.delayed.Delayed` object.
         """
+        # check if azimuth, range and time are in the dimensions
+        if not {"azimuth", "range", "time"} <= set(self._obj.dims.keys()):
+            raise ValueError(
+                "The data does not have azimuth, range and time dimensions."
+            )
+
         # set the chunk size
         if not self._obj.chunks:
             self._obj = self._obj.chunk(
-            {
-                "azimuth": "auto",
-                "range": "auto",
-                "time": -1,
-            })
+                {
+                    "azimuth": "auto",
+                    "range": "auto",
+                    "time": -1,
+                }
+            )
         chunk = (self._obj.chunks["azimuth"][0], self._obj.chunks["range"][0])
 
         # check if window_size is valid
