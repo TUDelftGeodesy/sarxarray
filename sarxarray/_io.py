@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def from_binary(
-    slc_files, shape, vlabel="complex", dtype=np.float32, chunks=None, ratio=1
+    slc_files, shape, vlabel="complex", dtype=np.complex64, chunks=None, ratio=1
 ):
     """
     Read a SLC stack or relabted variables from binary files

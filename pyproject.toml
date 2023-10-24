@@ -43,10 +43,11 @@ dev = [
     "pycodestyle",
 ]
 docs = [
-    "sphinx",
-    "docutils==0.16",
-    "sphinx_rtd_theme==0.5.2",
-    "recommonmark",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-jupyter",
+    "mkdocstrings[python]",
+    "mkdocs-gen-files",
 ]
 demo = [
     "jupyterlab",
