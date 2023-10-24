@@ -8,13 +8,9 @@
       
       
       
-        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/usage/">
+        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/CHANGLOG/">
       
       
-        <link rel="prev" href="../setup/">
-      
-      
-        <link rel="next" href="../example/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +18,7 @@
     
     
       
-        <title>Usage - SARXarray Documentation</title>
+        <title>CHANGLOG - SARXarray Documentation</title>
       
     
     
@@ -78,11 +74,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#usage" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -114,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Usage
+              CHANGLOG
             
           </span>
         </div>
@@ -198,12 +189,10 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href=".." class="md-tabs__link">
           
   
@@ -274,8 +263,6 @@
       
   
   
-    
-  
   
     
     
@@ -285,12 +272,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
         
           
           <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
@@ -304,7 +291,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             Getting started
@@ -355,29 +342,9 @@
                 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Usage
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -386,54 +353,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#loading-corregisterred-slc-stack" class="md-nav__link">
-    Loading corregisterred SLC stack
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-processing-on-an-slc-stack" class="md-nav__link">
-    Common processing on an SLC stack
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make-a-mean-reflection-map-mrm-and-visualize" class="md-nav__link">
-    Make a Mean-Reflection-Map (MRM) and visualize
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#access-and-manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
-    Access and manipulate an SLC stack as an Xarray
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -482,44 +401,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#loading-corregisterred-slc-stack" class="md-nav__link">
-    Loading corregisterred SLC stack
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-processing-on-an-slc-stack" class="md-nav__link">
-    Common processing on an SLC stack
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make-a-mean-reflection-map-mrm-and-visualize" class="md-nav__link">
-    Make a Mean-Reflection-Map (MRM) and visualize
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#access-and-manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
-    Access and manipulate an SLC stack as an Xarray
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -534,53 +415,9 @@
                   
 
 
-<h1 id="usage">Usage</h1>
-<pre><code class="language-python"># List of path to binary SLC files
-list_slcs = ['slc_1.raw', 'slc_2.raw', 'slc_3.raw']
-</code></pre>
-<pre><code class="language-python"># Known 2D shape (azimuth, range)
-shape = (10018, 68656)
-</code></pre>
-<h2 id="loading-corregisterred-slc-stack">Loading corregisterred SLC stack</h2>
-<p>Read corregisterred SLC stack using <code>from_binary</code>:</p>
-<pre><code class="language-python">import sarxarray
+  <h1>CHANGLOG</h1>
 
-stack = sarxarray.from_binary(list_slcs, shape) 
-</code></pre>
-<p>Manually specify chunk size:</p>
-<pre><code class="language-python">stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
-</code></pre>
-<h2 id="common-processing-on-an-slc-stack">Common processing on an SLC stack</h2>
-<p>Multi-look by a windowsize, e.g. 2 in azimuth dimension and 4 in range dimension.</p>
-<pre><code class="language-python">stack_multilook = stack.slcstack.multi_look((2,4))
-</code></pre>
-<p>Compute coherence between two SLCs:</p>
-<pre><code class="language-python">slc1 = stack.isel(time=[0]) # first image
-slc2 = stack.isel(time=[2])  # third image
-window = (4,4)
 
-coherence = slc1.slcstack.complex_coherence(slc2, window)
-</code></pre>
-<h2 id="make-a-mean-reflection-map-mrm-and-visualize">Make a Mean-Reflection-Map (MRM) and visualize</h2>
-<pre><code class="language-python"># Get MRM
-mrm = stack_multilook.slcstack.mrm()
-
-# Visualize
-from matplotlib import pyplot as plt
-fig, ax = plt.subplots()
-ax.imshow(mrm)
-mrm.plot(ax=ax, robust=True, cmap='gray')
-</code></pre>
-<h2 id="access-and-manipulate-an-slc-stack-as-an-xarray">Access and manipulate an SLC stack as an Xarray</h2>
-<p>Slice the SLC stack in 3D:</p>
-<pre><code class="language-python">stack.isel(azimuth=range(1000,2000), range=range(1500,2500), time=range(2,5))
-</code></pre>
-<p>Select <code>amplitude</code> attributes</p>
-<pre><code class="language-python">amp = stack['amplitude']
-</code></pre>
-<p>Compute stack and peresist in memory:</p>
-<pre><code class="language-python">stack = stack.compute()
-</code></pre>
 
 
 
