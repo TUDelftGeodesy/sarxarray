@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/usage/">
-      
       
         <link rel="prev" href="../setup/">
       
       
-        <link rel="next" href="../example/">
+        <link rel="next" href="../notebooks/demo_sarxarray/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -187,6 +185,18 @@
 </div>
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/motionbylearning/sarxarray/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
     
@@ -220,12 +230,29 @@
   
   
     <li class="md-tabs__item">
-      <a href="../example/" class="md-tabs__link">
+      <a href="../notebooks/demo_sarxarray/" class="md-tabs__link">
         
   
     
   
-  Examples
+  Example Jupyter Notebook
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../notebooks/demo_sarxarray_spider/" class="md-tabs__link">
+        
+  
+    
+  
+  Spider Example
 
       </a>
     </li>
@@ -267,6 +294,18 @@
     </a>
     SARXarray Documentation
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/motionbylearning/sarxarray/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -403,8 +442,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#loading-corregisterred-slc-stack" class="md-nav__link">
-    Loading corregisterred SLC stack
+  <a href="#input-data-format" class="md-nav__link">
+    Input data format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-corregisterred-slc-stack-in-binary-format" class="md-nav__link">
+    Loading corregisterred SLC stack in binary format
   </a>
   
 </li>
@@ -414,18 +460,45 @@
     Common processing on an SLC stack
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make-a-mean-reflection-map-mrm-and-visualize" class="md-nav__link">
-    Make a Mean-Reflection-Map (MRM) and visualize
+    <nav class="md-nav" aria-label="Common processing on an SLC stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multi-look" class="md-nav__link">
+    Multi-look
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coherence" class="md-nav__link">
+    Coherence
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean-reflection-map-mrm" class="md-nav__link">
+    Mean-Reflection-Map (MRM)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#point-selection" class="md-nav__link">
+    Point selection
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#access-and-manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
-    Access and manipulate an SLC stack as an Xarray
+  <a href="#manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
+    Manipulate an SLC stack as an Xarray
   </a>
   
 </li>
@@ -452,11 +525,30 @@
   
   
     <li class="md-nav__item">
-      <a href="../example/" class="md-nav__link">
+      <a href="../notebooks/demo_sarxarray/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Examples
+    Example Jupyter Notebook
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/demo_sarxarray_spider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Spider Example
   </span>
   
 
@@ -492,8 +584,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#loading-corregisterred-slc-stack" class="md-nav__link">
-    Loading corregisterred SLC stack
+  <a href="#input-data-format" class="md-nav__link">
+    Input data format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-corregisterred-slc-stack-in-binary-format" class="md-nav__link">
+    Loading corregisterred SLC stack in binary format
   </a>
   
 </li>
@@ -503,18 +602,45 @@
     Common processing on an SLC stack
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make-a-mean-reflection-map-mrm-and-visualize" class="md-nav__link">
-    Make a Mean-Reflection-Map (MRM) and visualize
+    <nav class="md-nav" aria-label="Common processing on an SLC stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multi-look" class="md-nav__link">
+    Multi-look
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coherence" class="md-nav__link">
+    Coherence
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mean-reflection-map-mrm" class="md-nav__link">
+    Mean-Reflection-Map (MRM)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#point-selection" class="md-nav__link">
+    Point selection
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#access-and-manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
-    Access and manipulate an SLC stack as an Xarray
+  <a href="#manipulate-an-slc-stack-as-an-xarray" class="md-nav__link">
+    Manipulate an SLC stack as an Xarray
   </a>
   
 </li>
@@ -533,45 +659,76 @@
                 
                   
 
+  
+  
+
 
 <h1 id="usage">Usage</h1>
-<pre><code class="language-python"># List of path to binary SLC files
-list_slcs = ['slc_1.raw', 'slc_2.raw', 'slc_3.raw']
+<h2 id="input-data-format">Input data format</h2>
+<p>SARXarry works with corregitserred SLC / interferogram stack. Conventionally they are provided in binary format. SARXarry provides a reader to perform lazy loading on a binary stack. However, we recommend to store the corregitserred stack in <a href="https://zarr.readthedocs.io/en/stable/"><code>zarr</code></a> format, and directly load them as an Xarray object by <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_zarr.html"><code>xarray.open_zarr</code></a>. </p>
+<h2 id="loading-corregisterred-slc-stack-in-binary-format">Loading corregisterred SLC stack in binary format</h2>
+<p>If the stack is saved in binary fomat, it can be read by <code>SARXarray</code> under two prerequisites:</p>
+<ol>
+<li>All SLCs/interferograms have the same known raster size and data type;</li>
+<li>All SLCs/interferograms have been resampled to the same raster grid.</li>
+</ol>
+<p>For example, let's consider a case of an stack with three SLCs:</p>
+<pre><code class="language-python">import numpy as np
+list_slcs = ['data/slc_1.raw', 'data/slc_2.raw', 'data/slc_3.raw']
+shape = (10018, 68656) # (azimuth, range)
+dtype = np.complex64
 </code></pre>
-<pre><code class="language-python"># Known 2D shape (azimuth, range)
-shape = (10018, 68656)
-</code></pre>
-<h2 id="loading-corregisterred-slc-stack">Loading corregisterred SLC stack</h2>
-<p>Read corregisterred SLC stack using <code>from_binary</code>:</p>
+<p>We built a list <code>list_slcs</code> with the paths to the SLCs. In this case they are stored in the same directory called <code>data</code>. The shape of each SLC is known: <code>10018</code> pixels in <code>azimuth</code> direction, and <code>68656</code> in range direction. The data type is <code>numpy.complex64</code>.</p>
+<p>The corregisterred SLC stack can be read using <code>from_binary</code> function:</p>
 <pre><code class="language-python">import sarxarray
 
-stack = sarxarray.from_binary(list_slcs, shape) 
+stack = sarxarray.from_binary(list_slcs, shape, dtype=dtype)
 </code></pre>
-<p>Manually specify chunk size:</p>
+<p>You can also skip the <code>dtype</code> argument since it's defaulted to <code>np.complex64</code>. The stack will be read as an <code>xarray.Dataset</code> object, with data variables lazily loaded as <code>Dask Array</code>:</p>
+<pre><code class="language-output">print(stack)
+
+&lt;xarray.Dataset&gt;
+Dimensions:    (azimuth: 10018, range: 68656, time: 3)
+Coordinates:
+  * azimuth    (azimuth) int64 0 1 2 3 4 5 ... 10013 10014 10015 10016 10017
+  * range      (range) int64 0 1 2 3 4 5 ... 68650 68651 68652 68653 68654 68655
+  * time       (time) int64 0 1 2
+Data variables:
+    complex    (azimuth, range, time) complex64 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+    amplitude  (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+    phase      (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+</code></pre>
+<p>The loading chunk size can also be specified manually:</p>
 <pre><code class="language-python">stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
 </code></pre>
 <h2 id="common-processing-on-an-slc-stack">Common processing on an SLC stack</h2>
-<p>Multi-look by a windowsize, e.g. 2 in azimuth dimension and 4 in range dimension.</p>
+<p>Common SAR processings can be performed by SARXarray. Below are some examples:</p>
+<h3 id="multi-look">Multi-look</h3>
+<p>Multi-look by a windowsize, e.g. 2 in azimuth dimension and 4 in range dimension:</p>
 <pre><code class="language-python">stack_multilook = stack.slcstack.multi_look((2,4))
 </code></pre>
+<h3 id="coherence">Coherence</h3>
 <p>Compute coherence between two SLCs:</p>
 <pre><code class="language-python">slc1 = stack.isel(time=[0]) # first image
-slc2 = stack.isel(time=[2])  # third image
+slc2 = stack.isel(time=[2]) # third image
 window = (4,4)
 
 coherence = slc1.slcstack.complex_coherence(slc2, window)
 </code></pre>
-<h2 id="make-a-mean-reflection-map-mrm-and-visualize">Make a Mean-Reflection-Map (MRM) and visualize</h2>
-<pre><code class="language-python"># Get MRM
-mrm = stack_multilook.slcstack.mrm()
-
-# Visualize
-from matplotlib import pyplot as plt
+<h3 id="mean-reflection-map-mrm">Mean-Reflection-Map (MRM)</h3>
+<pre><code class="language-python">mrm = stack_multilook.slcstack.mrm()
+</code></pre>
+<pre><code class="language-python">from matplotlib import pyplot as plt
 fig, ax = plt.subplots()
 ax.imshow(mrm)
 mrm.plot(ax=ax, robust=True, cmap='gray')
 </code></pre>
-<h2 id="access-and-manipulate-an-slc-stack-as-an-xarray">Access and manipulate an SLC stack as an Xarray</h2>
+<h3 id="point-selection">Point selection</h3>
+<p>A selection based on temporal properties per pixel can be performed. For example, we can select the Persistent Scatters (PS) by temporal dispersion of <code>amplitude</code>:</p>
+<pre><code class="language-python">ps = stack.slcstack.point_selection(threshold=0.25, method=&quot;amplitude_dispersion&quot;)
+</code></pre>
+<h2 id="manipulate-an-slc-stack-as-an-xarray">Manipulate an SLC stack as an Xarray</h2>
+<p>The loaded stack can be manipulated as an <code>Xarray.Dataset</code> instance.</p>
 <p>Slice the SLC stack in 3D:</p>
 <pre><code class="language-python">stack.isel(azimuth=range(1000,2000), range=range(1500,2500), time=range(2,5))
 </code></pre>
