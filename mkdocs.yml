@@ -5,8 +5,12 @@ nav:
   - Getting started: 
     - About SARXarray: index.md
     - Installation: setup.md
-    - Usage: usage.md
-  - Examples: example.md
+  - Usage: 
+    - Data loading: data_loading.md
+    - Common SLC operations: common_ops.md
+    - Other manipulations: manipulations.md
+  - Notebook page: notebooks/demo_sarxarray.ipynb
+  - Change Log: CHANGLOG.md
 
 
 theme:
@@ -46,3 +50,6 @@ plugins:
             ignore_init_summary: no
           merge_init_into_class: yes
           show_submodules: no
+
+extra:
+  generator: false
