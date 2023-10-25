@@ -8,11 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/CHANGLOG/">
+        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/common_ops/">
       
       
-        <link rel="prev" href="../notebooks/demo_sarxarray/">
+        <link rel="prev" href="../data_loading/">
       
+      
+        <link rel="next" href="../manipulations/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +22,7 @@
     
     
       
-        <title>Change log - SARXarray Documentation</title>
+        <title>Common SLC operations - SARXarray Documentation</title>
       
     
     
@@ -76,6 +78,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#common-slc-operations" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -107,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Change log
+              Common SLC operations
             
           </span>
         </div>
@@ -209,10 +216,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../data_loading/" class="md-tabs__link">
           
   
@@ -244,11 +253,9 @@
         
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../CHANGLOG/" class="md-tabs__link">
         
   
     
@@ -388,6 +395,8 @@
       
   
   
+    
+  
   
     
     
@@ -397,12 +406,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -416,7 +425,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Usage
@@ -447,9 +456,29 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../common_ops/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Common SLC operations
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -458,6 +487,54 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#multi-look" class="md-nav__link">
+    Multi-look
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coherence" class="md-nav__link">
+    Coherence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mean-reflection-map-mrm" class="md-nav__link">
+    Mean-Reflection-Map (MRM)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#point-selection" class="md-nav__link">
+    Point selection
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -513,16 +590,9 @@
       
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../CHANGLOG/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -531,7 +601,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -553,6 +622,44 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#multi-look" class="md-nav__link">
+    Multi-look
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coherence" class="md-nav__link">
+    Coherence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mean-reflection-map-mrm" class="md-nav__link">
+    Mean-Reflection-Map (MRM)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#point-selection" class="md-nav__link">
+    Point selection
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -567,9 +674,32 @@
                   
 
 
-  <h1>Change log</h1>
+<h1 id="common-slc-operations">Common SLC operations</h1>
+<p>Common SAR processings can be performed by SARXarray. Below are some examples:</p>
+<h2 id="multi-look">Multi-look</h2>
+<p>Multi-look by a windowsize, e.g. 2 in azimuth dimension and 4 in range dimension:</p>
+<pre><code class="language-python">stack_multilook = stack.slcstack.multi_look((2,4))
+</code></pre>
+<h2 id="coherence">Coherence</h2>
+<p>Compute coherence between two SLCs:</p>
+<pre><code class="language-python">slc1 = stack.isel(time=[0]) # first image
+slc2 = stack.isel(time=[2]) # third image
+window = (4,4)
 
-
+coherence = slc1.slcstack.complex_coherence(slc2, window)
+</code></pre>
+<h2 id="mean-reflection-map-mrm">Mean-Reflection-Map (MRM)</h2>
+<pre><code class="language-python">mrm = stack_multilook.slcstack.mrm()
+</code></pre>
+<pre><code class="language-python">from matplotlib import pyplot as plt
+fig, ax = plt.subplots()
+ax.imshow(mrm)
+mrm.plot(ax=ax, robust=True, cmap='gray')
+</code></pre>
+<h2 id="point-selection">Point selection</h2>
+<p>A selection based on temporal properties per pixel can be performed. For example, we can select the Persistent Scatters (PS) by temporal dispersion of <code>amplitude</code>:</p>
+<pre><code class="language-python">ps = stack.slcstack.point_selection(threshold=0.25, method=&quot;amplitude_dispersion&quot;)
+</code></pre>
 
 
 

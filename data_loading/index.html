@@ -8,11 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/CHANGLOG/">
+        <link rel="canonical" href="https://github.com/motionbylearning/sarxarray/data_loading/">
       
       
-        <link rel="prev" href="../notebooks/demo_sarxarray/">
+        <link rel="prev" href="../setup/">
       
+      
+        <link rel="next" href="../common_ops/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +22,7 @@
     
     
       
-        <title>Change log - SARXarray Documentation</title>
+        <title>Data loading - SARXarray Documentation</title>
       
     
     
@@ -76,6 +78,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#usage" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -107,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Change log
+              Data loading
             
           </span>
         </div>
@@ -209,11 +216,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../data_loading/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   Usage
@@ -244,11 +253,9 @@
         
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../CHANGLOG/" class="md-tabs__link">
         
   
     
@@ -388,6 +395,8 @@
       
   
   
+    
+  
   
     
     
@@ -397,12 +406,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -416,7 +425,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Usage
@@ -427,9 +436,29 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../data_loading/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Data loading
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -438,6 +467,40 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#input-data-format" class="md-nav__link">
+    Input data format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-corregisterred-slc-stack-in-binary-format" class="md-nav__link">
+    Loading corregisterred SLC stack in binary format
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -513,16 +576,9 @@
       
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../CHANGLOG/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -531,7 +587,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -553,6 +608,30 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#input-data-format" class="md-nav__link">
+    Input data format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-corregisterred-slc-stack-in-binary-format" class="md-nav__link">
+    Loading corregisterred SLC stack in binary format
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -567,9 +646,44 @@
                   
 
 
-  <h1>Change log</h1>
+<h1 id="usage">Usage</h1>
+<h2 id="input-data-format">Input data format</h2>
+<p>SARXarry works with corregitserred SLC / interferogram stack. Conventionally they are provided in binary format. SARXarry provides a reader to perform lazy loading on a binary stack. However, we recommend to store the corregitserred stack in <a href="https://zarr.readthedocs.io/en/stable/"><code>zarr</code></a> format, and directly load them as an Xarray object by <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_zarr.html"><code>xarray.open_zarr</code></a>. </p>
+<h2 id="loading-corregisterred-slc-stack-in-binary-format">Loading corregisterred SLC stack in binary format</h2>
+<p>If the stack is saved in binary fomat, it can be read by <code>SARXarray</code> under two prerequisites:</p>
+<ol>
+<li>All SLCs/interferograms have the same known raster size and data type;</li>
+<li>All SLCs/interferograms have been resampled to the same raster grid.</li>
+</ol>
+<p>For example, let's consider a case of an stack with three SLCs:</p>
+<pre><code class="language-python">import numpy as np
+list_slcs = ['data/slc_1.raw', 'data/slc_2.raw', 'data/slc_3.raw']
+shape = (10018, 68656) # (azimuth, range)
+dtype = np.complex64
+</code></pre>
+<p>We built a list <code>list_slcs</code> with the paths to the SLCs. In this case they are stored in the same directory called <code>data</code>. The shape of each SLC is known: <code>10018</code> pixels in <code>azimuth</code> direction, and <code>68656</code> in range direction. The data type is <code>numpy.complex64</code>.</p>
+<p>The corregisterred SLC stack can be read using <code>from_binary</code> function:</p>
+<pre><code class="language-python">import sarxarray
 
+stack = sarxarray.from_binary(list_slcs, shape, dtype=dtype)
+</code></pre>
+<p>You can also skip the <code>dtype</code> argument since it's defaulted to <code>np.complex64</code>. The stack will be read as an <code>xarray.Dataset</code> object, with data variables lazily loaded as <code>Dask Array</code>:</p>
+<pre><code class="language-output">print(stack)
 
+&lt;xarray.Dataset&gt;
+Dimensions:    (azimuth: 10018, range: 68656, time: 3)
+Coordinates:
+  * azimuth    (azimuth) int64 0 1 2 3 4 5 ... 10013 10014 10015 10016 10017
+  * range      (range) int64 0 1 2 3 4 5 ... 68650 68651 68652 68653 68654 68655
+  * time       (time) int64 0 1 2
+Data variables:
+    complex    (azimuth, range, time) complex64 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+    amplitude  (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+    phase      (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
+</code></pre>
+<p>The loading chunk size can also be specified manually:</p>
+<pre><code class="language-python">stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
+</code></pre>
 
 
 
