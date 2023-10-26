@@ -30,21 +30,20 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
         An `xarray.Dataset` or `xarray.DataArray` with coarsen shape if
         `compute` is True, otherwise a `dask.delayed.Delayed` object.
     """
-    # check if azimuth, range and time are in the dimensions
-    if not {"azimuth", "range", "time"} <= set(data.dims):
-        raise ValueError(
-            "The data must have azimuth, range and time dimensions."
-        )
+    # check if azimuth, range are in the dimensions
+    if not {"azimuth", "range"}.issubset(data.dims):
+        raise ValueError("The data must have azimuth and range dimensions.")
 
     # set the chunk size
     if not data.chunks:
-        data = data.chunk(
-            {
-                "azimuth": "auto",
-                "range": "auto",
-                "time": -1,
-            }
-        )
+        chunks = {
+            "azimuth": "auto",
+            "range": "auto",
+        }
+        # check if time in the dimensions
+        if "time" in data.dims:
+            chunks["time"] = -1
+        data = data.chunk(chunks)
 
     if isinstance(data, xr.Dataset):
         chunk = (data.chunks["azimuth"][0], data.chunks["range"][0])
@@ -112,13 +111,14 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
     chunk = (int(np.ceil(chunk[0] / window_size[0])),
                 int(np.ceil(chunk[1] / window_size[1])))
 
-    multi_looked = multi_looked.chunk(
-        {
-            "azimuth": chunk[0],
-            "range": chunk[1],
-            "time": -1,
-        }
-    )
+    chunks = {
+        "azimuth": chunk[0],
+        "range": chunk[1],
+    }
+    if "time" in data.dims:
+        chunks["time"] = -1
+
+    multi_looked = multi_looked.chunk(chunks)
 
     return multi_looked
 

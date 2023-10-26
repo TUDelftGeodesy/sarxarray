@@ -173,6 +173,7 @@ class TestUtilsCoherence:
 
         # coherence = abs( numerator / sqrt(denominator) )
         coherence = np.abs(numerator / np.sqrt(denominator))
+        print(da_co.isel(azimuth=0, range=0, time=0).values)
 
         # assert if the data is correctly calculated
         np.testing.assert_almost_equal(
@@ -192,3 +193,29 @@ class TestUtilsCoherence:
         # check if calling compute() works
         results = da_co.compute()
         assert results is not None
+
+    def test_complex_coherence_no_time(self, synthetic_dataarray, synthetic_dataarray_2):
+        reference = synthetic_dataarray.isel(time=0)
+        other = synthetic_dataarray_2.isel(time=0)
+        da_co = complex_coherence(reference, other, window_size=(2, 2), compute=True)
+
+        R_img = reference.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
+        O_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
+
+        # numerator = mean(R * O`) in the window
+        numerator = np.mean( R_img * np.conj(O_img) )
+
+        # denominator = mean(R * R`) * mean(O * O`) in the window
+        mean_R = np.mean( R_img * np.conj(R_img) )
+        mean_O = np.mean( O_img * np.conj(O_img) )
+        denominator = mean_R * mean_O
+
+        # coherence = abs( numerator / sqrt(denominator) )
+        coherence = np.abs(numerator / np.sqrt(denominator))
+
+        # assert if the data is correctly calculated
+        np.testing.assert_almost_equal(
+            da_co.isel(azimuth=0, range=0).values,
+            coherence,
+            decimal=8,
+        )
