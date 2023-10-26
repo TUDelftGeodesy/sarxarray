@@ -33,8 +33,8 @@ classifiers=[
 [project.urls]
 repository = "https://github.com/MotionbyLearning/sarxarray"
 doi = "https://doi.org/10.5281/zenodo.7717112"
-documentation = "https://sarxarray.readthedocs.io"
-changelog = "https://github.com/MotionbyLearning/sarxarray/blob/main/CHANGELOG.md"
+documentation = "https://motionbylearning.github.io/sarxarray/"
+changelog = "https://motionbylearning.github.io/sarxarray/CHANGLOG/"
 
 [project.optional-dependencies]
 dev = [

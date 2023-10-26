@@ -1,5 +1,6 @@
 site_name: SARXarray Documentation
-site_url: https://github.com/motionbylearning/sarxarray/
+repo_url: https://github.com/motionbylearning/sarxarray/
+repo_name: SARXarray
 
 nav:
   - Getting started: 
@@ -15,6 +16,7 @@ nav:
 
 theme:
   name: material
+  custom_dir: docs/notebooks/download_button
   logo: img/sarxarray_logo.png
   palette:
     # Palette toggle for light mode
