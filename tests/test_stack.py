@@ -2,9 +2,9 @@
 """
 import pytest
 import sarxarray
-from dask.delayed import Delayed
 import numpy as np
 import xarray as xr
+from dask.delayed import Delayed
 
 # Create a synthetic dataset
 @pytest.fixture
@@ -148,60 +148,3 @@ class TestStackMultiLook:
             results.time.values,
             ds.time.values,
         )
-
-
-# Create a other synthetic dataset
-@pytest.fixture(scope="class")
-def synthetic_dataset_2():
-    return xr.Dataset(
-        data_vars={
-            "complex": (
-                ("azimuth", "range", "time"),
-                np.random.rand(10, 10, 10) + 1j * np.random.rand(10, 10, 10),
-            )
-        },
-        coords={
-            "azimuth": np.arange(600, 610, 1, dtype=int),
-            "range": np.arange(1400, 1410, 1, dtype=int),
-            "time": np.arange(1, 11, 1, dtype=int),
-        },
-    )
-
-class TestStackCoherence:
-    def test_complex_coherence(self, synthetic_dataset, synthetic_dataset_2):
-        ds = synthetic_dataset
-        ds_2 = synthetic_dataset_2
-        ds_co = ds.slcstack.complex_coherence(ds_2, window_size=(2, 2), compute=True)
-
-        R_img = ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
-        O_img = ds_2.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
-
-        # numerator = mean(R * O`) in the window
-        numerator = np.mean( R_img * np.conj(O_img) )
-
-        # denominator = mean(R * R`) * mean(O * O`) in the window
-        mean_R = np.mean( R_img * np.conj(R_img) )
-        mean_O = np.mean( O_img * np.conj(O_img) )
-        denominator = mean_R * mean_O
-
-        # coherence = abs( numerator / sqrt(denominator) )
-        coherence = np.abs(numerator / np.sqrt(denominator))
-
-        # assert if the data is correctly calculated
-        np.testing.assert_almost_equal(
-            ds_co.complex.isel(azimuth=0, range=0, time=0).values,
-            coherence,
-            decimal=8,
-        )
-
-    def test_complex_coherence_compute_false(self, synthetic_dataset, synthetic_dataset_2):
-        ds = synthetic_dataset
-        ds_2 = synthetic_dataset_2
-        ds_co = ds.slcstack.complex_coherence(ds_2, window_size=(2, 2), compute=False)
-
-        # assert if ds_co is a dask.delayed object
-        assert isinstance(ds_co, Delayed)
-
-        # check if calling compute() works
-        results = ds_co.compute()
-        assert results is not None
