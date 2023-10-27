@@ -1,9 +1,7 @@
-import warnings
 import sarxarray
 import numpy as np
 import xarray as xr
-import dask.delayed as delayed
-
+from dask.delayed import delayed, Delayed
 
 def multi_look(data, window_size, method="coarsen", statistics="mean", compute=True):
     """
@@ -30,41 +28,18 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
         An `xarray.Dataset` or `xarray.DataArray` with coarsen shape if
         `compute` is True, otherwise a `dask.delayed.Delayed` object.
     """
-    # check if azimuth, range are in the dimensions
-    if not {"azimuth", "range"}.issubset(data.dims):
-        raise ValueError("The data must have azimuth and range dimensions.")
+    # validate the input
+    _validate_multi_look_inputs(data, window_size, method, statistics)
 
-    # set the chunk size
-    if not data.chunks:
-        chunks = {
-            "azimuth": "auto",
-            "range": "auto",
-        }
-        # check if time in the dimensions
-        if "time" in data.dims:
-            chunks["time"] = -1
-        data = data.chunk(chunks)
+    # chunk data if not already chunked
+    if isinstance(data, Delayed) or not data.chunks:
+        data = data.chunk("auto")
 
-    if isinstance(data, xr.Dataset):
-        chunk = (data.chunks["azimuth"][0], data.chunks["range"][0])
-    elif isinstance(data, xr.DataArray):
-        chunk = (data.chunks[0][0], data.chunks[1][0])
+    # get the chunk size
+    if isinstance(data, Delayed):
+        chunks = "auto"
     else:
-        raise TypeError("The data must be an xarray.Dataset or xarray.DataArray.")
-
-    # check if window_size is valid
-    if window_size[0] > data.azimuth.size or window_size[1] > data.range.size:
-        warnings.warn(
-            "Window size is larger than the data size, no multi-looking is performed."
-        )
-        return data
-
-    # check if window_size is smaller than chunk size
-    if window_size[0] > chunk[0] or window_size[1] > chunk[1]:
-        warnings.warn(
-            "Window size is larger than chunk size, no multi-looking is performed."
-        )
-        return data
+        chunks = _get_chunks(data, window_size)
 
     # add new atrrs here because Delayed objects are immutable
     data.attrs["multi-look"] = f"{method}-{statistics}"
@@ -78,50 +53,29 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
         else:
             return reshaped.flatten()
 
-    match method:
-        case "coarsen":
-            # TODO: if boundary and size should be configurable
-            multi_looked = data.coarsen(
-                {"azimuth": window_size[0], "range": window_size[1]},
-                boundary="trim",
-                side="left",
-                coord_func=_custom_coord_func,
-            )
-        case other:
-            raise NotImplementedError
+    if method == "coarsen":
+        # TODO: if boundary and size should be configurable
+        multi_looked = data.coarsen(
+            {"azimuth": window_size[0], "range": window_size[1]},
+            boundary="trim",
+            side="left",
+            coord_func=_custom_coord_func,
+        )
 
     # apply statistics
     stat_functions = {
         "mean": multi_looked.mean,
         "median": multi_looked.median,
     }
-    if statistics in stat_functions:
-        stat_function = stat_functions[statistics]
-        if compute:
-            multi_looked = stat_function(keep_attrs=True)
-        else:
-            multi_looked = delayed(stat_function)(keep_attrs=True)
+
+    stat_function = stat_functions[statistics]
+    if compute:
+        multi_looked = stat_function(keep_attrs=True)
     else:
-        NotImplementedError
+        multi_looked = delayed(stat_function)(keep_attrs=True)
 
     # Rechunk is needed because shape of the data will be changed after
     # multi-looking
-    # calculate new chunck size based on the window size and the existing
-    # chunk size
-    chunk = (int(np.ceil(chunk[0] / window_size[0])),
-                int(np.ceil(chunk[1] / window_size[1])))
-
-    chunks = {
-        "azimuth": chunk[0],
-        "range": chunk[1],
-    }
-
-    if "time" in data.dims:
-        if isinstance(data, xr.Dataset):
-            chunks["time"] = data.chunks["time"][0]
-        elif isinstance(data, xr.DataArray):
-            chunks["time"] = data.chunks[2][0]
-
     multi_looked = multi_looked.chunk(chunks)
 
     return multi_looked
@@ -188,3 +142,54 @@ def complex_coherence(reference: xr.DataArray, other: xr.DataArray, window_size,
         coherence = delayed(_compute_coherence)(numerator, denominator)
 
     return coherence
+
+
+def _validate_multi_look_inputs(data, window_size, method, statistics):
+    # check if data is xarray
+    if not isinstance(data, (xr.Dataset, xr.DataArray)):
+        raise TypeError("The data must be an xarray.Dataset or xarray.DataArray.")
+
+    # check if azimuth, range are in the dimensions
+    if not {"azimuth", "range"}.issubset(data.dims):
+        raise ValueError("The data must have azimuth and range dimensions.")
+
+    # check if window_size is valid
+    if window_size[0] > data.azimuth.size or window_size[1] > data.range.size:
+        raise ValueError("Window size is larger than data size.")
+
+    # check if method is valid
+    if method not in ["coarsen"]:
+        raise ValueError("The method must be one of ['coarsen'].")
+
+    # check if statistics is valid
+    if statistics not in ["mean", "median"]:
+        raise ValueError("The statistics must be one of ['mean', 'median'].")
+
+
+def _get_chunks(data, window_size):
+
+    if isinstance(data, xr.Dataset):
+        chunks = {
+            "azimuth": data.chunks["azimuth"][0],
+            "range": data.chunks["range"][0]}
+        if "time" in data.dims:
+            chunks["time"] = data.chunks["time"][0]
+    elif isinstance(data, xr.DataArray):
+        chunks = {
+            "azimuth": data.chunks[0][0],
+            "range": data.chunks[1][0]}
+        if "time" in data.dims:
+            chunks["time"] = data.chunks[2][0]
+
+    # check if window_size is smaller than chunks size
+    if window_size[0] > chunks["azimuth"] or window_size[1] > chunks["range"]:
+        raise ValueError(
+            f"Window size ({window_size}) should be smaller than chunk size ({chunks})"
+        )
+
+    # calculate new chunck size based on the window size and the existing chunk
+    # size
+    chunks["azimuth"] = int(np.ceil(chunks["azimuth"] / window_size[0]))
+    chunks["range"] = int(np.ceil(chunks["range"] / window_size[1]))
+
+    return chunks
