@@ -14,7 +14,7 @@ cd sarxarray
 pip install .
 ```
 
-Note that Python version `>3.10` is required for SARXarray.
+Note that Python version `>=3.10` is required for SARXarray.
 
 ## Tips
 

@@ -1,36 +1,32 @@
 # SarXarray
 
 [![DOI](https://zenodo.org/badge/563781394.svg)](https://zenodo.org/badge/latestdoi/563781394)
+[![License](https://img.shields.io/github/license/MotionbyLearning/sarxarray)](https://opensource.org/licenses/Apache-2.0)
+[![Build](https://github.com/MotionbyLearning/sarxarray/actions/workflows/build.yml/badge.svg)](https://github.com/MotionbyLearning/sarxarray/actions/workflows/build.yml)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7980/badge)](https://www.bestpractices.dev/projects/7980)
+[![sonarcloud](https://github.com/MotionbyLearning/sarxarray/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/MotionbyLearning/sarxarray/actions/workflows/sonarcloud.yml)
 
-`SarXarray` is an `Xarray` extension to process coregistered Single Look Complex (SLC) image stacks acquired by Synthetic Aperture Radar (SAR). It utilizes `Xarray`’s support on labeled multi-dimensional datasets to stress the space-time character of the SLC SAR stack. It also takes the benefits from `Dask` to perform lazy evaluations of the operations.
+SARXarray is an open-source Xarray extension for Synthetic Aperture Radar (SAR) data. It is especially designed to work with large volume complex data, e.g. Single Look Complex (SLC) data, as well as derived products such as interferogram stacks. 
+
 
 ## Installation
 
-First, clone this repository to your local file system:
+SARXarray can be installed from PyPI:
 
-```bash
+```sh
+pip install sarxarray
+```
+
+or from the source:
+
+```sh
 git clone git@github.com:MotionbyLearning/sarxarray.git
-```
-
-It is strongly recommended to install `sarxarray` under an independent Python environment, e.g. an independent [conda](https://docs.conda.io/en/latest/miniconda.html) environment. If `conda` is already installed in your system, you can create a new environment by:
-
-```bash
-conda create -n sarxarray_demo python=3.10
-```
-
-A new environment named `sarxarray_demo` will be created. Then you can activate it by:
-
-```bash
-conda activate sarxarray_demo
-```
-
-After creating a new environment, you can install `SarXarray` using `pip`:
-
-```bash
 cd sarxarray
 pip install .
 ```
 
-## Usage example
+Note that Python version `>=3.10` is required for SARXarray.
 
-An [example Jupyter Notebook](examples/demo_sarxarray.ipynb) is available to demonstrate the usage of `SarXarray`. Please follow the instructions inside the notebook to excute the demo.
+## Documentation
+
+For more information on usage and examples of SARXarray, please refer to the [documentation](https://motionbylearning.github.io/sarxarray/).
