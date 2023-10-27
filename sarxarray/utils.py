@@ -115,8 +115,12 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
         "azimuth": chunk[0],
         "range": chunk[1],
     }
+
     if "time" in data.dims:
-        chunks["time"] = -1
+        if isinstance(data, xr.Dataset):
+            chunks["time"] = data.chunks["time"][0]
+        elif isinstance(data, xr.DataArray):
+            chunks["time"] = data.chunks[2][0]
 
     multi_looked = multi_looked.chunk(chunks)
 

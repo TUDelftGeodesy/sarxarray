@@ -130,7 +130,7 @@ class Stack:
 
         Returns
         -------
-        xarray.Dataset or xarray.DataArray
+        xarray.Dataset
             An `xarray.Dataset` with coarsen shape if
             `compute` is True, otherwise a `dask.delayed.Delayed` object.
         """
