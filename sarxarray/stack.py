@@ -38,7 +38,9 @@ class Stack:
         """
         Select pixels from a Stack, and return a Space-Time Matrix.
 
-        The selection method is defined by `method` and `threshold`. The selected pixels will be reshaped to (space, time), where `space` is the number of selected pixels. The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
+        The selection method is defined by `method` and `threshold`.
+        The selected pixels will be reshaped to (space, time), where `space` is the number of selected pixels.
+        The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
 
         Parameters
         ----------
@@ -81,7 +83,8 @@ class Stack:
         stm_masked = stm.sel(space=index)
 
         # Re-order the dimensions to community preferred ("space", "time") order
-        # Since there are dask arrays in stm_masked, this operation is lazy. Therefore its effect can be observed after evaluation
+        # Since there are dask arrays in stm_masked, this operation is lazy.
+        # Therefore its effect can be observed after evaluation
         stm_masked = stm_masked.transpose("space", "time")
 
         # Rechunk
@@ -110,7 +113,9 @@ class Stack:
 
         return amplitude_dispersion
 
-    def multi_look(self, window_size, method="coarsen", statistics="mean", compute=True):
+    def multi_look(
+        self, window_size, method="coarsen", statistics="mean", compute=True
+    ):
         """
         Perform multi-looking on a Stack, and return a Stack.
 
@@ -136,15 +141,19 @@ class Stack:
         # set the chunk size
         if not self._obj.chunks:
             self._obj = self._obj.chunk(
-            {
-                "azimuth": "auto",
-                "range": "auto",
-                "time": -1,
-            })
+                {
+                    "azimuth": "auto",
+                    "range": "auto",
+                    "time": -1,
+                }
+            )
         chunk = (self._obj.chunks["azimuth"][0], self._obj.chunks["range"][0])
 
         # check if window_size is valid
-        if window_size[0] > self._obj.azimuth.size or window_size[1] > self._obj.range.size:
+        if (
+            window_size[0] > self._obj.azimuth.size
+            or window_size[1] > self._obj.range.size
+        ):
             warnings.warn(
                 "Window size is larger than the data size, no multi-looking is performed."
             )
@@ -199,8 +208,10 @@ class Stack:
         # multi-looking
         # calculate new chunck size based on the window size and the existing
         # chunk size
-        chunk = (int(np.ceil(chunk[0] / window_size[0])),
-                 int(np.ceil(chunk[1] / window_size[1])))
+        chunk = (
+            int(np.ceil(chunk[0] / window_size[0])),
+            int(np.ceil(chunk[1] / window_size[1])),
+        )
 
         multi_looked = multi_looked.chunk(
             {

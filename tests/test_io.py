@@ -84,11 +84,12 @@ class TestFromBinary:
 
 class TestUtils:
     """Utility functions in _io.py"""
+
     def test_unpack_complex(self):
         dtype = np.dtype([("re", np.float32), ("im", np.float32)])
-        cmp = np.array((1,2), dtype=dtype)
+        cmp = np.array((1, 2), dtype=dtype)
         cmp_unpacked = _unpack_complex(cmp)
-        assert cmp_unpacked == 2j+1
+        assert cmp_unpacked == 2j + 1
 
     def test_calc_chunksize_tiny(self):
         assert _calc_chunksize((100, 100), np.float32, 1) == (100, 100)

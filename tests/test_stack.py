@@ -6,6 +6,7 @@ from dask.delayed import Delayed
 import numpy as np
 import xarray as xr
 
+
 # Create a synthetic dataset
 @pytest.fixture
 def synthetic_dataset():
@@ -23,6 +24,7 @@ def synthetic_dataset():
         },
     )
 
+
 class TestStackMultiLook:
     def test_stack_multi_look_mean(self, synthetic_dataset):
         ds = synthetic_dataset
@@ -34,14 +36,12 @@ class TestStackMultiLook:
         assert ds_ml.time.size == 10
         assert ds_ml.attrs["multi-look"] == "coarsen-mean"
         # check the "auto" chunk
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (5,), "time": (10,)}
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
             ),
         )
         # assert if coordinates are correctly calculated
@@ -66,15 +66,13 @@ class TestStackMultiLook:
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 5
         assert ds_ml.time.size == 10
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (5,), "time": (10,)}
         assert ds_ml.attrs["multi-look"] == "coarsen-median"
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.median(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
             ),
         )
 
@@ -86,15 +84,13 @@ class TestStackMultiLook:
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 3
         assert ds_ml.time.size == 10
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (3,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (3,), "time": (10,)}
         assert ds_ml.attrs["multi-look"] == "coarsen-mean"
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values
             ),
         )
         # assert if coordinates are correctly calculated
@@ -124,15 +120,13 @@ class TestStackMultiLook:
         assert results.azimuth.size == 5
         assert results.range.size == 3
         assert results.time.size == 10
-        assert results.chunks == {'azimuth': (5,), 'range': (3,), 'time': (10,)}
+        assert results.chunks == {"azimuth": (5,), "range": (3,), "time": (10,)}
         assert results.attrs["multi-look"] == "coarsen-mean"
         # assert if the data is correctly computed
         assert np.allclose(
             results.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values
             ),
         )
         # assert if coordinates are correctly computed
