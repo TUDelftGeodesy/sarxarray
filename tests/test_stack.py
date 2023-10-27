@@ -10,6 +10,7 @@ import xarray as xr
 # Create a synthetic dataset
 @pytest.fixture
 def synthetic_dataset():
+    np.random.seed(0)
     return xr.Dataset(
         {
             "complex": (
@@ -23,6 +24,63 @@ def synthetic_dataset():
             "time": np.arange(1, 11, 1, dtype=int),
         },
     )
+
+
+class TestStackSARrelated:
+    def test_stack_get_amp(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        assert ds.azimuth.size == 10
+        assert ds.range.size == 10
+        assert ds.time.size == 10
+
+    def test_stack_get_phase(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_phase()
+        assert ds.azimuth.size == 10
+        assert ds.range.size == 10
+        assert ds.time.size == 10
+
+    def test_stack_mrm(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        mrm = ds.slcstack.mrm()
+        assert mrm.azimuth.size == 10
+        assert mrm.range.size == 10
+        assert "time" not in mrm.dims
+        assert np.allclose(ds.amplitude.mean(axis=2), mrm)
+
+    def test_amp_disp(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        amp_disp = ds.slcstack._amp_disp()
+        amp = ds.amplitude
+        amp_disp_calc = amp.std(axis=2) / amp.mean(axis=2)
+        assert np.allclose(amp_disp, amp_disp_calc)
+
+    def test_stack_pointselection_all(self, synthetic_dataset):
+        synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
+        synthetic_dataset = synthetic_dataset.slcstack._get_phase()
+        stm = synthetic_dataset.slcstack.point_selection(
+            threshold=100, method="amplitude_dispersion"
+        )  # select all
+        assert stm.space.shape[0] == 100
+        assert set([k for k in stm.coords.keys()]).issubset(
+            ["time", "azimuth", "range"]
+        )
+        assert set([d for d in stm.data_vars.keys()]).issubset(
+            ["complex", "amplitude", "phase"]
+        )
+
+    def test_stack_pointselection_some(self, synthetic_dataset):
+        synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
+        synthetic_dataset = synthetic_dataset.slcstack._get_phase()
+        stm = synthetic_dataset.slcstack.point_selection(
+            threshold=0.2, method="amplitude_dispersion"
+        )  # select all
+        assert stm.space.shape[0] == 4
+        assert set([k for k in stm.coords.keys()]).issubset(
+            ["time", "azimuth", "range"]
+        )
+        assert set([d for d in stm.data_vars.keys()]).issubset(
+            ["complex", "amplitude", "phase"]
+        )
 
 
 class TestStackMultiLook:

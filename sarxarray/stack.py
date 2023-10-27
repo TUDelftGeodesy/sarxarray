@@ -71,7 +71,7 @@ class Stack:
 
         # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("space", "time")
         stacked = self._obj.stack(space=("azimuth", "range"))
-        stm = stacked.drop_vars(["space"])  # this will also drop azimuth and range
+        stm = stacked.drop_vars(["space", "azimuth", "range"])  # this will also drop azimuth and range
         stm = stm.assign_coords(
             {
                 "azimuth": (["space"], stacked.azimuth.data),
