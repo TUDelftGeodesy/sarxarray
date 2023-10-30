@@ -48,7 +48,7 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
     # from 0: the inputs `reshaped` and `axis` are output of
     # `coarsen_reshape` internal function and are passed to the `coord_func`
     def _custom_coord_func(reshaped, axis):
-        if axis[0] == 1 or 2:
+        if axis[0] == 1 or  axis[0] == 2:
             return np.arange(0, reshaped.shape[0], 1, dtype=int)
         else:
             return reshaped.flatten()
