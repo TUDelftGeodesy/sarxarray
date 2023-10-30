@@ -2,9 +2,9 @@
 """
 import pytest
 import sarxarray
-from dask.delayed import Delayed
 import numpy as np
 import xarray as xr
+from dask.delayed import Delayed
 
 # Create a synthetic dataset
 @pytest.fixture
