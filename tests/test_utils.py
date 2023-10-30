@@ -8,6 +8,7 @@ from sarxarray.utils import multi_look, complex_coherence
 # Create a synthetic dataarray
 @pytest.fixture
 def synthetic_dataarray():
+    np.random.seed(0)
     complex_data = np.random.rand(10, 10, 10) + 1j * np.random.rand(10, 10, 10)
     complex_data = complex_data.astype(np.complex64)
     return xr.DataArray(
@@ -163,7 +164,7 @@ class TestUtilsCoherence:
         mean_O = np.mean(O_img * np.conj(O_img))
         denominator = mean_R * mean_O
 
-        # coherence = abs( numerator / sqrt(denominator) )
+        # Eq: coherence = abs( numerator / sqrt(denominator) )
         coherence = np.abs(numerator / np.sqrt(denominator))
         print(da_co.isel(azimuth=0, range=0, time=0).values)
 
