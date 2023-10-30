@@ -1,10 +1,9 @@
+import sarxarray
 import numpy as np
 import xarray as xr
 import dask.array as da
-import dask.delayed as delayed
-import warnings
-
 from .conf import _dtypes
+from .utils import multi_look
 
 
 @xr.register_dataset_accessor("slcstack")
@@ -123,6 +122,8 @@ class Stack:
 
         Parameters
         ----------
+        data : xarray.Dataset
+            The data to be multi-looked.
         window_size : tuple
             Window size for multi-looking, in the format of (azimuth, range)
         method : str, optional
@@ -137,93 +138,10 @@ class Stack:
         Returns
         -------
         xarray.Dataset
-            An `xarray.Dataset` with coarsen shape if `compute` is True,
-            otherwise a `dask.delayed.Delayed` object.
+            An `xarray.Dataset` with coarsen shape if
+            `compute` is True, otherwise a `dask.delayed.Delayed` object.
         """
-        # set the chunk size
-        if not self._obj.chunks:
-            self._obj = self._obj.chunk(
-                {
-                    "azimuth": "auto",
-                    "range": "auto",
-                    "time": -1,
-                }
-            )
-        chunk = (self._obj.chunks["azimuth"][0], self._obj.chunks["range"][0])
-
-        # check if window_size is valid
-        if (
-            window_size[0] > self._obj.azimuth.size
-            or window_size[1] > self._obj.range.size
-        ):
-            warnings.warn(
-                "Window size is larger than the data size, no multi-looking is performed."
-            )
-            return self._obj
-
-        # check if window_size is smaller than chunk size
-        if window_size[0] > chunk[0] or window_size[1] > chunk[1]:
-            warnings.warn(
-                "Window size is larger than chunk size, no multi-looking is performed."
-            )
-            return self._obj
-
-        # add new atrrs here because Delayed objects are immutable
-        self._obj.attrs["multi-look"] = f"{method}-{statistics}"
-
-        # define custom coordinate function to define new coordinates starting
-        # from 0: the inputs `reshaped` and `axis` are output of
-        # `coarsen_reshape` internal function and are passed to the `coord_func`
-        def _custom_coord_func(reshaped, axis):
-            if axis[0] == 1 or 2:
-                return np.arange(0, reshaped.shape[0], 1, dtype=int)
-            else:
-                return reshaped.flatten()
-
-        match method:
-            case "coarsen":
-                # TODO: if boundary and size should be configurable
-                multi_looked = self._obj.coarsen(
-                    {"azimuth": window_size[0], "range": window_size[1]},
-                    boundary="trim",
-                    side="left",
-                    coord_func=_custom_coord_func,
-                )
-            case other:
-                raise NotImplementedError
-
-        # apply statistics
-        stat_functions = {
-            "mean": multi_looked.mean,
-            "median": multi_looked.median,
-        }
-        if statistics in stat_functions:
-            stat_function = stat_functions[statistics]
-            if compute:
-                multi_looked = stat_function(keep_attrs=True)
-            else:
-                multi_looked = delayed(stat_function)(keep_attrs=True)
-        else:
-            NotImplementedError
-
-        # Rechunk is needed because shape of the data will be changed after
-        # multi-looking
-        # calculate new chunck size based on the window size and the existing
-        # chunk size
-        chunk = (
-            int(np.ceil(chunk[0] / window_size[0])),
-            int(np.ceil(chunk[1] / window_size[1])),
-        )
-
-        multi_looked = multi_looked.chunk(
-            {
-                "azimuth": chunk[0],
-                "range": chunk[1],
-                "time": -1,
-            }
-        )
-
-        return multi_looked
+        return multi_look(self._obj, window_size, method, statistics, compute)
 
 
 def _compute_amp(complex):
