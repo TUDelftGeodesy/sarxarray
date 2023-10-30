@@ -4,6 +4,7 @@ import numpy as np
 import xarray as xr
 from sarxarray.utils import multi_look, complex_coherence
 
+
 # Create a synthetic dataarray
 @pytest.fixture
 def synthetic_dataarray():
@@ -18,6 +19,7 @@ def synthetic_dataarray():
             "time": np.arange(1, 11, 1, dtype=int),
         },
     )
+
 
 # this class tests multi_look with dataarray. For testing with dataset, see
 # test_stack.py
@@ -34,11 +36,7 @@ class TestUtilsMultiLook:
         # assert if the data is correctly calculated
         assert np.allclose(
             da_ml.isel(azimuth=0, range=0, time=0).values,
-            np.mean(
-                da.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
-            ),
+            np.mean(da.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values),
         )
         # assert if coordinates are correctly calculated
         assert np.allclose(
@@ -56,7 +54,9 @@ class TestUtilsMultiLook:
 
     def test_stack_multi_look_median(self, synthetic_dataarray):
         da = synthetic_dataarray
-        da_ml = multi_look(da, window_size=(2, 2), method="coarsen", statistics="median")
+        da_ml = multi_look(
+            da, window_size=(2, 2), method="coarsen", statistics="median"
+        )
         assert da_ml.azimuth.size == 5
         assert da_ml.range.size == 5
         assert da_ml.time.size == 10
@@ -65,11 +65,7 @@ class TestUtilsMultiLook:
         # assert if the data is correctly calculated
         assert np.allclose(
             da_ml.isel(azimuth=0, range=0, time=0).values,
-            np.median(
-                da.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
-            ),
+            np.median(da.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values),
         )
 
     def test_stack_multi_look_unequal_window_sizes(self, synthetic_dataarray):
@@ -83,11 +79,7 @@ class TestUtilsMultiLook:
         # assert if the data is correctly calculated
         assert np.allclose(
             da_ml.isel(azimuth=0, range=0, time=0).values,
-            np.mean(
-                da.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
-            ),
+            np.mean(da.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values),
         )
         # assert if coordinates are correctly calculated
         assert np.allclose(
@@ -105,7 +97,9 @@ class TestUtilsMultiLook:
 
     def test_stack_multi_look_compute_false(self, synthetic_dataarray):
         da = synthetic_dataarray
-        da_ml = multi_look(da, window_size=(2, 3), method="coarsen", statistics="mean", compute=False)
+        da_ml = multi_look(
+            da, window_size=(2, 3), method="coarsen", statistics="mean", compute=False
+        )
         # assert if da_ml is a dask.delayed object
         assert isinstance(da_ml, Delayed)
 
@@ -119,11 +113,7 @@ class TestUtilsMultiLook:
         # assert if the data is correctly computed
         assert np.allclose(
             results.isel(azimuth=0, range=0, time=0).values,
-            np.mean(
-                da.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
-            ),
+            np.mean(da.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values),
         )
         # assert if coordinates are correctly computed
         assert np.allclose(
@@ -138,6 +128,7 @@ class TestUtilsMultiLook:
             results.time.values,
             da.time.values,
         )
+
 
 # Create another synthetic dataset
 @pytest.fixture(scope="class")
@@ -154,6 +145,7 @@ def synthetic_dataarray_2():
         },
     )
 
+
 class TestUtilsCoherence:
     def test_complex_coherence(self, synthetic_dataarray, synthetic_dataarray_2):
         reference = synthetic_dataarray
@@ -164,11 +156,11 @@ class TestUtilsCoherence:
         O_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
 
         # numerator = mean(R * O`) in the window
-        numerator = np.mean( R_img * np.conj(O_img) )
+        numerator = np.mean(R_img * np.conj(O_img))
 
         # denominator = mean(R * R`) * mean(O * O`) in the window
-        mean_R = np.mean( R_img * np.conj(R_img) )
-        mean_O = np.mean( O_img * np.conj(O_img) )
+        mean_R = np.mean(R_img * np.conj(R_img))
+        mean_O = np.mean(O_img * np.conj(O_img))
         denominator = mean_R * mean_O
 
         # coherence = abs( numerator / sqrt(denominator) )
@@ -182,7 +174,9 @@ class TestUtilsCoherence:
             decimal=8,
         )
 
-    def test_complex_coherence_compute_false(self, synthetic_dataarray, synthetic_dataarray_2):
+    def test_complex_coherence_compute_false(
+        self, synthetic_dataarray, synthetic_dataarray_2
+    ):
         reference = synthetic_dataarray
         other = synthetic_dataarray_2
         da_co = complex_coherence(reference, other, window_size=(2, 2), compute=False)
@@ -194,7 +188,9 @@ class TestUtilsCoherence:
         results = da_co.compute()
         assert results is not None
 
-    def test_complex_coherence_no_time(self, synthetic_dataarray, synthetic_dataarray_2):
+    def test_complex_coherence_no_time(
+        self, synthetic_dataarray, synthetic_dataarray_2
+    ):
         reference = synthetic_dataarray.isel(time=0)
         other = synthetic_dataarray_2.isel(time=0)
         da_co = complex_coherence(reference, other, window_size=(2, 2), compute=True)
@@ -203,11 +199,11 @@ class TestUtilsCoherence:
         O_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
 
         # numerator = mean(R * O`) in the window
-        numerator = np.mean( R_img * np.conj(O_img) )
+        numerator = np.mean(R_img * np.conj(O_img))
 
         # denominator = mean(R * R`) * mean(O * O`) in the window
-        mean_R = np.mean( R_img * np.conj(R_img) )
-        mean_O = np.mean( O_img * np.conj(O_img) )
+        mean_R = np.mean(R_img * np.conj(R_img))
+        mean_O = np.mean(O_img * np.conj(O_img))
         denominator = mean_R * mean_O
 
         # coherence = abs( numerator / sqrt(denominator) )

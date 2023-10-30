@@ -3,6 +3,7 @@ import numpy as np
 import xarray as xr
 from dask.delayed import delayed, Delayed
 
+
 def multi_look(data, window_size, method="coarsen", statistics="mean", compute=True):
     """
     Perform multi-looking on a Stack, and return a Stack.
@@ -48,7 +49,7 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
     # from 0: the inputs `reshaped` and `axis` are output of
     # `coarsen_reshape` internal function and are passed to the `coord_func`
     def _custom_coord_func(reshaped, axis):
-        if axis[0] == 1 or  axis[0] == 2:
+        if axis[0] == 1 or axis[0] == 2:
             return np.arange(0, reshaped.shape[0], 1, dtype=int)
         else:
             return reshaped.flatten()
@@ -81,7 +82,9 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
     return multi_looked
 
 
-def complex_coherence(reference: xr.DataArray, other: xr.DataArray, window_size, compute=True):
+def complex_coherence(
+    reference: xr.DataArray, other: xr.DataArray, window_size, compute=True
+):
     """
     Calculate complex coherence of two images.
 
@@ -112,7 +115,10 @@ def complex_coherence(reference: xr.DataArray, other: xr.DataArray, window_size,
         otherwise a `dask.delayed.Delayed` object.
     """
     # check if the two images have the same shape
-    if reference.azimuth.size != other.azimuth.size or reference.range.size != other.range.size:
+    if (
+        reference.azimuth.size != other.azimuth.size
+        or reference.range.size != other.range.size
+    ):
         raise ValueError("The two images have different shape.")
 
     # check if dtype is complex
@@ -121,14 +127,20 @@ def complex_coherence(reference: xr.DataArray, other: xr.DataArray, window_size,
 
     # calculate the numerator of the equation
     da = reference * other.conj()
-    numerator = multi_look(da, window_size, method="coarsen", statistics="mean", compute=compute)
+    numerator = multi_look(
+        da, window_size, method="coarsen", statistics="mean", compute=compute
+    )
 
     # calculate the denominator of the equation
     da = reference * reference.conj()
-    reference_mean = multi_look(da, window_size, method="coarsen", statistics="mean", compute=compute)
+    reference_mean = multi_look(
+        da, window_size, method="coarsen", statistics="mean", compute=compute
+    )
 
     da = other * other.conj()
-    other_mean = multi_look(da, window_size, method="coarsen", statistics="mean", compute=compute)
+    other_mean = multi_look(
+        da, window_size, method="coarsen", statistics="mean", compute=compute
+    )
 
     denominator = reference_mean * other_mean
 
@@ -167,17 +179,15 @@ def _validate_multi_look_inputs(data, window_size, method, statistics):
 
 
 def _get_chunks(data, window_size):
-
     if isinstance(data, xr.Dataset):
         chunks = {
             "azimuth": data.chunks["azimuth"][0],
-            "range": data.chunks["range"][0]}
+            "range": data.chunks["range"][0],
+        }
         if "time" in data.dims:
             chunks["time"] = data.chunks["time"][0]
     elif isinstance(data, xr.DataArray):
-        chunks = {
-            "azimuth": data.chunks[0][0],
-            "range": data.chunks[1][0]}
+        chunks = {"azimuth": data.chunks[0][0], "range": data.chunks[1][0]}
         if "time" in data.dims:
             chunks["time"] = data.chunks[2][0]
 
