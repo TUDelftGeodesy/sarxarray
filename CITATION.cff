@@ -17,6 +17,10 @@ authors:
     family-names: Alidoost
   - given-names: Pranav
     family-names: Chandramouli
+  - given-names: Francesco 
+    family-names: Nattino
+  - given-names: Freek
+    family-names: van Leijen
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7717112

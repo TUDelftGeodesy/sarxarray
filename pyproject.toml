@@ -17,8 +17,10 @@ readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
     {name = "Ou Ku", email = "o.ku@esciencecenter.nl"},
-    {name = "Pranav Chandramouli"},
     {name = "Fakhereh Alidoost"},
+    {name = "Pranav Chandramouli"},
+    {name = "Francesco Nattino"},
+    {name = "Freek van Leijen"},
 ]
 keywords = ["radar", "sar", "insar", "earth observation", "distributed computing"]
 classifiers=[

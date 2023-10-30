@@ -10,13 +10,20 @@
     },
     {
       "name": "Chandramouli, Pranav"
+    },
+    {
+      "name": "Nattino, Francesco"
+    },
+    {
+      "name": "van Leijen, Freek"
     }
   ],
   "keywords": [
     "earth-observation",
     "sar",
     "insar",
-    "radar"
+    "radar",
+    "distributed computation"
   ],
   "license": {
     "id": "Apache-2.0"
