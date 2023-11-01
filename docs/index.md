@@ -15,9 +15,3 @@ SARXarry supports the following functionalities:
 
 All the above functionalities can be scaled up to a Hyper-Performance Computation (HPC) system.
 
-
-
-
-
-
-

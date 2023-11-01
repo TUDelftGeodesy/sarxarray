@@ -17,7 +17,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
     {name = "Ou Ku", email = "o.ku@esciencecenter.nl"},
-    {name = "Fakhereh Alidoost"},
+    {name = "Fakhereh Sarah Alidoost"},
     {name = "Pranav Chandramouli"},
     {name = "Francesco Nattino"},
     {name = "Freek van Leijen"},

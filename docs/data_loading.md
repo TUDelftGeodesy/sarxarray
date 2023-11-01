@@ -53,12 +53,3 @@ The loading chunk size can also be specified manually:
 stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
 ```
 
-
-
-
-
-
-
-
-
-
