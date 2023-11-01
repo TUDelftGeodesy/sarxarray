@@ -1,6 +1,6 @@
 # SarXarray
 
-[![DOI](https://zenodo.org/badge/563781394.svg)](https://zenodo.org/badge/latestdoi/563781394)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7717027.svg)](https://doi.org/10.5281/zenodo.7717027)
 [![License](https://img.shields.io/github/license/MotionbyLearning/sarxarray)](https://opensource.org/licenses/Apache-2.0)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7980/badge)](https://www.bestpractices.dev/projects/7980)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MotionbyLearning_sarxarray&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=MotionbyLearning_sarxarray)
