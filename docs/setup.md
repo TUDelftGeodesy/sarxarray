@@ -18,4 +18,4 @@ Note that Python version `>=3.10` is required for SARXarray.
 
 ## Tips
 
-We strongly recommend installing separately from your default Python envrionment. E.g. you can use enviroment manager e.g. [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html) to create separate environment.
+We strongly recommend installing separately from your default Python envrionment. E.g. you can use enviroment manager e.g. [mamba](https://mamba.readthedocs.io/en/latest/mamba-installation.html) to create separate environment.
