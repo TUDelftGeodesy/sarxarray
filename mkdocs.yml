@@ -38,6 +38,7 @@ theme:
     - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
+    - content.code.copy
   
 plugins:
 - mkdocs-jupyter:
@@ -52,6 +53,11 @@ plugins:
             ignore_init_summary: no
           merge_init_into_class: yes
           show_submodules: no
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
 
 extra:
   generator: false
