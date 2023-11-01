@@ -1,5 +1,7 @@
 # Common SLC operations
 
+> Details about the common operations in this page are coming soon...
+
 Common SAR processings can be performed by SARXarray. Below are some examples:
 
 ## Multi-look
@@ -14,11 +16,12 @@ stack_multilook = stack.slcstack.multi_look((2,4))
 Compute coherence between two SLCs:
 
 ```python
-slc1 = stack.isel(time=[0]) # first image
-slc2 = stack.isel(time=[2]) # third image
+from sarxarray import complex_coherence
+slc1 = stack.complex.isel(time=0) # first image
+slc2 = stack.complex.isel(time=2) # third image
 window = (4,4)
 
-coherence = slc1.slcstack.complex_coherence(slc2, window)
+coherence = complex_coherence(slc1, slc2, window)
 ```
 
 ## Mean-Reflection-Map (MRM)

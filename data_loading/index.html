@@ -265,7 +265,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../CHANGLOG/" class="md-tabs__link">
+      <a href="../CHANGELOG/" class="md-tabs__link">
         
   
     
@@ -600,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../CHANGLOG/" class="md-nav__link">
+      <a href="../CHANGELOG/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -684,34 +684,34 @@
 <li>All SLCs/interferograms have been resampled to the same raster grid.</li>
 </ol>
 <p>For example, let's consider a case of an stack with three SLCs:</p>
-<pre><code class="language-python">import numpy as np
-list_slcs = ['data/slc_1.raw', 'data/slc_2.raw', 'data/slc_3.raw']
-shape = (10018, 68656) # (azimuth, range)
-dtype = np.complex64
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">list_slcs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;data/slc_1.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;data/slc_2.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;data/slc_3.raw&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10018</span><span class="p">,</span> <span class="mi">68656</span><span class="p">)</span> <span class="c1"># (azimuth, range)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span>
+</code></pre></div>
 <p>We built a list <code>list_slcs</code> with the paths to the SLCs. In this case they are stored in the same directory called <code>data</code>. The shape of each SLC is known: <code>10018</code> pixels in <code>azimuth</code> direction, and <code>68656</code> in range direction. The data type is <code>numpy.complex64</code>.</p>
 <p>The corregisterred SLC stack can be read using <code>from_binary</code> function:</p>
-<pre><code class="language-python">import sarxarray
-
-stack = sarxarray.from_binary(list_slcs, shape, dtype=dtype)
-</code></pre>
-<p>You can also skip the <code>dtype</code> argument since it's defaulted to <code>np.complex64</code>. The stack will be read as an <code>xarray.Dataset</code> object, with data variables lazily loaded as <code>Dask Array</code>:</p>
-<pre><code class="language-output">print(stack)
-
-&lt;xarray.Dataset&gt;
-Dimensions:    (azimuth: 10018, range: 68656, time: 3)
-Coordinates:
-  * azimuth    (azimuth) int64 0 1 2 3 4 5 ... 10013 10014 10015 10016 10017
-  * range      (range) int64 0 1 2 3 4 5 ... 68650 68651 68652 68653 68654 68655
-  * time       (time) int64 0 1 2
-Data variables:
-    complex    (azimuth, range, time) complex64 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
-    amplitude  (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
-    phase      (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;
-</code></pre>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">sarxarray</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">stack</span> <span class="o">=</span> <span class="n">sarxarray</span><span class="o">.</span><span class="n">from_binary</span><span class="p">(</span><span class="n">list_slcs</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</code></pre></div>
+You can also skip the <code>dtype</code> argument since it's defaulted to <code>np.complex64</code>. The stack will be read as an <code>xarray.Dataset</code> object, with data variables lazily loaded as <code>Dask Array</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="go">print(stack)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="go">&lt;xarray.Dataset&gt;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="go">Dimensions:    (azimuth: 10018, range: 68656, time: 3)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="go">Coordinates:</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="go">  * azimuth    (azimuth) int64 0 1 2 3 4 5 ... 10013 10014 10015 10016 10017</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="go">  * range      (range) int64 0 1 2 3 4 5 ... 68650 68651 68652 68653 68654 68655</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="go">  * time       (time) int64 0 1 2</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="go">Data variables:</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="go">    complex    (azimuth, range, time) complex64 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="go">    amplitude  (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="go">    phase      (azimuth, range, time) float32 dask.array&lt;chunksize=(4000, 4000, 1), meta=np.ndarray&gt;</span>
+</code></pre></div>
 <p>The loading chunk size can also be specified manually:</p>
-<pre><code class="language-python">stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">stack_smallchunk</span> <span class="o">=</span> <span class="n">sarxarray</span><span class="o">.</span><span class="n">from_binary</span><span class="p">(</span><span class="n">list_slcs</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">))</span>
+</code></pre></div>
 
 
 
@@ -746,7 +746,7 @@ Data variables:
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "content.code.copy"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.aecac24b.min.js"></script>
