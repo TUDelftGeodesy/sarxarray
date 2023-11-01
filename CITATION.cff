@@ -3,6 +3,7 @@
 
 cff-version: 1.2.0
 title: sarxarray
+abstract: "SARXarray is an open-source Xarray extension for Synthetic Aperture Radar (SAR) data."
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
