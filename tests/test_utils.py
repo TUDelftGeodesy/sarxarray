@@ -2,7 +2,12 @@ import pytest
 from dask.delayed import Delayed
 import numpy as np
 import xarray as xr
-from sarxarray.utils import multi_look, complex_coherence
+from sarxarray.utils import (
+    multi_look,
+    complex_coherence,
+    _validate_multi_look_inputs,
+    _get_chunks,
+)
 
 
 # Create a synthetic dataarray
@@ -130,6 +135,48 @@ class TestUtilsMultiLook:
             da.time.values,
         )
 
+    def test_validate_multilook_args(self, synthetic_dataarray):
+        np_arr_bad = np.ones((3, 3))
+        da_bad = synthetic_dataarray.isel(azimuth=0)  # no azimuth dimension
+        window_good = (2, 3)
+        window_bad = (200, 200)
+
+        with pytest.raises(TypeError):
+            _validate_multi_look_inputs(
+                np_arr_bad, window_good, method="coarsen", statistics="mean"
+            )
+
+        with pytest.raises(ValueError):
+            _validate_multi_look_inputs(
+                da_bad, window_good, method="coarsen", statistics="mean"
+            )
+
+        with pytest.raises(ValueError):
+            _validate_multi_look_inputs(
+                synthetic_dataarray, window_bad, method="coarsen", statistics="mean"
+            )
+
+        with pytest.raises(ValueError):
+            _validate_multi_look_inputs(
+                synthetic_dataarray,
+                window_good,
+                method="something_bad",
+                statistics="mean",
+            )
+
+        with pytest.raises(ValueError):
+            _validate_multi_look_inputs(
+                synthetic_dataarray,
+                window_good,
+                method="coarsen",
+                statistics="something_bad",
+            )
+
+    def test_get_chunks(self, synthetic_dataarray):
+        da = synthetic_dataarray.chunk("auto")
+        with pytest.raises(ValueError):
+            _get_chunks(da, (200, 200))
+
 
 # Create another synthetic dataset
 @pytest.fixture(scope="class")
@@ -216,3 +263,15 @@ class TestUtilsCoherence:
             coherence,
             decimal=8,
         )
+
+    def test_complex_coherence_bad_args(
+        self, synthetic_dataarray, synthetic_dataarray_2
+    ):
+        reference = synthetic_dataarray
+        other1 = synthetic_dataarray_2.isel(azimuth=1)
+        other2 = synthetic_dataarray_2
+        other2.values = np.random.rand(10, 10, 10)
+        with pytest.raises(ValueError):
+            complex_coherence(reference, other1, window_size=(2, 2), compute=True)
+        with pytest.raises(ValueError):
+            complex_coherence(reference, other2, window_size=(2, 2), compute=True)
