@@ -11,6 +11,7 @@ nav:
     - Common SLC operations: common_ops.md
     - Other manipulations: manipulations.md
   - Notebook page: notebooks/demo_sarxarray.ipynb
+  - Conributing guide: CONTRIBUTING.md
   - Change Log: CHANGELOG.md
 
 
