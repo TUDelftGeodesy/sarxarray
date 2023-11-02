@@ -32,9 +32,11 @@ stack = sarxarray.from_binary(list_slcs, shape, dtype=dtype)
 ```
 You can also skip the `dtype` argument since it's defaulted to `np.complex64`. The stack will be read as an `xarray.Dataset` object, with data variables lazily loaded as `Dask Array`:
 
-```output
+```python
 print(stack)
+```
 
+```output
 <xarray.Dataset>
 Dimensions:    (azimuth: 10018, range: 68656, time: 3)
 Coordinates:
