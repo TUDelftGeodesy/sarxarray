@@ -1,0 +1,64 @@
+site_name: SARXarray Documentation
+repo_url: https://github.com/motionbylearning/sarxarray/
+repo_name: SARXarray
+
+nav:
+  - Getting started: 
+    - About SARXarray: index.md
+    - Installation: setup.md
+  - Usage: 
+    - Data loading: data_loading.md
+    - Common SLC operations: common_ops.md
+    - Other manipulations: manipulations.md
+  - Notebook page: notebooks/demo_sarxarray.ipynb
+  - Conributing guide: CONTRIBUTING.md
+  - Change Log: CHANGELOG.md
+
+
+theme:
+  name: material
+  custom_dir: docs/notebooks/download_button
+  logo: img/sarxarray_logo.png
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+      primary: black
+      accent: red
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+      primary: black
+      accent: pink
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.copy
+  
+plugins:
+- mkdocs-jupyter:
+      include_source: True
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: google
+          docstring_options:
+            ignore_init_summary: no
+          merge_init_into_class: yes
+          show_submodules: no
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+
+extra:
+  generator: false

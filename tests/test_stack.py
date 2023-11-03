@@ -6,9 +6,11 @@ import numpy as np
 import xarray as xr
 from dask.delayed import Delayed
 
+
 # Create a synthetic dataset
 @pytest.fixture
 def synthetic_dataset():
+    np.random.seed(0)
     return xr.Dataset(
         {
             "complex": (
@@ -23,6 +25,64 @@ def synthetic_dataset():
         },
     )
 
+
+class TestStackSARrelated:
+    def test_stack_get_amp(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        assert ds.azimuth.size == 10
+        assert ds.range.size == 10
+        assert ds.time.size == 10
+
+    def test_stack_get_phase(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_phase()
+        assert ds.azimuth.size == 10
+        assert ds.range.size == 10
+        assert ds.time.size == 10
+
+    def test_stack_mrm(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        mrm = ds.slcstack.mrm()
+        assert mrm.azimuth.size == 10
+        assert mrm.range.size == 10
+        assert "time" not in mrm.dims
+        assert np.allclose(ds.amplitude.mean(axis=2), mrm)
+
+    def test_amp_disp(self, synthetic_dataset):
+        ds = synthetic_dataset.slcstack._get_amplitude()
+        amp_disp = ds.slcstack._amp_disp()
+        amp = ds.amplitude
+        amp_disp_calc = amp.std(axis=2) / amp.mean(axis=2)
+        assert np.allclose(amp_disp, amp_disp_calc)
+
+    def test_stack_pointselection_all(self, synthetic_dataset):
+        synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
+        synthetic_dataset = synthetic_dataset.slcstack._get_phase()
+        stm = synthetic_dataset.slcstack.point_selection(
+            threshold=100, method="amplitude_dispersion"
+        )  # select all
+        assert stm.space.shape[0] == 100
+        assert set([k for k in stm.coords.keys()]).issubset(
+            ["time", "azimuth", "range"]
+        )
+        assert set([d for d in stm.data_vars.keys()]).issubset(
+            ["complex", "amplitude", "phase"]
+        )
+
+    def test_stack_pointselection_some(self, synthetic_dataset):
+        synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
+        synthetic_dataset = synthetic_dataset.slcstack._get_phase()
+        stm = synthetic_dataset.slcstack.point_selection(
+            threshold=0.2, method="amplitude_dispersion"
+        )  # select all
+        assert stm.space.shape[0] == 4
+        assert set([k for k in stm.coords.keys()]).issubset(
+            ["time", "azimuth", "range"]
+        )
+        assert set([d for d in stm.data_vars.keys()]).issubset(
+            ["complex", "amplitude", "phase"]
+        )
+
+
 class TestStackMultiLook:
     def test_stack_multi_look_mean(self, synthetic_dataset):
         ds = synthetic_dataset
@@ -34,14 +94,12 @@ class TestStackMultiLook:
         assert ds_ml.time.size == 10
         assert ds_ml.attrs["multi-look"] == "coarsen-mean"
         # check the "auto" chunk
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (5,), "time": (10,)}
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
             ),
         )
         # assert if coordinates are correctly calculated
@@ -66,15 +124,13 @@ class TestStackMultiLook:
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 5
         assert ds_ml.time.size == 10
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (5,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (5,), "time": (10,)}
         assert ds_ml.attrs["multi-look"] == "coarsen-median"
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.median(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 2), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
             ),
         )
 
@@ -86,15 +142,13 @@ class TestStackMultiLook:
         assert ds_ml.azimuth.size == 5
         assert ds_ml.range.size == 3
         assert ds_ml.time.size == 10
-        assert ds_ml.chunks == {'azimuth': (5,), 'range': (3,), 'time': (10,)}
+        assert ds_ml.chunks == {"azimuth": (5,), "range": (3,), "time": (10,)}
         assert ds_ml.attrs["multi-look"] == "coarsen-mean"
         # assert if the data is correctly calculated
         assert np.allclose(
             ds_ml.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values
             ),
         )
         # assert if coordinates are correctly calculated
@@ -124,15 +178,13 @@ class TestStackMultiLook:
         assert results.azimuth.size == 5
         assert results.range.size == 3
         assert results.time.size == 10
-        assert results.chunks == {'azimuth': (5,), 'range': (3,), 'time': (10,)}
+        assert results.chunks == {"azimuth": (5,), "range": (3,), "time": (10,)}
         assert results.attrs["multi-look"] == "coarsen-mean"
         # assert if the data is correctly computed
         assert np.allclose(
             results.complex.isel(azimuth=0, range=0, time=0).values,
             np.mean(
-                ds.complex.isel(
-                    azimuth=slice(0, 2), range=slice(0, 3), time=0
-                ).values
+                ds.complex.isel(azimuth=slice(0, 2), range=slice(0, 3), time=0).values
             ),
         )
         # assert if coordinates are correctly computed

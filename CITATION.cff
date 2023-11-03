@@ -1,0 +1,36 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: sarxarray
+abstract: "SARXarray is an open-source Xarray extension for Synthetic Aperture Radar (SAR) data."
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ou
+    family-names: Ku
+    email: o.ku@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-5373-5209'
+  - given-names: Fakhereh (Sarah)
+    family-names: Alidoost
+  - given-names: Pranav
+    family-names: Chandramouli
+  - given-names: Francesco 
+    family-names: Nattino
+  - given-names: Freek
+    family-names: van Leijen
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7717112
+    description: Zenodo
+repository-code: 'https://github.com/MotionbyLearning/sarxarray'
+keywords:
+  - earth-observation
+  - sar
+  - insar
+  - radar
+  - distributed computation 
+license: Apache-2.0
