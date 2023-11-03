@@ -35,9 +35,9 @@ to see if someone already filed the same issue;
 - (**important**) announce your plan to the rest of the community *before you start working*. This announcement should be in the form of a (new) issue;
 - (**important**) wait until some kind of consensus is reached about your idea being a good idea;
 - if needed, fork the repository to your own Github profile and create your own feature branch off of the latest master commit. While working on your feature branch, make sure to stay up to date with the master branch by pulling in changes, possibly from the 'upstream' repository (follow the instructions [here](https://help.github.com/articles/configuring-a-remote-for-a-fork/) and [here](https://help.github.com/articles/syncing-a-fork/));
-- make sure the existing tests still work by running, e.g. `pytest tests`;
+- make sure the existing tests still work. First, install the development dependencies as `pip install .[dev]`, and then run `pytest tests`;
 - add your own tests (if necessary);
-- update or expand the documentation;
+- update or expand the documentation. Make sure the documentation is built successfully: first, install documentation dependencies as `pip install .[docs]` and then run `mkdocs build`.
 - [push](http://rogerdudler.github.io/git-guide/) your feature branch to (your fork of) the SARXarray repository on GitHub;
 - create the pull request, e.g. following the instructions [here](https://help.github.com/articles/creating-a-pull-request/).
 
