@@ -1,4 +1,3 @@
-import sarxarray
 import numpy as np
 import xarray as xr
 import dask.array as da
@@ -59,7 +58,7 @@ class Stack:
         match method:
             case "amplitude_dispersion":
                 mask = self._amp_disp() < threshold
-            case other:
+            case _:
                 raise NotImplementedError
 
         # Get the 1D index on space dimension

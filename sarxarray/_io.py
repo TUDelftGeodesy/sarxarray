@@ -5,7 +5,6 @@ import numpy as np
 import xarray as xr
 import dask.array as da
 import math
-import sarxarray.stack
 
 from .conf import _dtypes, _memsize_chunk_mb
 
@@ -59,7 +58,7 @@ def from_binary(
         "range": range(shape[1]),
         "time": range(len(slc_files)),
     }
-    stack = xr.Dataset(coords=coords)
+    ds_stack = xr.Dataset(coords=coords)
 
     # Calculate appropriate chunk size if not user-defined
     if chunks is None:
@@ -83,14 +82,14 @@ def from_binary(
         meta_arr = np.array((), dtype=_dtypes["complex"])
         slcs = da.apply_gufunc(_unpack_complex, "()->()", slcs, meta=meta_arr)
 
-    stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
+    ds_stack = ds_stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
 
     # If reading complex data, automatically
     if vlabel == "complex":
-        stack = stack.slcstack._get_amplitude()
-        stack = stack.slcstack._get_phase()
+        ds_stack = ds_stack.slcstack._get_amplitude()
+        ds_stack = ds_stack.slcstack._get_phase()
 
-    return stack
+    return ds_stack
 
 
 def _mmap_dask_array(filename, shape, dtype, chunks):

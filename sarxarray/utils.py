@@ -1,4 +1,3 @@
-import sarxarray
 import numpy as np
 import xarray as xr
 from dask.delayed import delayed, Delayed
