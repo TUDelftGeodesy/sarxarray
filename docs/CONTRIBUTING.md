@@ -38,6 +38,7 @@ to see if someone already filed the same issue;
 - make sure the existing tests still work. First, install the development dependencies as `pip install .[dev]`, and then run `pytest tests`;
 - add your own tests (if necessary);
 - update or expand the documentation. Make sure the documentation is built successfully: first, install documentation dependencies as `pip install .[docs]` and then run `mkdocs build`.
+- make sure the linting tests pass by running `ruff` in the project root directory: `ruff check .`;
 - [push](http://rogerdudler.github.io/git-guide/) your feature branch to (your fork of) the SARXarray repository on GitHub;
 - create the pull request, e.g. following the instructions [here](https://help.github.com/articles/creating-a-pull-request/).
 
