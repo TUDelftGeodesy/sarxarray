@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sarxarray"
 version = "0.1.0"
+requires-python = ">=3.10"
 dependencies = [
     "dask[complete]",
     "xarray",
@@ -44,6 +45,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pycodestyle",
+    "ruff",
 ]
 docs = [
     "mkdocs",
@@ -70,3 +72,27 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["sarxarray"]
+
+[tool.ruff]
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "B",  # flake8-bugbear
+  "D",  # pydocstyle
+  "I",  # isort
+  "N",  # PEP8-naming
+  "UP",  # pyupgrade (upgrade syntax to current syntax)
+  "PLE",  # Pylint error https://github.com/charliermarsh/ruff#error-ple
+]
+ignore = [
+"D100", "D101", "D104", "D105", "D106", "D107", "D203", "D213"
+] # docstring style
+
+line-length = 88
+exclude = ["docs", "build"]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py310"
+
+[tool.ruff.per-file-ignores]
+"tests/**" = ["D"]

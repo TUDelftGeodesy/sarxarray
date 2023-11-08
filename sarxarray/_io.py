@@ -1,11 +1,10 @@
 import logging
+import math
 
 import dask
+import dask.array as da
 import numpy as np
 import xarray as xr
-import dask.array as da
-import math
-import sarxarray.stack
 
 from .conf import _dtypes, _memsize_chunk_mb
 
@@ -17,8 +16,7 @@ logger = logging.getLogger(__name__)
 def from_binary(
     slc_files, shape, vlabel="complex", dtype=np.complex64, chunks=None, ratio=1
 ):
-    """
-    Read a SLC stack or relabted variables from binary files
+    """Read a SLC stack or relabted variables from binary files.
 
     Parameters
     ----------
@@ -41,16 +39,15 @@ def from_binary(
         An xarray.Dataset with three dimensions: (azimuth, range, time).
 
     """
-
     # Check dtype
     if not np.dtype(dtype).isbuiltin:
         if not all([name in (("re", "im")) for name in dtype.names]):
             raise TypeError(
-                (
+
                     "The customed dtype should have only two field names: "
                     '"re" and "im". For example: '
                     'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
-                )
+
             )
 
     # Initialize stack as a Dataset
@@ -59,7 +56,7 @@ def from_binary(
         "range": range(shape[1]),
         "time": range(len(slc_files)),
     }
-    stack = xr.Dataset(coords=coords)
+    ds_stack = xr.Dataset(coords=coords)
 
     # Calculate appropriate chunk size if not user-defined
     if chunks is None:
@@ -83,33 +80,30 @@ def from_binary(
         meta_arr = np.array((), dtype=_dtypes["complex"])
         slcs = da.apply_gufunc(_unpack_complex, "()->()", slcs, meta=meta_arr)
 
-    stack = stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
+    ds_stack = ds_stack.assign({vlabel: (("azimuth", "range", "time"), slcs)})
 
     # If reading complex data, automatically
     if vlabel == "complex":
-        stack = stack.slcstack._get_amplitude()
-        stack = stack.slcstack._get_phase()
+        ds_stack = ds_stack.slcstack._get_amplitude()
+        ds_stack = ds_stack.slcstack._get_phase()
 
-    return stack
+    return ds_stack
 
 
 def _mmap_dask_array(filename, shape, dtype, chunks):
-    """
-    Create a Dask array from raw binary data in :code:`filename`
-    by memory mapping.
+    """Create a Dask array from raw binary data by memory mapping.
 
     This method is particularly effective if the file is already
     in the file system cache and if arbitrary smaller subsets are
     to be extracted from the Dask array without optimizing its
     chunking scheme.
-
     It may perform poorly on Windows if the file is not in the file
     system cache. On Linux it performs well under most circumstances.
 
     Parameters
     ----------
-
     filename : str
+        The path to the file that contains raw binary data.
     shape : tuple
         Total shape of the data in the file
     dtype:
@@ -119,7 +113,6 @@ def _mmap_dask_array(filename, shape, dtype, chunks):
 
     Returns
     -------
-
     dask.array.Array
         Dask array matching :code:`shape` and :code:`dtype`, backed by
         memory-mapped chunks.
@@ -151,28 +144,31 @@ def _mmap_dask_array(filename, shape, dtype, chunks):
 
 
 def _mmap_load_chunk(filename, shape, dtype, sl1, sl2):
-    """
-    Memory map the given file with overall shape and dtype and return a slice
-    specified by :code:`sl`.
+    """Memory map the given file with overall shape and dtype.
+
+    It returns a slice specified by :code:`sl1` in azimuth direction and
+    :code:`sl2` in range direction.
 
     Parameters
     ----------
-
     filename : str
+        The path to the file that contains raw binary data.
     shape : tuple
         Total shape of the data in the file
     dtype:
         NumPy dtype of the data in the file
-    sl:
-        Object that can be used for indexing or slicing a NumPy array to
-        extract a chunk
+    sl1:
+        Slice object in azimuth direction that can be used for indexing or
+        slicing a NumPy array to extract a chunk
+    sl2:
+        Slice object in range direction that can be used for indexing or slicing
+        a NumPy array to extract a chunk
 
     Returns
     -------
-
     numpy.memmap or numpy.ndarray
-        View into memory map created by indexing with :code:`sl`,
-        or NumPy ndarray in case no view can be created using :code:`sl`.
+        View into memory map created by indexing with :code:`sl1` and
+        :code:`sl2`, or NumPy ndarray in case no view can be created.
     """
     data = np.memmap(filename, mode="r", shape=shape, dtype=dtype)
     return data[sl1, sl2]
@@ -183,13 +179,13 @@ def _unpack_complex(complex):
 
 
 def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
-    """
-    Calculate an optimal chunking size in the azimuth and range direction for
-    reading with dask and store it in variable `chunks`
+    """Calculate an optimal chunking size.
+
+    It calculates an optimal chunking size in the azimuth and range direction
+    for reading with dask and store it in variable `chunks`.
 
     Parameters
     ----------
-
     shape : tuple
         Total shape of the data in the file
     dtype:
@@ -199,12 +195,10 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
 
     Returns
     -------
-
     chunks: tuple
         Chunk sizes (as multiples of 1000) in the azimuth and range direction.
         Default value of [-1, -1] when unmodified activates this function.
     """
-
     n_elements = (
         _memsize_chunk_mb * 1024 * 1024 / np.dtype(dtype).itemsize
     )  # Optimal number of elements for a memory size of 100mb (first number)

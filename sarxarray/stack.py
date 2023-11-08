@@ -1,7 +1,7 @@
-import sarxarray
+import dask.array as da
 import numpy as np
 import xarray as xr
-import dask.array as da
+
 from .conf import _dtypes
 from .utils import multi_look
 
@@ -30,16 +30,17 @@ class Stack:
         return self._obj
 
     def mrm(self):
+        """Compute a Mean Reflection Map (MRM)."""
         t_order = list(self._obj.dims.keys()).index("time")  # Time dimension order
         return self._obj.amplitude.mean(axis=t_order)
 
     def point_selection(self, threshold, method="amplitude_dispersion", chunks=1000):
-        """
-        Select pixels from a Stack, and return a Space-Time Matrix.
+        """Select pixels from a Stack, and return a Space-Time Matrix.
 
         The selection method is defined by `method` and `threshold`.
-        The selected pixels will be reshaped to (space, time), where `space` is the number of selected pixels.
-        The unselected pixels will be discarded. The original `azimuth` and `range` coordinates will be persisted.
+        The selected pixels will be reshaped to (space, time), where `space` is
+        the number of selected pixels. The unselected pixels will be discarded.
+        The original `azimuth` and `range` coordinates will be persisted.
 
         Parameters
         ----------
@@ -55,11 +56,10 @@ class Stack:
         xarray.Dataset
             An xarray.Dataset with two dimensions: (space, time).
         """
-
         match method:
             case "amplitude_dispersion":
                 mask = self._amp_disp() < threshold
-            case other:
+            case _:
                 raise NotImplementedError
 
         # Get the 1D index on space dimension
@@ -68,7 +68,8 @@ class Stack:
         )
         index = mask_1d.space.data[mask_1d.data]  # Evaluate the mask
 
-        # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix ("space", "time")
+        # Reshape from Stack ("azimuth", "range", "time") to Space-Time Matrix
+        # ("space", "time")
         stacked = self._obj.stack(space=("azimuth", "range"))
         stm = stacked.drop_vars(
             ["space", "azimuth", "range"]
@@ -83,13 +84,15 @@ class Stack:
         # Apply selection
         stm_masked = stm.sel(space=index)
 
-        # Re-order the dimensions to community preferred ("space", "time") order
-        # Since there are dask arrays in stm_masked, this operation is lazy.
+        # Re-order the dimensions to
+        # community preferred ("space", "time") order
+        # Since there are dask arrays in stm_masked,
+        # this operation is lazy.
         # Therefore its effect can be observed after evaluation
         stm_masked = stm_masked.transpose("space", "time")
 
-        # Rechunk
-        # Rechunk is needed because after apply maksing, the chunksize will be in consistant
+        # Rechunk is needed because after apply maksing,
+        # the chunksize will be in consistant
         stm_masked = stm_masked.chunk(
             {
                 "space": chunks,
@@ -117,8 +120,7 @@ class Stack:
     def multi_look(
         self, window_size, method="coarsen", statistics="mean", compute=True
     ):
-        """
-        Perform multi-looking on a Stack, and return a Stack.
+        """Perform multi-looking on a Stack, and return a Stack.
 
         Parameters
         ----------

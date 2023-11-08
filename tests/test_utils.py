@@ -1,12 +1,13 @@
-import pytest
-from dask.delayed import Delayed
 import numpy as np
+import pytest
 import xarray as xr
+from dask.delayed import Delayed
+
 from sarxarray.utils import (
-    multi_look,
-    complex_coherence,
-    _validate_multi_look_inputs,
     _get_chunks,
+    _validate_multi_look_inputs,
+    complex_coherence,
+    multi_look,
 )
 
 
@@ -200,16 +201,16 @@ class TestUtilsCoherence:
         other = synthetic_dataarray_2
         da_co = complex_coherence(reference, other, window_size=(2, 2), compute=True)
 
-        R_img = reference.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
-        O_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
+        r_img = reference.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
+        o_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2), time=0).values
 
         # numerator = mean(R * O`) in the window
-        numerator = np.mean(R_img * np.conj(O_img))
+        numerator = np.mean(r_img * np.conj(o_img))
 
         # denominator = mean(R * R`) * mean(O * O`) in the window
-        mean_R = np.mean(R_img * np.conj(R_img))
-        mean_O = np.mean(O_img * np.conj(O_img))
-        denominator = mean_R * mean_O
+        mean_r = np.mean(r_img * np.conj(r_img))
+        mean_o = np.mean(o_img * np.conj(o_img))
+        denominator = mean_r * mean_o
 
         # Eq: coherence = abs( numerator / sqrt(denominator) )
         coherence = np.abs(numerator / np.sqrt(denominator))
@@ -243,16 +244,16 @@ class TestUtilsCoherence:
         other = synthetic_dataarray_2.isel(time=0)
         da_co = complex_coherence(reference, other, window_size=(2, 2), compute=True)
 
-        R_img = reference.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
-        O_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
+        r_img = reference.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
+        o_img = other.isel(azimuth=slice(0, 2), range=slice(0, 2)).values
 
         # numerator = mean(R * O`) in the window
-        numerator = np.mean(R_img * np.conj(O_img))
+        numerator = np.mean(r_img * np.conj(o_img))
 
         # denominator = mean(R * R`) * mean(O * O`) in the window
-        mean_R = np.mean(R_img * np.conj(R_img))
-        mean_O = np.mean(O_img * np.conj(O_img))
-        denominator = mean_R * mean_O
+        mean_r = np.mean(r_img * np.conj(r_img))
+        mean_o = np.mean(o_img * np.conj(o_img))
+        denominator = mean_r * mean_o
 
         # coherence = abs( numerator / sqrt(denominator) )
         coherence = np.abs(numerator / np.sqrt(denominator))
