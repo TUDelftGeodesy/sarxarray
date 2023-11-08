@@ -1,7 +1,7 @@
 """test stack.py
 """
-import pytest
 import numpy as np
+import pytest
 import xarray as xr
 from dask.delayed import Delayed
 

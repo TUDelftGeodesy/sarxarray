@@ -1,11 +1,10 @@
 import numpy as np
 import xarray as xr
-from dask.delayed import delayed, Delayed
+from dask.delayed import Delayed, delayed
 
 
 def multi_look(data, window_size, method="coarsen", statistics="mean", compute=True):
-    """
-    Perform multi-looking on a Stack, and return a Stack.
+    """Perform multi-looking on a Stack, and return a Stack.
 
     Parameters
     ----------
@@ -84,8 +83,7 @@ def multi_look(data, window_size, method="coarsen", statistics="mean", compute=T
 def complex_coherence(
     reference: xr.DataArray, other: xr.DataArray, window_size, compute=True
 ):
-    """
-    Calculate complex coherence of two images.
+    """Calculate complex coherence of two images.
 
     Assume two images reference (R) and other (O), the complex coherence is
     defined as:
@@ -157,7 +155,7 @@ def complex_coherence(
 
 def _validate_multi_look_inputs(data, window_size, method, statistics):
     # check if data is xarray
-    if not isinstance(data, (xr.Dataset, xr.DataArray)):
+    if not isinstance(data, xr.Dataset | xr.DataArray):
         raise TypeError("The data must be an xarray.Dataset or xarray.DataArray.")
 
     # check if azimuth, range are in the dimensions

@@ -1,10 +1,11 @@
 """test _io.py
 """
 
-import pytest
-import sarxarray
 import numpy as np
-from sarxarray._io import _unpack_complex, _calc_chunksize
+import pytest
+
+import sarxarray
+from sarxarray._io import _calc_chunksize, _unpack_complex
 
 
 @pytest.fixture()
