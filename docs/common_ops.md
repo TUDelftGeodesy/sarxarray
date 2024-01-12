@@ -6,7 +6,7 @@ Common SAR processings can be performed by SARXarray. Below are some examples:
 
 ## Multi-look
 
-Multi-look by a windowsize, e.g. 2 in azimuth dimension and 4 in range dimension:
+Multi-look by a windowsize of e.g. 2 in azimuth dimension and 4 in range dimension:
 
 ```python
 stack_multilook = stack.slcstack.multi_look((2,4))
@@ -37,7 +37,7 @@ mrm.plot(ax=ax, robust=True, cmap='gray')
 ```
 
 ## Point selection
-A selection based on temporal properties per pixel can be performed. For example, we can select the Persistent Scatters (PS) by temporal dispersion of `amplitude`:
+A selection based on temporal properties per pixel can be performed. For example, we can select the Point Scatterers (PS) by normalized temporal dispersion of `amplitude`:
 
 ```python
 ps = stack.slcstack.point_selection(threshold=0.25, method="amplitude_dispersion")
