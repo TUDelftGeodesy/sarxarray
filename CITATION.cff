@@ -26,7 +26,7 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.7717112
     description: Zenodo
-repository-code: 'https://github.com/MotionbyLearning/sarxarray'
+repository-code: 'https://github.com/TUDelftGeodesy/sarxarray'
 keywords:
   - earth-observation
   - sar
