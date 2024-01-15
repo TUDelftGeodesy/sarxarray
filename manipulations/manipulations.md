@@ -8,12 +8,12 @@ Slice the SLC stack in 3D:
 stack.isel(azimuth=range(1000,2000), range=range(1500,2500), time=range(2,5))
 ```
 
-Select `amplitude` attributes
+Select the `amplitude` attribute
 ```python
 amp = stack['amplitude']
 ```
 
-Compute stack and peresist in memory:
+Compute stack and persist in memory:
 ```python
 stack = stack.compute()
 ```

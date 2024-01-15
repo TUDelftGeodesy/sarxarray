@@ -11,7 +11,7 @@ SARXarry supports the following functionalities:
 
 2. Basic operations on complex data, e.g., averaging along axis and complex conjugate multiplication;
 
-3. Specific SAR data operations, e.g., multilooking and coherence estimation.
+3. Specific SAR data operations, e.g., multi-looking and coherence estimation.
 
 All the above functionalities can be scaled up to a Hyper-Performance Computation (HPC) system.
 

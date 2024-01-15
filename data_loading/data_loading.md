@@ -2,17 +2,17 @@
 
 ## Input data format
 
-SARXarry works with corregitserred SLC / interferogram stack. Conventionally they are provided in binary format. SARXarry provides a reader to perform lazy loading on a binary stack. However, we recommend to store the corregitserred stack in [`zarr`](https://zarr.readthedocs.io/en/stable/) format, and directly load them as an Xarray object by [`xarray.open_zarr`](https://docs.xarray.dev/en/stable/generated/xarray.open_zarr.html). 
+SARXarray works with coregistered SLC/interferogram stack. SARXarray provides a reader to perform lazy loading on data stacks in different file formats, including binary format. However, we recommend to store the coregistered stack in [`zarr`](https://zarr.readthedocs.io/en/stable/) format, and directly load them as an Xarray object by [`xarray.open_zarr`](https://docs.xarray.dev/en/stable/generated/xarray.open_zarr.html). 
 
 
-## Loading corregisterred SLC stack in binary format
+## Loading coregistered SLC stack in binary format
 
-If the stack is saved in binary fomat, it can be read by `SARXarray` under two prerequisites:
+If the stack is saved in binary format, it can be read by `SARXarray` under two pre-requisites:
 
 1. All SLCs/interferograms have the same known raster size and data type;
 2. All SLCs/interferograms have been resampled to the same raster grid.
 
-For example, let's consider a case of an stack with three SLCs:
+For example, let's consider a case of a stack with three SLCs:
 
 ```python
 import numpy as np
@@ -21,20 +21,22 @@ shape = (10018, 68656) # (azimuth, range)
 dtype = np.complex64
 ```
 
-We built a list `list_slcs` with the paths to the SLCs. In this case they are stored in the same directory called `data`. The shape of each SLC is known: `10018` pixels in `azimuth` direction, and `68656` in range direction. The data type is `numpy.complex64`.
+We built a list `list_slcs` with the paths to the SLCs. In this case they are stored in the same directory called `data`. The shape of each SLC should be provided, i.e.: `10018` pixels in `azimuth` direction, and `68656` in range direction. The data type is `numpy.complex64`.
 
-The corregisterred SLC stack can be read using `from_binary` function:
+The coregistered SLC stack can be read using the `from_binary` function:
 
 ```python
 import sarxarray
 
 stack = sarxarray.from_binary(list_slcs, shape, dtype=dtype)
 ```
-You can also skip the `dtype` argument since it's defaulted to `np.complex64`. The stack will be read as an `xarray.Dataset` object, with data variables lazily loaded as `Dask Array`:
+You can also skip the `dtype` argument since it's defaulted to `numpy.complex64`. The stack will be read as an `xarray.Dataset` object, with data variables lazily loaded as `Dask Array`:
+
+```python
+print(stack)
+```
 
 ```output
-print(stack)
-
 <xarray.Dataset>
 Dimensions:    (azimuth: 10018, range: 68656, time: 3)
 Coordinates:
