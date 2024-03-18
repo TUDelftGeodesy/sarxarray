@@ -111,8 +111,8 @@ class Stack:
             {"azimuth": chunk_azimuth, "range": chunk_range, "time": -1}
         )
 
-        amplitude_dispersion = amplitude.std(axis=t_order) / (
-            amplitude.mean(axis=t_order) + np.finfo(amplitude.dtype).eps
+        amplitude_dispersion = amplitude.std(axis=t_order, skipna=False) / (
+            amplitude.mean(axis=t_order, skipna=False) + np.finfo(amplitude.dtype).eps
         )  # adding epsilon to avoid zero division
 
         return amplitude_dispersion
