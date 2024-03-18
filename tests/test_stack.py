@@ -72,8 +72,37 @@ class TestStackSARrelated:
         synthetic_dataset = synthetic_dataset.slcstack._get_phase()
         stm = synthetic_dataset.slcstack.point_selection(
             threshold=0.2, method="amplitude_dispersion"
-        )  # select all
+        )  # select some
         assert stm.space.shape[0] == 4
+        assert set([k for k in stm.coords.keys()]).issubset(
+            ["time", "azimuth", "range"]
+        )
+        assert set([d for d in stm.data_vars.keys()]).issubset(
+            ["complex", "amplitude", "phase"]
+        )
+
+    def test_stack_pointselection_nan(self):
+        data = np.random.rand(10, 10, 10) + 1j * np.random.rand(10, 10, 10)
+        data[0, 0, 0] = np.nan  # introduce a nan
+        ds_nan = xr.Dataset(
+            {
+                "complex": (
+                    ("azimuth", "range", "time"),
+                    data,
+                )
+            },
+            coords={
+                "azimuth": np.arange(600, 610, 1, dtype=int),
+                "range": np.arange(1400, 1410, 1, dtype=int),
+                "time": np.arange(1, 11, 1, dtype=int),
+            },
+        )
+        ds_nan = ds_nan.slcstack._get_amplitude()
+        ds_nan = ds_nan.slcstack._get_phase()
+        stm = ds_nan.slcstack.point_selection(
+            threshold=100, method="amplitude_dispersion"
+        )
+        assert stm.space.shape[0] == 99  # only the nan is removed
         assert set([k for k in stm.coords.keys()]).issubset(
             ["time", "azimuth", "range"]
         )
