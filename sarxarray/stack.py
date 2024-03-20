@@ -62,7 +62,7 @@ class Stack:
             case _:
                 raise NotImplementedError
 
-        # Get the 1D index on space dimension
+        # Get the 1D index on space dimension HERE!!!
         mask_1d = mask.stack(space=("azimuth", "range")).drop_vars(
             ["azimuth", "range", "space"]
         )
