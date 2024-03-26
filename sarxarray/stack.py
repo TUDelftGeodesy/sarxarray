@@ -58,6 +58,9 @@ class Stack:
         """
         match method:
             case "amplitude_dispersion":
+                # Amplitude dispersion thresholding
+                # Note there can be NaN values in the amplitude dispersion
+                # However NaN values will not pass this threshold
                 mask = self._amp_disp() < threshold
             case _:
                 raise NotImplementedError
@@ -111,9 +114,14 @@ class Stack:
             {"azimuth": chunk_azimuth, "range": chunk_range, "time": -1}
         )
 
+        # Compoute amplitude dispersion
+        # By defalut, the mean and std function from Xarray will skip NaN values
+        # However, if there is NaN value in time series, we want to discard the pixel
+        # Therefore, we set skipna=False
+        # Adding epsilon to avoid zero division
         amplitude_dispersion = amplitude.std(axis=t_order, skipna=False) / (
             amplitude.mean(axis=t_order, skipna=False) + np.finfo(amplitude.dtype).eps
-        )  # adding epsilon to avoid zero division
+        )
 
         return amplitude_dispersion
 
