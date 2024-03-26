@@ -103,10 +103,10 @@ class TestStackSARrelated:
             threshold=100, method="amplitude_dispersion"
         )
         assert stm.space.shape[0] == 99  # only the nan is removed
-        assert set([k for k in stm.coords.keys()]).issubset(
+        assert set(list(stm.coords.keys())).issubset(
             ["time", "azimuth", "range"]
         )
-        assert set([d for d in stm.data_vars.keys()]).issubset(
+        assert set(list(stm.data_vars.keys())).issubset(
             ["complex", "amplitude", "phase"]
         )
 
