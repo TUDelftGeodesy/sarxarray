@@ -1,5 +1,4 @@
-"""test _io.py
-"""
+"""test _io.py"""
 
 import numpy as np
 import pytest
@@ -10,7 +9,7 @@ from sarxarray._io import _calc_chunksize, _unpack_complex
 
 @pytest.fixture()
 def test_slcs():
-    return ["../../.debug/scene_0.binaray", "../../.debug/scene_1.binaray"]
+    return ["./data/scene_0.binaray", "./data/scene_1.binaray"]
 
 
 class TestFromBinary:
