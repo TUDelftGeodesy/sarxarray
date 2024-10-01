@@ -1,5 +1,6 @@
 import logging
 import math
+from pathlib import Path
 
 import dask
 import dask.array as da
@@ -11,6 +12,60 @@ from .conf import _dtypes, _memsize_chunk_mb
 logger = logging.getLogger(__name__)
 
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
+
+
+def from_zarr(files_zarr: str | Path) -> xr.Dataset:
+    """Read a SLC stack or relabted variables from zarr files.
+
+    Note that this function only works for the SLC stack zarr files.
+
+    The purpose of this function is to create task graph converting `real`/`imag` to
+    `complex`, `amplitude`, and `phase` variables.
+
+    For other datasets, such as lat, lon, etc., please use `xr.open_zarr` directly.
+
+    Parameters
+    ----------
+    files_zarr : str | Path
+        Paths to the zarr files.
+
+    Returns
+    -------
+    xr.Dataset
+        Loaded SLC stack.
+        An xarray.Dataset with three dimensions: (azimuth, range, time), and
+        three variables: ("complex", "amplitude", "phase").
+
+    Raises
+    ------
+    ValueError
+        The input dataset should have three dimensions: (azimuth, range, time).
+    ValueError
+        The input dataset should have the following variables: ('real', 'imag').
+    """
+    ds = xr.open_zarr(files_zarr)
+
+    # Check ds should have the following dimensions: (azimuth, range, time)
+    if not all([dim in ds.dims for dim in ["azimuth", "range", "time"]]):
+        raise ValueError(
+            "The input dataset should have three dimensions: (azimuth, range, time)."
+        )
+
+    # Check ds should have the following variables: ("real", "imag")
+    if not all([var in ds.variables for var in ["real", "imag"]]):
+        raise ValueError(
+            "The input dataset should have the following variables: ('real', 'imag')."
+        )
+
+    # Construct the three datavariables: complex, amplitude, and phase
+    ds["complex"] = ds["real"] + 1j * ds["imag"]
+    ds = ds.slcstack._get_amplitude()
+    ds = ds.slcstack._get_phase()
+
+    # Remove the original real and imag variables
+    ds = ds.drop_vars(["real", "imag"])
+
+    return ds
 
 
 def from_binary(
@@ -43,11 +98,9 @@ def from_binary(
     if not np.dtype(dtype).isbuiltin:
         if not all([name in (("re", "im")) for name in dtype.names]):
             raise TypeError(
-
-                    "The customed dtype should have only two field names: "
-                    '"re" and "im". For example: '
-                    'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
-
+                "The customed dtype should have only two field names: "
+                '"re" and "im". For example: '
+                'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
             )
 
     # Initialize stack as a Dataset
