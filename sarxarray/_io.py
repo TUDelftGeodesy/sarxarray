@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def from_zarr(files_zarr: str | Path) -> xr.Dataset:
-    """Read a SLC stack or relabted variables from zarr files.
+    """Read a SLC stack or related variables from zarr files.
 
     Note that this function only works for the SLC stack zarr files.
 
@@ -46,13 +46,13 @@ def from_zarr(files_zarr: str | Path) -> xr.Dataset:
     ds = xr.open_zarr(files_zarr)
 
     # Check ds should have the following dimensions: (azimuth, range, time)
-    if not all([dim in ds.dims for dim in ["azimuth", "range", "time"]]):
+    if any(dim not in ds.dims for dim in ["azimuth", "range", "time"]):
         raise ValueError(
             "The input dataset should have three dimensions: (azimuth, range, time)."
         )
 
     # Check ds should have the following variables: ("real", "imag")
-    if not all([var in ds.variables for var in ["real", "imag"]]):
+    if any(var not in ds.variables for var in ["real", "imag"]):
         raise ValueError(
             "The input dataset should have the following variables: ('real', 'imag')."
         )

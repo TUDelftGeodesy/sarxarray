@@ -24,10 +24,10 @@ class TestFromZarr:
         slcs = sarxarray.from_zarr(
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example.zarr"
         )
-        assert all([dim in slcs.dims for dim in ["azimuth", "range", "time"]])
-        assert all([var not in slcs.variables.keys() for var in ["real", "imag"]])
+        assert all(dim in slcs.dims for dim in ["azimuth", "range", "time"])
+        assert all(var not in slcs.variables.keys() for var in ["real", "imag"])
         assert all(
-            [var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]]
+            var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]
         )
 
     def test_from_zarr_broken_dim(self):
