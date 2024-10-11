@@ -4,6 +4,7 @@ import os
 
 import numpy as np
 import pytest
+import xarray as xr
 
 import sarxarray
 from sarxarray._io import _calc_chunksize, _unpack_complex
@@ -17,30 +18,33 @@ def test_slcs():
     ]
 
 
-class TestFromZarr:
-    """from_zarr in _io.py"""
+class TestFromDS:
+    """from_ds in _io.py"""
 
-    def test_from_zarr_normal(self):
-        slcs = sarxarray.from_zarr(
+    def test_from_ds_normal(self):
+        test_ds = xr.open_zarr(
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example.zarr"
         )
+        slcs = sarxarray.from_ds(test_ds)
         assert all(dim in slcs.dims for dim in ["azimuth", "range", "time"])
         assert all(var not in slcs.variables.keys() for var in ["real", "imag"])
         assert all(
             var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]
         )
 
-    def test_from_zarr_broken_dim(self):
+    def test_from_ds_broken_dim(self):
+        test_ds_broken_dim = xr.open_zarr(
+            f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_dim.zarr"
+        )
         with pytest.raises(ValueError):
-            sarxarray.from_zarr(
-                f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_dim.zarr"
-            )
+            sarxarray.from_ds(test_ds_broken_dim)
 
-    def test_from_zarr_broken_vars(self):
+    def test_from_ds_broken_vars(self):
+        test_ds_broken_vars = xr.open_zarr(
+            f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_vars.zarr"
+        )
         with pytest.raises(ValueError):
-            sarxarray.from_zarr(
-                f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_vars.zarr"
-            )
+            sarxarray.from_ds(test_ds_broken_vars)
 
 
 class TestFromBinary:

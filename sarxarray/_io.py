@@ -1,6 +1,5 @@
 import logging
 import math
-from pathlib import Path
 
 import dask
 import dask.array as da
@@ -14,37 +13,37 @@ logger = logging.getLogger(__name__)
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
 
-def from_zarr(files_zarr: str | Path) -> xr.Dataset:
-    """Read a SLC stack or related variables from zarr files.
+def from_ds(ds: xr.Dataset) -> xr.Dataset:
+    """Create a SLC stack or from an Xarray Dataset.
 
-    Note that this function only works for the SLC stack zarr files.
+    This function create tasks graph converting the two data variables of complex data:
+    `real` and `imag`, to three variables: `complex`, `amplitude`, and `phase`.
 
-    The purpose of this function is to create task graph converting `real`/`imag` to
-    `complex`, `amplitude`, and `phase` variables.
+    The function is intented for an SLC stack in `xr.Dataset` loaded from a Zarr file.
 
     For other datasets, such as lat, lon, etc., please use `xr.open_zarr` directly.
 
     Parameters
     ----------
-    files_zarr : str | Path
-        Paths to the zarr files.
+    ds : xr.Dataset
+        SLC stack loaded from a Zarr file.
+        Must have three dimensions: `(azimuth, range, time)`.
+        Must have two variables: `real` and `imag`.
 
     Returns
     -------
     xr.Dataset
-        Loaded SLC stack.
-        An xarray.Dataset with three dimensions: (azimuth, range, time), and
-        three variables: ("complex", "amplitude", "phase").
+        Converted SLC stack.
+        An xarray.Dataset with three dimensions: `(azimuth, range, time)`, and
+        three variables: `complex`, `amplitude`, `phase`.
 
     Raises
     ------
     ValueError
-        The input dataset should have three dimensions: (azimuth, range, time).
+        The input dataset should have three dimensions: `(azimuth, range, time)`.
     ValueError
-        The input dataset should have the following variables: ('real', 'imag').
+        The input dataset should have the following variables: `('real', 'imag')`.
     """
-    ds = xr.open_zarr(files_zarr)
-
     # Check ds should have the following dimensions: (azimuth, range, time)
     if any(dim not in ds.dims for dim in ["azimuth", "range", "time"]):
         raise ValueError(
