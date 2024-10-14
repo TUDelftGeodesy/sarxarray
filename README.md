@@ -32,3 +32,9 @@ Note that Python version `>=3.10` is required for SARXarray.
 ## Documentation
 
 For more information on usage and examples of SARXarray, please refer to the [documentation](https://tudelftgeodesy.github.io/sarxarray/).
+
+## License
+
+Copyright (c) 2018 - 2024, Netherlands eScience Center & Delft University of Technology
+
+Apache Software License 2.0
