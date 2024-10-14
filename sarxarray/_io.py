@@ -13,6 +13,60 @@ logger = logging.getLogger(__name__)
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
 
+def from_ds(ds: xr.Dataset) -> xr.Dataset:
+    """Create a SLC stack or from an Xarray Dataset.
+
+    This function create tasks graph converting the two data variables of complex data:
+    `real` and `imag`, to three variables: `complex`, `amplitude`, and `phase`.
+
+    The function is intented for an SLC stack in `xr.Dataset` loaded from a Zarr file.
+
+    For other datasets, such as lat, lon, etc., please use `xr.open_zarr` directly.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        SLC stack loaded from a Zarr file.
+        Must have three dimensions: `(azimuth, range, time)`.
+        Must have two variables: `real` and `imag`.
+
+    Returns
+    -------
+    xr.Dataset
+        Converted SLC stack.
+        An xarray.Dataset with three dimensions: `(azimuth, range, time)`, and
+        three variables: `complex`, `amplitude`, `phase`.
+
+    Raises
+    ------
+    ValueError
+        The input dataset should have three dimensions: `(azimuth, range, time)`.
+    ValueError
+        The input dataset should have the following variables: `('real', 'imag')`.
+    """
+    # Check ds should have the following dimensions: (azimuth, range, time)
+    if any(dim not in ds.dims for dim in ["azimuth", "range", "time"]):
+        raise ValueError(
+            "The input dataset should have three dimensions: (azimuth, range, time)."
+        )
+
+    # Check ds should have the following variables: ("real", "imag")
+    if any(var not in ds.variables for var in ["real", "imag"]):
+        raise ValueError(
+            "The input dataset should have the following variables: ('real', 'imag')."
+        )
+
+    # Construct the three datavariables: complex, amplitude, and phase
+    ds["complex"] = ds["real"] + 1j * ds["imag"]
+    ds = ds.slcstack._get_amplitude()
+    ds = ds.slcstack._get_phase()
+
+    # Remove the original real and imag variables
+    ds = ds.drop_vars(["real", "imag"])
+
+    return ds
+
+
 def from_binary(
     slc_files, shape, vlabel="complex", dtype=np.complex64, chunks=None, ratio=1
 ):
@@ -43,11 +97,9 @@ def from_binary(
     if not np.dtype(dtype).isbuiltin:
         if not all([name in (("re", "im")) for name in dtype.names]):
             raise TypeError(
-
-                    "The customed dtype should have only two field names: "
-                    '"re" and "im". For example: '
-                    'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
-
+                "The customed dtype should have only two field names: "
+                '"re" and "im". For example: '
+                'dtype = np.dtype([("re", np.float32), ("im", np.float32)]).'
             )
 
     # Initialize stack as a Dataset
