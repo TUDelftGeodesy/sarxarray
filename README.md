@@ -35,6 +35,6 @@ For more information on usage and examples of SARXarray, please refer to the [do
 
 ## License
 
-Copyright (c) 2018 - 2024, Netherlands eScience Center & Delft University of Technology
+Copyright (c) 2022 - 2024, Netherlands eScience Center & Delft University of Technology
 
 Apache Software License 2.0
