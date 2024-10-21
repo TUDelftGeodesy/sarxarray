@@ -19,32 +19,32 @@ def test_slcs():
 
 
 class TestFromDS:
-    """from_ds in _io.py"""
+    """from_dataset in _io.py"""
 
-    def test_from_ds_normal(self):
+    def test_from_dataset_normal(self):
         test_ds = xr.open_zarr(
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example.zarr"
         )
-        slcs = sarxarray.from_ds(test_ds)
+        slcs = sarxarray.from_dataset(test_ds)
         assert all(dim in slcs.dims for dim in ["azimuth", "range", "time"])
         assert all(var not in slcs.variables.keys() for var in ["real", "imag"])
         assert all(
             var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]
         )
 
-    def test_from_ds_broken_dim(self):
+    def test_from_dataset_broken_dim(self):
         test_ds_broken_dim = xr.open_zarr(
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_dim.zarr"
         )
         with pytest.raises(ValueError):
-            sarxarray.from_ds(test_ds_broken_dim)
+            sarxarray.from_dataset(test_ds_broken_dim)
 
-    def test_from_ds_broken_vars(self):
+    def test_from_dataset_broken_vars(self):
         test_ds_broken_vars = xr.open_zarr(
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example_broken_vars.zarr"
         )
         with pytest.raises(ValueError):
-            sarxarray.from_ds(test_ds_broken_vars)
+            sarxarray.from_dataset(test_ds_broken_vars)
 
 
 class TestFromBinary:
