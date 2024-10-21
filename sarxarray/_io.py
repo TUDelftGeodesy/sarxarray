@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
 
-def from_ds(ds: xr.Dataset) -> xr.Dataset:
+def from_dataset(ds: xr.Dataset) -> xr.Dataset:
     """Create a SLC stack or from an Xarray Dataset.
 
     This function create tasks graph converting the two data variables of complex data:
