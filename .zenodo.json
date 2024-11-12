@@ -6,16 +6,25 @@
       "orcid": "0000-0002-5373-5209"
     },
     {
+      "affiliation": "Netherlands eScience Center",
       "name": "Alidoost, Fakhereh (Sarah)"
     },
     {
       "name": "Chandramouli, Pranav"
     },
     {
+      "affiliation": "Netherlands eScience Center",
       "name": "Nattino, Francesco"
     },
     {
-      "name": "van Leijen, Freek"
+      "affiliation": "Delft University of Technology",
+      "name": "van Leijen, Freek",
+      "orcid": "0000-0002-2582-9267"
+    },
+    {
+      "affiliation": "Delft University of Technology",
+      "name": "Jansen, Niels",
+      "orcid": "0009-0009-1736-9801"
     }
   ],
   "description": "SARXarray is an open-source Xarray extension for Synthetic Aperture Radar (SAR) data.",
