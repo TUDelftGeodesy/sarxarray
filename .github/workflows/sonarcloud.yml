@@ -1,5 +1,9 @@
 name: Build
-on: [pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 jobs:
   sonarqube:
     name: SonarQube
