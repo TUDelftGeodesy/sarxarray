@@ -28,28 +28,28 @@ bibliography: paper.bib
 
 ## Summary
 
-Satellite-based Synthetic Aperture Radar (SAR) provides invaluable image data for Earth Observation. The Interferometric SAR (InSAR) technique, which leverages a stack of SAR images in Single Look Complex (SLC) format, plays a significant role for various surface motion monitoring applications, e.g. civil-infrastructure stability [@chang2014detection; @chang2017railway], hydrocarbons extraction [@fokker2016application; @ZHANG2022102847], etc. To enable advanced data processing for the InSAR community, we present `SARXarray`, an Xarray extension for handling SLC SAR stacks for InSAR data processing. 
+Satellite-based Synthetic Aperture Radar (SAR) provides invaluable image data for Earth observation. The Interferometric SAR (InSAR) technique, which utilizes a stack of SAR images in Single Look Complex (SLC) format, plays a significant role in various surface motion monitoring applications, e.g. civil-infrastructure stability [@chang2014detection; @chang2017railway], and hydrocarbons extraction [@fokker2016application; @ZHANG2022102847]. To facilitate advanced data processing for InSAR communities, we developed `SARXarray`, a Xarray extension for handling SLC SAR stacks. 
 
 ## Statement of Need
 
-Satellite-based SAR generates data stacks with long temporal coverage, broad spatial coverage and high spatio-temporal resolution. [@moreira2013tutorial] Handling it in an efficient way is a common challenge within the InSAR community. The High Performance Computing (HPC) infrastructures provide an opportunity to process these data stacks in a parallel and distributed manner. However, to fully utilize the HPC infrastructures, the data processing workflows often need to be customized case by case.
+Satellite-based SAR generates data stacks with long temporal coverage, broad spatial coverage, and high spatio-temporal resolution. [@moreira2013tutorial] Handling SAR data stacks in an efficient way is a common challenge within InSAR communities. To address this challenge, High-Performance Computing (HPC) is often used to process data in a parallel and distributed manner. However, to fully leverage HPC capabilities, data processing workflows need to be customized for each specific use-case.
 
-Aiming to meet the need for efficient processing of SLC SAR stacks with minimum effort on code customization, we developed `SARXarray` for SLC SAR stack processing. 
+To facilitate efficient processing of SLC SAR stacks and minimize code customization, we developed `SARXarray` for SLC SAR stack. 
 
-`SARXarray` is developed based on two established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). Implemented as an Xarray extension, it utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. It also leverages `Dask` to perform lazy evaluation of the operations and block-wise computation. It can be integrated to existing Python workflows of InSAR processing and deployed on various computational infrastructures. 
+`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of computational infrastructures. 
 
 ## Tutorial
 
-We provide a tutorial as a Jupyter notebook to demonstrate the basic functionalities of `SARXarray`:
+We provided a tutorial as a Jupyter notebook to demonstrate the functionalities of `SARXarray`:
 
 [Tutorial Jupyter notebook](https://tudelftgeodesy.github.io/sarxarray/notebooks/demo_sarxarray/)
 
-The tutorial demonstrates the following steps:
+The tutorial includes the following steps:
 
 - Installation and data preparation
 - Lazy loading a SAR data stack in binary format as an Xarray Dataset
 - Attaching attributes to the loaded stack
-- Applying a simple SAR operation on the loaded stack
+- Applying common SAR operations on the loaded stack such as Multi-Looking and Mean-Reflection-Map
 
 ## Acknowledgements
 
