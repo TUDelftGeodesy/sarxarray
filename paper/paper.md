@@ -49,7 +49,10 @@ The tutorial includes the following steps:
 - Installation and data preparation
 - Lazy loading a SAR data stack in binary format as an Xarray Dataset
 - Attaching attributes to the loaded stack
-- Applying common SAR operations on the loaded stack such as Multi-Looking and Mean-Reflection-Map
+- Applying common SAR operations on the loaded stack such as:
+  - Multi-Looking 
+  - Create Mean-Reflection-Map (MRM)
+  - Calculate complex coherence
 
 ## Acknowledgements
 
