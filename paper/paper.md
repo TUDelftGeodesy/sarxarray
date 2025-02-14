@@ -53,7 +53,7 @@ The tutorial includes the following steps:
 
 ## Acknowledgements
 
-The authors express sincere gratitude to the Dutch Research Council (Nederlandse Organisatie voor Wetenschappelijk Onderzoek, NWO) for their generous funding of the `SARXarray` development through the Collaboration in Innovative Technologies (CIT 2021) Call, grant NLESC.CIT.2021.006. Special thanks to SURF for providing valuable computational resources for `SARXarray` testing.
+The authors express sincere gratitude to the Dutch Research Council (Nederlandse Organisatie voor Wetenschappelijk Onderzoek, NWO) for their generous funding of the `SARXarray` development through the Collaboration in Innovative Technologies (CIT 2021) Call, grant NLESC.CIT.2021.006. Special thanks to SURF for providing valuable computational resources for `SARXarray` testing via grant EINF-2051, EINF-4287 and EINF-6883.
 
 We would also like to thank Dr. Francesco Nattino and Dr. Meiert Willem Grootes for the insightful discussions, which are important contributions to this work.
 
