@@ -45,7 +45,7 @@ def from_dataset(ds: xr.Dataset) -> xr.Dataset:
         The input dataset should have the following variables: `('real', 'imag')`.
     """
     # Check ds should have the following dimensions: (azimuth, range, time)
-    if any(dim not in ds.dims for dim in ["azimuth", "range", "time"]):
+    if any(dim not in list(ds.sizes) for dim in ["azimuth", "range", "time"]):
         raise ValueError(
             "The input dataset should have three dimensions: (azimuth, range, time)."
         )

@@ -26,7 +26,7 @@ class TestFromDS:
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example.zarr"
         )
         slcs = sarxarray.from_dataset(test_ds)
-        assert all(dim in slcs.dims for dim in ["azimuth", "range", "time"])
+        assert all(dim in list(slcs.sizes) for dim in ["azimuth", "range", "time"])
         assert all(var not in slcs.variables.keys() for var in ["real", "imag"])
         assert all(
             var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]
@@ -60,7 +60,7 @@ class TestFromBinary:
         assert set(["azimuth", "range", "time"]).issubset(
             [k for k in stack.coords.keys()]
         )
-        assert stack.dims == {"azimuth": 100, "range": 100, "time": 2}
+        assert stack.sizes == {"azimuth": 100, "range": 100, "time": 2}
 
     def test_loading_custom_var(self, test_slcs):
         """When other var names specified, do not compute amplitude and range"""
@@ -75,7 +75,7 @@ class TestFromBinary:
         assert not (
             set(["amplitude", "phase"]).issubset([k for k in stack.coords.keys()])
         )
-        assert stack.dims == {"azimuth": 100, "range": 100, "time": 2}
+        assert stack.sizes == {"azimuth": 100, "range": 100, "time": 2}
 
     def test_loading_chunksizes(self, test_slcs):
         stack = sarxarray.from_binary(
@@ -114,7 +114,7 @@ class TestFromBinary:
         assert set(["azimuth", "range", "time"]).issubset(
             [k for k in stack.coords.keys()]
         )
-        assert stack.dims == {"azimuth": 100, "range": 100, "time": 1}
+        assert stack.sizes == {"azimuth": 100, "range": 100, "time": 1}
 
 
 class TestUtils:
