@@ -26,7 +26,7 @@ class TestFromDS:
             f"{os.path.dirname(__file__)}/data/zarrs/slcs_example.zarr"
         )
         slcs = sarxarray.from_dataset(test_ds)
-        assert all(dim in list(slcs.sizes) for dim in ["azimuth", "range", "time"])
+        assert all(dim in slcs.sizes for dim in ["azimuth", "range", "time"])
         assert all(var not in slcs.variables.keys() for var in ["real", "imag"])
         assert all(
             var in slcs.variables.keys() for var in ["complex", "amplitude", "phase"]
