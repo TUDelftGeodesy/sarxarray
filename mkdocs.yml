@@ -3,16 +3,17 @@ repo_url: https://github.com/TUDelftGeodesy/sarxarray/
 repo_name: SARXarray
 
 nav:
-  - Getting started: 
+  - Getting started:
     - About SARXarray: index.md
     - Installation: setup.md
-  - Usage: 
+  - Usage:
     - Data loading: data_loading.md
     - Common SLC operations: common_ops.md
     - Other manipulations: manipulations.md
   - Notebook page: notebooks/demo_sarxarray.ipynb
   - Conributing guide: CONTRIBUTING.md
   - Change Log: CHANGELOG.md
+  - API reference: api_reference.md
 
 
 theme:
@@ -40,7 +41,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - content.code.copy
-  
+
 plugins:
 - mkdocs-jupyter:
       include_source: True
@@ -49,16 +50,31 @@ plugins:
     handlers:
       python:
         options:
-          docstring_style: google
+          docstring_style: numpy
           docstring_options:
-            ignore_init_summary: no
-          merge_init_into_class: yes
-          show_submodules: no
+            ignore_init_summary: true
+          merge_init_into_class: true
+          docstring_section_style: list
+          show_submodules: true
+          show_root_heading: true
+          show_source: true
+          heading_level: 3
+          relative_crossrefs: true
+          parameter_headings: false
+          separate_signature: true
+          show_bases: true
+          show_signature_annotations: true
+          show_symbol_type_heading: true
+          signature_crossrefs: true
+          summary: true
+          backlinks: tree
+          scoped_crossrefs: true
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
+  - pymdownx.highlight
 
 extra:
   generator: false
