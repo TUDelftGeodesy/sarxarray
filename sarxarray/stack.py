@@ -31,7 +31,7 @@ class Stack:
 
     def mrm(self):
         """Compute a Mean Reflection Map (MRM)."""
-        t_order = list(self._obj.dims.keys()).index("time")  # Time dimension order
+        t_order = list(self._obj.sizes).index("time")  # Time dimension index
         return self._obj.amplitude.mean(axis=t_order)
 
     def point_selection(self, threshold, method="amplitude_dispersion", chunks=1000):
@@ -107,7 +107,7 @@ class Stack:
 
     def _amp_disp(self, chunk_azimuth=500, chunk_range=500):
         # Time dimension order
-        t_order = list(self._obj.dims.keys()).index("time")
+        t_order = list(self._obj.sizes).index("time")
 
         # Rechunk to make temporal operation more efficient
         amplitude = self._obj.amplitude.chunk(
