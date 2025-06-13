@@ -90,7 +90,8 @@ def complex_coherence(
     numerator = mean(R * O`) in a window
     denominator = mean(R * R`) * mean(O * O`) in a window
     coherence = abs( numerator / sqrt(denominator) ),
-    See the equationin chapter 28 in http://doris.tudelft.nl/software/doris_v4.02.pdf
+    See the equation in chapter 28 in [doris
+    documentation](http://doris.tudelft.nl/software/doris_v4.02.pdf)
 
     Parameters
     ----------
