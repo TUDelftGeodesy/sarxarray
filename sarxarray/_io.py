@@ -1,5 +1,7 @@
 import logging
 import math
+import re
+from datetime import datetime
 
 import dask
 import dask.array as da
@@ -10,7 +12,35 @@ from .conf import _dtypes, _memsize_chunk_mb
 
 logger = logging.getLogger(__name__)
 
-# Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
+# Float keys in metadata
+META_FLOAT_KEYS = [
+    "wavelength",
+    "pulse_repetition_frequency",
+    "total_azimuth_bandwidth",
+    "range_time_first_pixel",
+    "range_sampling_rate",
+    "total_range_bandwidth",
+]
+
+# Regular expressions for reading metadata from DORIS4 files
+RES_PATTERNS_DORIS4 = {
+    "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
+    "product_type": r"Product type specifier:\s+(.+)",
+    "orbit": r"Scene identification:.*?(ASCENDING|DESCENDING)",
+    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
+    "pulse_repetition_frequency": (
+        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
+    ),
+    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
+    "range_time_first_pixel": (
+        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
+    ),
+    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
+    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
+    "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
+    "weighting_range": r"Weighting_range:\s+(.+)",
+    "first_pixel_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
+}
 
 
 def from_dataset(ds: xr.Dataset) -> xr.Dataset:
@@ -266,3 +296,85 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
     chunks = (chunks_az, chunks_ra)
 
     return chunks
+
+
+def read_metadata(files: str | list, driver: str = "doris5"):
+    """Read metadata."""
+    if isinstance(files, str):
+        files = [files]
+
+    if driver == "doris4":
+        metadata = _read_metadata_doris4(files[0])
+        if len(files) > 1:
+            for file in files[1:]:
+                res = _read_metadata_doris4(file)
+                for key, value in res.items():
+                    # If the key already exists, append the new value to the list
+                    if isinstance(metadata[key], list):
+                        metadata[key].append(value)
+                    else:
+                        metadata[key] = [metadata[key], value]
+            metadata = _regulate_metadata(metadata)
+
+    return metadata
+
+
+def _read_metadata_doris4(file):
+    # Open the file
+    with open(file) as f:
+        content = f.read()
+
+    results = {}
+    for key, pattern in RES_PATTERNS_DORIS4.items():
+        match = re.search(pattern, content)
+        if match:
+            results[key] = match.group(1)
+            if key == "first_pixel_azimuth_time":  # Convert to datetime
+                try:
+                    dt = datetime.strptime(results[key], "%d-%b-%Y %H:%M:%S.%f")
+                    results[key] = np.datetime64(dt).astype("datetime64[s]")
+                except ValueError as e:
+                    raise ValueError(
+                        f"Invalid date format for key: {key}. "
+                        "Expected format is '%d-%b-%Y %H:%M:%S'."
+                    ) from e
+        else:
+            results[key] = None
+
+    return results
+
+
+def _regulate_metadata(metadata):
+    """Regulate metadata."""
+    for key, value in metadata.items():
+        # raise error if different types are found in value
+        if len(set(type(v) for v in value)) > 1:
+            raise TypeError(
+                f"Inconsistency found in metadata key: {key}. "
+                "Different types are found in the value list."
+            )
+
+        # Only keep the unique values
+        if isinstance(value[0], str):
+            metadata[key] = set(value)
+
+        if len(metadata[key]) == 1:
+            # If only one unique value, convert to scalar
+            metadata[key] = next(iter(metadata[key]))
+
+        # if float, take the average unless std is larger than 1% of the mean
+        if key in META_FLOAT_KEYS:
+            # Convert to float
+            arr = np.array(value, dtype=np.float64)
+            if np.std(arr) / np.mean(arr) < 0.01:
+                metadata[key] = np.mean(arr).item()  # Convert to scalar
+            else:
+                raise ValueError(
+                    f"Inconsistency found in metadata key:  {key}. "
+                    "Standard deviation is larger than 1% of the mean."
+                )
+
+        if key == "first_pixel_azimuth_time":
+            metadata[key] = np.array(metadata[key])
+
+    return metadata
