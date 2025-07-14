@@ -2,6 +2,7 @@ import logging
 import math
 import re
 from datetime import datetime
+from pathlib import Path
 
 import dask
 import dask.array as da
@@ -20,13 +21,28 @@ META_FLOAT_KEYS = [
     "range_time_first_pixel",
     "range_sampling_rate",
     "total_range_bandwidth",
+    "range_pixel_spacing",  # from here DORIS5 only
+    "azimuth_pixel_spacing",
+    "radar_frequency",
+    "pulse_repetition_frequency_raw",
+    "azimuth_time_interval",
+]
+
+META_INT_KEYS = [
+    "total_burst",  # from here DORIS5 only
+    "burst_number_index",
+    "deramp",
+    "reramp",
+    "number_of_lines",
+    "number_of_pixels",
+    "esd_correct",
 ]
 
 # Regular expressions for reading metadata from DORIS4 files
 RES_PATTERNS_DORIS4 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
     "product_type": r"Product type specifier:\s+(.+)",
-    "orbit": r"Scene identification:.*?(ASCENDING|DESCENDING)",
+    "pass_direction": r"Scene identification:.*?(ASCENDING|DESCENDING)",
     "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
     "pulse_repetition_frequency": (
         r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
@@ -40,6 +56,48 @@ RES_PATTERNS_DORIS4 = {
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
     "weighting_range": r"Weighting_range:\s+(.+)",
     "first_pixel_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
+}
+
+
+RES_PATTERNS_DORIS5 = {
+    "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
+    "product_type": r"Product type specifier:\s+(.+)",
+    "pass_direction": r"PASS:\s+(.+)",
+    "swath": r"SWATH:\s+(.+)",
+    "image_mode": r"IMAGE_MODE:\s+(.+)",
+    "polarisation": r"polarisation:\s+(.+)",
+    "range_pixel_spacing": r"rangePixelSpacing:\s+([\d\.E\+\-]+)",
+    "azimuth_pixel_spacing": r"azimuthPixelSpacing:\s+([\d\.E\+\-]+)",
+    "total_burst": r"total_Burst:\s+([\d\.E\+\-]+)",
+    "burst_number_index": r"Burst_number_index:\s+([\d\.E\+\-]+)",
+    "radar_frequency": r"RADAR_FREQUENCY \(HZ\):\s+([\d\.E\+\-]+)",
+    "sensor_platform": r"Sensor platform mission identifer:\s+(.+)",
+    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
+    "pulse_repetition_frequency_raw": (
+        r"Pulse_Repetition_Frequency_raw_data\(TOPSAR\):\s+([\d\.E\+\-]+)"
+    ),
+    "pulse_repetition_frequency": (
+        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
+    ),
+    "first_pixel_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
+    "azimuth_time_interval": r"Azimuth_time_interval \(s\):\s+([\d\.E\+\-]+)",
+    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
+    "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
+    "range_time_first_pixel": (
+        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)",
+    ),
+    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
+    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
+    "weighting_range": r"Weighting_range:\s+(.+)",
+    "dataformat": r"Dataformat:\s+(.+)",
+    "deramp": r"deramp:\s+([\d\.E\+\-]+)",
+    "reramp": r"reramp:\s+([\d\.E\+\-]+)",
+    "esd_correct": r"ESD_correct:\s+([\d\.E\+\-]+)",
+}
+
+RES_PATTERNS_DORIS5_IFG = {
+    "number_of_lines": r"Number of lines \(multilooked\):\s+(\d+)",
+    "number_of_pixels": r"Number of pixels \(multilooked\):\s+(\d+)",
 }
 
 
@@ -300,21 +358,39 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
 
 def read_metadata(files: str | list, driver: str = "doris5"):
     """Read metadata."""
-    if isinstance(files, str):
+    # If there is only one file, convert it to a list
+    if not isinstance(files, list):
         files = [files]
 
-    if driver == "doris4":
-        metadata = _read_metadata_doris4(files[0])
-        if len(files) > 1:
-            for file in files[1:]:
-                res = _read_metadata_doris4(file)
-                for key, value in res.items():
-                    # If the key already exists, append the new value to the list
-                    if isinstance(metadata[key], list):
-                        metadata[key].append(value)
-                    else:
-                        metadata[key] = [metadata[key], value]
-            metadata = _regulate_metadata(metadata)
+    # Force all files to be Path objects in case files is a list of strings
+    files = [Path(file) for file in files]
+
+    # Choose reading function based on the driver
+    if driver == "doris5":
+        read_func = _read_metadata_doris5
+    elif driver == "doris4":
+        read_func = _read_metadata_doris4
+    else:
+        raise NotImplementedError(
+            f"Driver '{driver}' is not implemented. "
+            "Supported drivers are: 'doris4', 'doris5'."
+        )
+
+    # Read the first file
+    metadata = read_func(files[0])
+
+    # If there are multiple files, read the metadata from each file
+    # Otherwise, just return the metadata from the first file
+    if len(files) > 1:
+        for file in files[1:]:
+            res = read_func(file)
+            for key, value in res.items():
+                # If the key already exists, append the new value to the list
+                if isinstance(metadata[key], list):
+                    metadata[key].append(value)
+                else:
+                    metadata[key] = [metadata[key], value]
+        metadata = _regulate_metadata(metadata)
 
     return metadata
 
@@ -344,8 +420,45 @@ def _read_metadata_doris4(file):
     return results
 
 
+def _read_metadata_doris5(file):
+    # Open the file
+    with open(file) as f:
+        content = f.read()
+
+    results = {}
+    for key, pattern in RES_PATTERNS_DORIS5.items():
+        match = re.search(pattern, content)
+        if match:
+            results[key] = match.group(1)
+            if key == "first_pixel_azimuth_time":  # Convert to datetime
+                try:
+                    dt = datetime.strptime(results[key], "%Y-%b-%d %H:%M:%S.%f")
+                    results[key] = np.datetime64(dt).astype("datetime64[s]")
+                except ValueError as e:
+                    raise ValueError(
+                        f"Invalid date format for key: {key}. "
+                        "Expected format is '%d-%b-%Y %H:%M:%S'."
+                    ) from e
+        else:
+            results[key] = None
+
+    # Try to get the ifg size from ifgs.res next to slave.res, if it exists
+    file_ifg = file.with_name("ifgs.res")
+    if file_ifg.exists():
+        with open(file_ifg) as f_ifg:
+            content_ifg = f_ifg.read()
+        for key, pattern in RES_PATTERNS_DORIS5_IFG.items():
+            match = re.search(pattern, content_ifg)
+            if match:
+                results[key] = match.group(1)
+            else:
+                results[key] = None
+
+    return results
+
+
 def _regulate_metadata(metadata):
-    """Regulate metadata."""
+    """Regulate metadata strings."""
     for key, value in metadata.items():
         # raise error if different types are found in value
         if len(set(type(v) for v in value)) > 1:
@@ -358,8 +471,8 @@ def _regulate_metadata(metadata):
         if isinstance(value[0], str):
             metadata[key] = set(value)
 
+        # Unfold the single value set to strings
         if len(metadata[key]) == 1:
-            # If only one unique value, convert to scalar
             metadata[key] = next(iter(metadata[key]))
 
         # if float, take the average unless std is larger than 1% of the mean
@@ -373,6 +486,11 @@ def _regulate_metadata(metadata):
                     f"Inconsistency found in metadata key:  {key}. "
                     "Standard deviation is larger than 1% of the mean."
                 )
+        if key in META_INT_KEYS:
+            if isinstance(metadata[key], str):
+                metadata[key] = int(metadata[key])
+            elif len(metadata[key]) > 1:  # set with multiple values
+                metadata[key] = set([int(v) for v in metadata[key]])
 
         if key == "first_pixel_azimuth_time":
             metadata[key] = np.array(metadata[key])
