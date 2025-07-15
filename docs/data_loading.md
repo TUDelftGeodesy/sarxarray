@@ -55,3 +55,76 @@ The loading chunk size can also be specified manually:
 stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
 ```
 
+## Reading metadata
+
+SARXarray provides a function to read metadata from the interferogram stack corregistered by Doris v4 or Doris v5. The metadata is read as a dictionary from the `slave.res` file under the folder of each SLC.
+
+### Doris v4 metadata
+
+A common Doris v4 output folder structure is as follows:
+
+```
+stack/
+├── YYYYMMDD1/
+│   ├── slc_1.res
+│   ├── slc_1.raw
+│   ├── ...
+├── YYYYMMDD2/
+│   ├── slc_2.res
+│   ├── slc_2.raw
+│   ├── ...
+...
+```
+
+Where `YYYYMMDD1`, `YYYYMMDD2`, etc. are the acquisition dates of the SLCs, and `slc_1.res`, `slc_2.res`, etc. are the metadata files for each SLC.
+
+To read the metadata from the Doris v4 stack, first build a list of the SLC metadata files:
+
+```python
+from pathlib import Path
+stack_folder = Path('stack/')
+res_file_list = list(tsx_folder.glob('???????/slave.res'))
+```
+
+where the pattern `???????` matches the date folders. Then, you can use the `read_metadata` function with the `driver` argument set to `"doris4"`:
+
+```python
+import sarxarray
+metadata = sarxarray.read_metadata(res_file_list, driver="doris4")
+```
+
+### Doris v5 metadata
+A common Doris v5 output folder structure is as follows:
+
+```stack/
+├── YYYYMMDD1/
+│   ├── slc_1.res
+│   ├── ifgs_1.res
+│   ├── slc_1.raw
+│   ├── ...
+├── YYYYMMDD2/
+│   ├── slc_2.res
+│   ├── ifgs_2.res
+│   ├── slc_2.raw
+│   ├── ...
+...
+```
+
+Where `YYYYMMDD1`, `YYYYMMDD2`, etc. are the acquisition dates of the SLCs, and `slc_1.res`, `slc_2.res`, etc. are the metadata files for each SLC. The files `ifgs_1.res`, `ifgs_2.res`, etc. are the metadata files for each interferogram, which contain the information of the sizes of the corregistered interferograms.
+
+To read the metadata from the Doris v5 stack, first build a list of the SLC metadata files:
+
+```python
+from pathlib import Path
+stack_folder = Path('stack/')
+res_file_list = list(stack_folder.glob('???????/slc_*.res'))
+```
+
+Then, you can use the `read_metadata` function with the `driver` argument set to `"doris5"`:
+
+```python
+import sarxarray
+metadata = sarxarray.read_metadata(res_file_list, driver="doris5")
+```
+
+`read_metadata` assumes that `ifgs_*.res` files are in the same folder as the `slc_*.res` files, and will read the interferogram sizes from them.
