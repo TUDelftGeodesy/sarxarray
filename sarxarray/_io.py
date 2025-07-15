@@ -295,6 +295,11 @@ def read_metadata(
     expressions, returning a dictionary with predefined keys. Check conf.py for
     available keys and regular expressions.
 
+    Specifically for the "doris5" driver, it is assumed that there is a "ifgs.res" file
+    next to the input metadata file, which contains the interferogram size information.
+    If the "ifgs.res" file is not found, the interferogram size information will
+    not be included in the metadata.
+
     If a single file is provided, it reads the metadata from that file.
 
     If multiple files are provided, the function will read the metadata from each file,
