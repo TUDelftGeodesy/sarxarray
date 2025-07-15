@@ -362,7 +362,7 @@ def read_metadata(
                 if isinstance(metadata[key], list):
                     metadata[key].append(value)
                 else:
-                    metadata[key] = [value]
+                    metadata[key] = [metadata[key], value]
         metadata = _regulate_metadata(metadata)
 
     return metadata
@@ -390,7 +390,7 @@ def _read_metadata_doris4(file):
                 except ValueError as e:
                     raise ValueError(
                         f"Invalid date format for key: {key}. "
-                        "Expected format is '%d-%b-%Y %H:%M:%S'."
+                        "Expected format is '%d-%b-%Y %H:%M:%S.%f'."
                     ) from e
         else:
             results[key] = None
@@ -416,7 +416,7 @@ def _read_metadata_doris5(file):
                 except ValueError as e:
                     raise ValueError(
                         f"Invalid date format for key: {key}. "
-                        "Expected format is '%d-%b-%Y %H:%M:%S'."
+                        "Expected format is '%d-%b-%Y %H:%M:%S.%f'."
                     ) from e
         else:
             results[key] = None
