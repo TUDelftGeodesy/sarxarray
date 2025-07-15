@@ -29,9 +29,7 @@ META_FLOAT_KEYS = [
 ]
 
 META_INT_KEYS = [
-    "total_burst",  # from here DORIS5 only
-    "burst_number_index",
-    "deramp",
+    "deramp",  # from here DORIS5 only
     "reramp",
     "number_of_lines",
     "number_of_pixels",
@@ -39,7 +37,7 @@ META_INT_KEYS = [
 ]
 
 # Regular expressions for reading metadata from DORIS4 files
-RES_PATTERNS_DORIS4 = {
+RE_PATTERNS_DORIS4 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
     "product_type": r"Product type specifier:\s+(.+)",
     "pass_direction": r"Scene identification:.*?(ASCENDING|DESCENDING)",
@@ -59,7 +57,7 @@ RES_PATTERNS_DORIS4 = {
 }
 
 
-RES_PATTERNS_DORIS5 = {
+RE_PATTERNS_DORIS5 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
     "product_type": r"Product type specifier:\s+(.+)",
     "pass_direction": r"PASS:\s+(.+)",
@@ -68,8 +66,6 @@ RES_PATTERNS_DORIS5 = {
     "polarisation": r"polarisation:\s+(.+)",
     "range_pixel_spacing": r"rangePixelSpacing:\s+([\d\.E\+\-]+)",
     "azimuth_pixel_spacing": r"azimuthPixelSpacing:\s+([\d\.E\+\-]+)",
-    "total_burst": r"total_Burst:\s+([\d\.E\+\-]+)",
-    "burst_number_index": r"Burst_number_index:\s+([\d\.E\+\-]+)",
     "radar_frequency": r"RADAR_FREQUENCY \(HZ\):\s+([\d\.E\+\-]+)",
     "sensor_platform": r"Sensor platform mission identifer:\s+(.+)",
     "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
@@ -84,7 +80,7 @@ RES_PATTERNS_DORIS5 = {
     "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
     "range_time_first_pixel": (
-        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)",
+        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
     ),
     "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
     "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
@@ -95,7 +91,7 @@ RES_PATTERNS_DORIS5 = {
     "esd_correct": r"ESD_correct:\s+([\d\.E\+\-]+)",
 }
 
-RES_PATTERNS_DORIS5_IFG = {
+RE_PATTERNS_DORIS5_IFG = {
     "number_of_lines": r"Number of lines \(multilooked\):\s+(\d+)",
     "number_of_pixels": r"Number of pixels \(multilooked\):\s+(\d+)",
 }
@@ -401,7 +397,7 @@ def _read_metadata_doris4(file):
         content = f.read()
 
     results = {}
-    for key, pattern in RES_PATTERNS_DORIS4.items():
+    for key, pattern in RE_PATTERNS_DORIS4.items():
         match = re.search(pattern, content)
         if match:
             results[key] = match.group(1)
@@ -426,7 +422,7 @@ def _read_metadata_doris5(file):
         content = f.read()
 
     results = {}
-    for key, pattern in RES_PATTERNS_DORIS5.items():
+    for key, pattern in RE_PATTERNS_DORIS5.items():
         match = re.search(pattern, content)
         if match:
             results[key] = match.group(1)
@@ -447,7 +443,7 @@ def _read_metadata_doris5(file):
     if file_ifg.exists():
         with open(file_ifg) as f_ifg:
             content_ifg = f_ifg.read()
-        for key, pattern in RES_PATTERNS_DORIS5_IFG.items():
+        for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
             match = re.search(pattern, content_ifg)
             if match:
                 results[key] = match.group(1)
@@ -493,6 +489,11 @@ def _regulate_metadata(metadata):
                 metadata[key] = set([int(v) for v in metadata[key]])
 
         if key == "first_pixel_azimuth_time":
-            metadata[key] = np.array(metadata[key])
+            metadata[key] = np.sort(np.array(metadata[key]))
+
+        if key in ["number_of_lines", "number_of_pixels"]:
+            if isinstance(metadata[key], set):
+                warning_msg = f"Multiple values found in {key}: {metadata[key]}."
+                logger.warning(warning_msg)
 
     return metadata
