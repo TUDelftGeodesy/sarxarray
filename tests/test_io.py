@@ -40,7 +40,7 @@ def res_files_doris4():
 # Example metadata files DORIS5
 @pytest.fixture()
 def res_files_doris5():
-    # 20180318 miss the ifgs.res file
+    # 20180318 misses the ifgs.res file
     # 20180312 has a wrong number of pixels (24866 instead of 24865)
     # but the metadata reader should not fail
     # a warning should be raised for the wrong number of pixels

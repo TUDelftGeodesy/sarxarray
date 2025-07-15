@@ -96,7 +96,7 @@ metadata = sarxarray.read_metadata(res_file_list, driver="doris4")
 ### Doris v5 metadata
 A common Doris v5 output folder structure is as follows:
 
-```stack/
+```text
 ├── YYYYMMDD1/
 │   ├── slc_1.res
 │   ├── ifgs_1.res

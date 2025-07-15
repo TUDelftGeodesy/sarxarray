@@ -304,7 +304,7 @@ def read_metadata(
 
     If multiple files are provided, the function will read the metadata from each file,
     and combine the results based on the following rules:
-    - If a metadata key has values in string format or integwe format, it combines the
+    - If a metadata key has values in string format or integer format, it combines the
     values into a set.
     - If a metadata key has values in float format, and the standard deviation is less
     than 1% of the mean, it takes the average of the values.
@@ -399,7 +399,7 @@ def _read_metadata_doris4(file):
 
 
 def _read_metadata_doris5(file):
-    """Read metadata from a DORIS4 metadata file."""
+    """Read metadata from a DORIS5 metadata file."""
     # Open the file
     with open(file) as f:
         content = f.read()
