@@ -282,7 +282,9 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
 
 
 def read_metadata(
-    files: str | list | Path, driver: Literal["doris4", "doris5"] = "doris5"
+    files: str | list | Path,
+    driver: Literal["doris4", "doris5"] = "doris5",
+    ifg_file_name: str = "ifgs.res",
 ) -> dict:
     """Read metadata of a coregistered interferogram stack.
 
@@ -323,6 +325,11 @@ def read_metadata(
     driver : str, optional
         The driver to use for reading metadata. Supported drivers are "doris4" and
         "doris5". Default is "doris5".
+    ifg_file_name : str, optional
+        The name of the interferogram size file for the "doris5" driver.
+        We assume this file is next to each metadata file and use it to read the
+        interferogram size information. if it is not found, the size
+        information will not be included in the metadata. Default is "ifgs.res".
 
     Returns
     -------
@@ -367,7 +374,7 @@ def read_metadata(
     return metadata
 
 
-def _parse_metadata(file, driver):
+def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
     """Parse a single metadata file to a dictionary of strings."""
     # Select the appropriate patterns based on the driver
     if driver == "doris5":
@@ -393,7 +400,7 @@ def _parse_metadata(file, driver):
     # Doris5 has size information in ifgs.res file
     # Try to get the ifg size from ifgs.res next to slave.res, if it exists
     if patterns_ifg is not None:
-        file_ifg = file.with_name("ifgs.res")
+        file_ifg = file.with_name(ifg_file_name)
         if file_ifg.exists():
             with open(file_ifg) as f_ifg:
                 content_ifg = f_ifg.read()
