@@ -88,3 +88,6 @@ META_INT_KEYS = [
     "number_of_pixels",
     "esd_correct",
 ]
+# Time formats for DORIS metadata
+TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
+TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"

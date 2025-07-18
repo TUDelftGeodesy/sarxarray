@@ -16,6 +16,8 @@ from .conf import (
     RE_PATTERNS_DORIS4,
     RE_PATTERNS_DORIS5,
     RE_PATTERNS_DORIS5_IFG,
+    TIME_FORMAT_DORIS4,
+    TIME_FORMAT_DORIS5,
     _dtypes,
     _memsize_chunk_mb,
 )
@@ -331,6 +333,13 @@ def read_metadata(
     NotImplementedError
         If the driver is not "doris4" or "doris5".
     """
+    # Check driver
+    if driver not in ["doris4", "doris5"]:
+        raise NotImplementedError(
+            f"Driver '{driver}' is not implemented. "
+            "Supported drivers are: 'doris4', 'doris5'."
+        )
+
     # If there is only one file, convert it to a list
     if not isinstance(files, list):
         files = [files]
@@ -338,25 +347,14 @@ def read_metadata(
     # Force all files to be Path objects in case files is a list of strings
     files = [Path(file) for file in files]
 
-    # Choose reading function based on the driver
-    if driver == "doris5":
-        read_func = _read_metadata_doris5
-    elif driver == "doris4":
-        read_func = _read_metadata_doris4
-    else:
-        raise NotImplementedError(
-            f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
-        )
+    # Parse the first file
+    metadata = _parse_metadata(files[0], driver)
 
-    # Read the first file
-    metadata = read_func(files[0])
-
-    # If there are multiple files, read the metadata from each file
+    # If there are multiple files, read the metadata from each file, then combine
     # Otherwise, just return the metadata from the first file
     if len(files) > 1:
         for file in files[1:]:
-            res = read_func(file)
+            res = _parse_metadata(file, driver)
             for key, value in res.items():
                 # If the key already exists, append the new value to the list
                 if isinstance(metadata[key], list):
@@ -368,70 +366,53 @@ def read_metadata(
     return metadata
 
 
-def _read_metadata_doris4(file):
-    """Read metadata from a DORIS4 metadata file."""
+def _parse_metadata(file, driver):
+    """Parse a single metadata file to a dictionary of strings."""
+    # Select the appropriate patterns based on the driver
+    if driver == "doris5":
+        patterns = RE_PATTERNS_DORIS5
+        patterns_ifg = RE_PATTERNS_DORIS5_IFG
+        time_format = TIME_FORMAT_DORIS5
+    elif driver == "doris4":
+        patterns = RE_PATTERNS_DORIS4
+        patterns_ifg = None
+        time_format = TIME_FORMAT_DORIS4
+
     # Open the file
     with open(file) as f:
         content = f.read()
 
-    # Rcursively search for the patterns in the content
-    # Only the first match is used for each key
+    # Read common metadata patterns
     results = {}
-    for key, pattern in RE_PATTERNS_DORIS4.items():
-        match = re.search(pattern, content)
-        if match:
-            results[key] = match.group(1)
-            # Timestamp key
-            if key == "first_pixel_azimuth_time":
-                try:
-                    dt = datetime.strptime(results[key], "%d-%b-%Y %H:%M:%S.%f")
-                    # Convert to numpy datetime64, rounding to seconds
-                    results[key] = np.datetime64(dt).astype("datetime64[s]")
-                except ValueError as e:
-                    raise ValueError(
-                        f"Invalid date format for key: {key}. "
-                        "Expected format is '%d-%b-%Y %H:%M:%S.%f'."
-                    ) from e
-        else:
-            results[key] = None
-
-    return results
-
-
-def _read_metadata_doris5(file):
-    """Read metadata from a DORIS5 metadata file."""
-    # Open the file
-    with open(file) as f:
-        content = f.read()
-
-    results = {}
-    for key, pattern in RE_PATTERNS_DORIS5.items():
+    for key, pattern in patterns.items():
         match = re.search(pattern, content)
         if match:
             results[key] = match.group(1)
             if key == "first_pixel_azimuth_time":  # Convert to datetime
                 try:
-                    dt = datetime.strptime(results[key], "%Y-%b-%d %H:%M:%S.%f")
+                    dt = datetime.strptime(results[key], time_format)
                     results[key] = np.datetime64(dt).astype("datetime64[s]")
                 except ValueError as e:
                     raise ValueError(
                         f"Invalid date format for key: {key}. "
-                        "Expected format is '%d-%b-%Y %H:%M:%S.%f'."
+                        "Expected format is '{time_format}'."
                     ) from e
         else:
             results[key] = None
 
+    # Doris5 has size information in ifgs.res file
     # Try to get the ifg size from ifgs.res next to slave.res, if it exists
-    file_ifg = file.with_name("ifgs.res")
-    if file_ifg.exists():
-        with open(file_ifg) as f_ifg:
-            content_ifg = f_ifg.read()
-        for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-            match = re.search(pattern, content_ifg)
-            if match:
-                results[key] = match.group(1)
-            else:
-                results[key] = None
+    if patterns_ifg is not None:
+        file_ifg = file.with_name("ifgs.res")
+        if file_ifg.exists():
+            with open(file_ifg) as f_ifg:
+                content_ifg = f_ifg.read()
+            for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
+                match = re.search(pattern, content_ifg)
+                if match:
+                    results[key] = match.group(1)
+                else:
+                    results[key] = None
 
     return results
 
