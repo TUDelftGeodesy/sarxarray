@@ -18,6 +18,7 @@ from .conf import (
     RE_PATTERNS_DORIS5_IFG,
     TIME_FORMAT_DORIS4,
     TIME_FORMAT_DORIS5,
+    TIME_STAMP_KEY,
     _dtypes,
     _memsize_chunk_mb,
 )
@@ -311,7 +312,7 @@ def read_metadata(
     - If a metadata key has values in float format, and the standard deviation is less
     than 1% of the mean, it takes the average of the values.
     - For the two Doris drivers "doris4" or "doris5", if the metadata key is
-    "first_pixel_azimuth_time", it treats it as the timestamp of acquisition and
+    TIME_STAMP_KEY, it treats it as the timestamp of acquisition and
     converts it to a numpy array of datetime64 format, sorted in ascending order.
 
 
@@ -361,7 +362,7 @@ def read_metadata(
                     metadata[key].append(value)
                 else:
                     metadata[key] = [metadata[key], value]
-        metadata = _regulate_metadata(metadata)
+    metadata = _regulate_metadata(metadata, driver)
 
     return metadata
 
@@ -372,11 +373,9 @@ def _parse_metadata(file, driver):
     if driver == "doris5":
         patterns = RE_PATTERNS_DORIS5
         patterns_ifg = RE_PATTERNS_DORIS5_IFG
-        time_format = TIME_FORMAT_DORIS5
     elif driver == "doris4":
         patterns = RE_PATTERNS_DORIS4
         patterns_ifg = None
-        time_format = TIME_FORMAT_DORIS4
 
     # Open the file
     with open(file) as f:
@@ -388,15 +387,6 @@ def _parse_metadata(file, driver):
         match = re.search(pattern, content)
         if match:
             results[key] = match.group(1)
-            if key == "first_pixel_azimuth_time":  # Convert to datetime
-                try:
-                    dt = datetime.strptime(results[key], time_format)
-                    results[key] = np.datetime64(dt).astype("datetime64[s]")
-                except ValueError as e:
-                    raise ValueError(
-                        f"Invalid date format for key: {key}. "
-                        "Expected format is '{time_format}'."
-                    ) from e
         else:
             results[key] = None
 
@@ -417,7 +407,7 @@ def _parse_metadata(file, driver):
     return results
 
 
-def _regulate_metadata(metadata):
+def _regulate_metadata(metadata, driver):
     """Regulate metadata strings.
 
     This function processes the metadata read from the DORIS files, which are strings,
@@ -425,7 +415,27 @@ def _regulate_metadata(metadata):
 
     Check the documentation of `read_metadata` for the rules applied to the metadata.
     """
-    for key, value in metadata.items():
+    # Convert time metadata from string to datetime
+    if driver == "doris5":
+        time_format = TIME_FORMAT_DORIS5
+    elif driver == "doris4":
+        time_format = TIME_FORMAT_DORIS4
+    list_time = []
+    # If the time is a single string, convert it to a list
+    if isinstance(metadata[TIME_STAMP_KEY], str):
+        metadata[TIME_STAMP_KEY] = [metadata[TIME_STAMP_KEY]]
+    for time in metadata[TIME_STAMP_KEY]:
+        try:
+            dt = datetime.strptime(time, time_format)
+            list_time.append(np.datetime64(dt).astype("datetime64[s]"))
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid date format for key: '{TIME_STAMP_KEY}'. "
+                f"Expected format is '{time_format}'."
+            ) from e
+    metadata[TIME_STAMP_KEY] = np.sort(np.array(list_time))
+
+    for key, value in list(metadata.items()):
         # raise error if different types are found in value
         if len(set(type(v) for v in value)) > 1:
             raise TypeError(
@@ -434,7 +444,7 @@ def _regulate_metadata(metadata):
             )
 
         # Only keep the unique values
-        if isinstance(value[0], str):
+        if isinstance(metadata[key], list):
             metadata[key] = set(value)
 
         # Unfold the single value set to strings
@@ -457,9 +467,6 @@ def _regulate_metadata(metadata):
                 metadata[key] = int(metadata[key])
             elif len(metadata[key]) > 1:  # set with multiple values
                 metadata[key] = set([int(v) for v in metadata[key]])
-
-        if key == "first_pixel_azimuth_time":
-            metadata[key] = np.sort(np.array(metadata[key]))
 
         if key in ["number_of_lines", "number_of_pixels"]:
             if isinstance(metadata[key], set):

@@ -91,3 +91,5 @@ META_INT_KEYS = [
 # Time formats for DORIS metadata
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
+# Time stamp key
+TIME_STAMP_KEY = "first_pixel_azimuth_time"
