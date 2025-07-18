@@ -281,14 +281,14 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
 def read_metadata(
     files: str | list | Path, driver: Literal["doris4", "doris5"] = "doris5"
 ) -> dict:
-    """Read metadata of a corregistered interferogram stack.
+    """Read metadata of a coregistered interferogram stack.
 
-    This function reads metadata from one or more metadata files from a corregistered
+    This function reads metadata from one or more metadata files from a coregistered
     interferogram stack, and returns the metadata as a dictionary format.
 
     This function supports two drivers: "doris4" for DORIS4 metadata files, e.g.
-    corregistration results from TerraSAR-X; "doris5" for DORIS5 metadata files,
-    e.g. corregistration results from Sentinel-1. More support for other drivers
+    coregistration results from TerraSAR-X; "doris5" for DORIS5 metadata files,
+    e.g. coregistration results from Sentinel-1. More support for other drivers
     will be added in the future.
 
     For drivers "doris4" and "doris5", it parses the metadata with predefined regular

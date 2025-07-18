@@ -57,7 +57,7 @@ stack_smallchunk = sarxarray.from_binary(list_slcs, shape, chunks=(2000, 2000))
 
 ## Reading metadata
 
-SARXarray provides a function to read metadata from the interferogram stack corregistered by Doris v4 or Doris v5. The metadata is read as a dictionary from the `slave.res` file under the folder of each SLC.
+SARXarray provides a function to read metadata from the interferogram stack coregistered by Doris v4 or Doris v5. The metadata is read as a dictionary from the `slave.res` file under the folder of each SLC.
 
 ### Doris v4 metadata
 
@@ -110,7 +110,7 @@ A common Doris v5 output folder structure is as follows:
 ...
 ```
 
-Where `YYYYMMDD1`, `YYYYMMDD2`, etc. are the acquisition dates of the SLCs, and `slc_1.res`, `slc_2.res`, etc. are the metadata files for each SLC. The files `ifgs_1.res`, `ifgs_2.res`, etc. are the metadata files for each interferogram, which contain the information of the sizes of the corregistered interferograms.
+Where `YYYYMMDD1`, `YYYYMMDD2`, etc. are the acquisition dates of the SLCs, and `slc_1.res`, `slc_2.res`, etc. are the metadata files for each SLC. The files `ifgs_1.res`, `ifgs_2.res`, etc. are the metadata files for each interferogram, which contain the information of the sizes of the coregistered interferograms.
 
 To read the metadata from the Doris v5 stack, first build a list of the SLC metadata files:
 
