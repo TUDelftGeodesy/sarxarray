@@ -206,3 +206,7 @@ class TestReadMetadata:
                 else:
                     assert isinstance(metadata[key], int)
         assert metadata["first_pixel_azimuth_time"].shape[0] == 3
+
+    def test_read_metadata_non_existent_driver(self, res_files_doris4):
+        with pytest.raises(NotImplementedError):
+            sarxarray.read_metadata(res_files_doris4, driver="non_existent")
