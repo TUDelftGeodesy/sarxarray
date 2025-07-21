@@ -1,16 +1,30 @@
 import logging
 import math
+import re
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Literal
 
 import dask
 import dask.array as da
 import numpy as np
 import xarray as xr
 
-from .conf import _dtypes, _memsize_chunk_mb
+from .conf import (
+    META_FLOAT_KEYS,
+    META_INT_KEYS,
+    RE_PATTERNS_DORIS4,
+    RE_PATTERNS_DORIS5,
+    RE_PATTERNS_DORIS5_IFG,
+    TIME_FORMAT_DORIS4,
+    TIME_FORMAT_DORIS5,
+    TIME_STAMP_KEY,
+    _dtypes,
+    _memsize_chunk_mb,
+)
 
 logger = logging.getLogger(__name__)
-
-# Example: https://docs.dask.org/en/stable/array-creation.html#memory-mapping
 
 
 def from_dataset(ds: xr.Dataset) -> xr.Dataset:
@@ -266,3 +280,200 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
     chunks = (chunks_az, chunks_ra)
 
     return chunks
+
+
+def read_metadata(
+    files: str | list | Path,
+    driver: Literal["doris4", "doris5"] = "doris5",
+    ifg_file_name: str = "ifgs.res",
+) -> dict:
+    """Read metadata of a coregistered interferogram stack.
+
+    This function reads metadata from one or more metadata files from a coregistered
+    interferogram stack, and returns the metadata as a dictionary format.
+
+    This function supports two drivers: "doris4" for DORIS4 metadata files, e.g.
+    coregistration results from TerraSAR-X; "doris5" for DORIS5 metadata files,
+    e.g. coregistration results from Sentinel-1. More support for other drivers
+    will be added in the future.
+
+    For drivers "doris4" and "doris5", it parses the metadata with predefined regular
+    expressions, returning a dictionary with predefined keys. Check conf.py for
+    available keys and regular expressions.
+
+    Specifically for the "doris5" driver, it is assumed that there is a "ifgs.res" file
+    next to the input metadata file, which contains the interferogram size information.
+    If the "ifgs.res" file is not found, the interferogram size information will
+    not be included in the metadata.
+
+    If a single file is provided, it reads the metadata from that file.
+
+    If multiple files are provided, the function will read the metadata from each file,
+    and combine the results based on the following rules:
+    - If a metadata key has values in string format or integer format, it combines the
+    values into a set.
+    - If a metadata key has values in float format, and the standard deviation is less
+    than 1% of the mean, it takes the average of the values.
+    - For the two Doris drivers "doris4" or "doris5", if the metadata key is
+    TIME_STAMP_KEY, it treats it as the timestamp of acquisition and
+    converts it to a numpy array of datetime64 format, sorted in ascending order.
+
+
+    Parameters
+    ----------
+    files : str | list | Path
+        Path(s) to the metadata files.
+    driver : str, optional
+        The driver to use for reading metadata. Supported drivers are "doris4" and
+        "doris5". Default is "doris5".
+    ifg_file_name : str, optional
+        The name of the interferogram size file for the "doris5" driver.
+        We assume this file is next to each metadata file and use it to read the
+        interferogram size information. if it is not found, the size
+        information will not be included in the metadata. Default is "ifgs.res".
+
+    Returns
+    -------
+    dict
+        Dictionary containing the metadata read from the files.
+
+    Raises
+    ------
+    NotImplementedError
+        If the driver is not "doris4" or "doris5".
+    """
+    # Check driver
+    if driver not in ["doris4", "doris5"]:
+        raise NotImplementedError(
+            f"Driver '{driver}' is not implemented. "
+            "Supported drivers are: 'doris4', 'doris5'."
+        )
+
+    # If there is only one file, convert it to a list
+    if not isinstance(files, list):
+        files = [files]
+
+    # Force all files to be Path objects in case files is a list of strings
+    files = [Path(file) for file in files]
+
+    # Parse metadata from each file
+    # if a key does not exists, a list will be created
+    metadata = defaultdict(list)
+    for file in files:
+        res = _parse_metadata(file, driver)
+        for key, value in res.items():
+            metadata[key].append(value)
+
+    # Regulate metadata for all files
+    metadata = _regulate_metadata(metadata, driver)
+
+    return metadata
+
+
+def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
+    """Parse a single metadata file to a dictionary of strings."""
+    # Select the appropriate patterns based on the driver
+    if driver == "doris5":
+        patterns = RE_PATTERNS_DORIS5
+        patterns_ifg = RE_PATTERNS_DORIS5_IFG
+    elif driver == "doris4":
+        patterns = RE_PATTERNS_DORIS4
+        patterns_ifg = None
+
+    # Open the file
+    with open(file) as f:
+        content = f.read()
+
+    # Read common metadata patterns
+    results = {}
+    for key, pattern in patterns.items():
+        match = re.search(pattern, content)
+        if match:
+            results[key] = match.group(1)
+        else:
+            results[key] = None
+
+    # Doris5 has size information in ifgs.res file
+    # Try to get the ifg size from ifgs.res next to slave.res, if it exists
+    if patterns_ifg is not None:
+        file_ifg = file.with_name(ifg_file_name)
+        if file_ifg.exists():
+            with open(file_ifg) as f_ifg:
+                content_ifg = f_ifg.read()
+            for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
+                match = re.search(pattern, content_ifg)
+                if match:
+                    results[key] = match.group(1)
+                else:
+                    results[key] = None
+
+    return results
+
+
+def _regulate_metadata(metadata, driver):
+    """Regulate metadata strings.
+
+    This function processes the metadata read from the DORIS files, which are strings,
+    and converts according to the types specified in META_FLOAT_KEYS and META_INT_KEYS.
+
+    Check the documentation of `read_metadata` for the rules applied to the metadata.
+    """
+    # Convert time metadata from string to datetime
+    if driver == "doris5":
+        time_format = TIME_FORMAT_DORIS5
+    elif driver == "doris4":
+        time_format = TIME_FORMAT_DORIS4
+    list_time = []
+    # If the time is a single string, convert it to a list
+    if isinstance(metadata[TIME_STAMP_KEY], str):
+        metadata[TIME_STAMP_KEY] = [metadata[TIME_STAMP_KEY]]
+    for time in metadata[TIME_STAMP_KEY]:
+        try:
+            dt = datetime.strptime(time, time_format)
+            list_time.append(np.datetime64(dt).astype("datetime64[s]"))
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid date format for key: '{TIME_STAMP_KEY}'. "
+                f"Expected format is '{time_format}'."
+            ) from e
+    metadata[TIME_STAMP_KEY] = np.sort(np.array(list_time))
+
+    for key, value in list(metadata.items()):
+        # raise error if different types are found in value
+        if len(set(type(v) for v in value)) > 1:
+            raise TypeError(
+                f"Inconsistency found in metadata key: {key}. "
+                "Different types are found in the value list."
+            )
+
+        # Only keep the unique values
+        if isinstance(metadata[key], list):
+            metadata[key] = set(value)
+
+        # Unfold the single value set to strings
+        if len(metadata[key]) == 1:
+            metadata[key] = next(iter(metadata[key]))
+
+        # if float, take the average unless std is larger than 1% of the mean
+        if key in META_FLOAT_KEYS:
+            # Convert to float
+            arr = np.array(value, dtype=np.float64)
+            if np.std(arr) / np.mean(arr) < 0.01:
+                metadata[key] = np.mean(arr).item()  # Convert to scalar
+            else:
+                raise ValueError(
+                    f"Inconsistency found in metadata key:  {key}. "
+                    "Standard deviation is larger than 1% of the mean."
+                )
+        if key in META_INT_KEYS:
+            if isinstance(metadata[key], str):
+                metadata[key] = int(metadata[key])
+            elif len(metadata[key]) > 1:  # set with multiple values
+                metadata[key] = set([int(v) for v in metadata[key]])
+
+        if key in ["number_of_lines", "number_of_pixels"]:
+            if isinstance(metadata[key], set):
+                warning_msg = f"Multiple values found in {key}: {metadata[key]}."
+                logger.warning(warning_msg)
+
+    return metadata
