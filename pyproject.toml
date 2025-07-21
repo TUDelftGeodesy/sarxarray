@@ -95,7 +95,7 @@ exclude = ["docs", "build", "examples"]
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py310"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
