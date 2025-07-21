@@ -1,6 +1,7 @@
 import logging
 import math
 import re
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -355,20 +356,15 @@ def read_metadata(
     # Force all files to be Path objects in case files is a list of strings
     files = [Path(file) for file in files]
 
-    # Parse the first file
-    metadata = _parse_metadata(files[0], driver)
+    # Parse metadata from each file
+    # if a key does not exists, a list will be created
+    metadata = defaultdict(list)
+    for file in files:
+        res = _parse_metadata(file, driver)
+        for key, value in res.items():
+            metadata[key].append(value)
 
-    # If there are multiple files, read the metadata from each file, then combine
-    # Otherwise, just return the metadata from the first file
-    if len(files) > 1:
-        for file in files[1:]:
-            res = _parse_metadata(file, driver)
-            for key, value in res.items():
-                # If the key already exists, append the new value to the list
-                if isinstance(metadata[key], list):
-                    metadata[key].append(value)
-                else:
-                    metadata[key] = [metadata[key], value]
+    # Regulate metadata for all files
     metadata = _regulate_metadata(metadata, driver)
 
     return metadata
