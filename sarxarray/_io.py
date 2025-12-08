@@ -467,13 +467,20 @@ def _regulate_metadata(metadata, driver):
             )
 
         if key in META_ARRAY_KEYS.keys():  # need to regulate this one separately
-            regulated_array = np.zeros((len(metadata[key]), len(metadata[key][0])))
-            for row in range(len(metadata[key])):
-                for col in range(len(metadata[key][row])):
-                    regulated_array[row, col] = META_ARRAY_KEYS[key](
-                        metadata[key][row][col]
-                    )
-            metadata[key] = np.copy(regulated_array)
+            regulated_arrays = []
+            for arr in metadata[key]:
+                regulated_array = np.zeros((len(arr), len(arr[0])))
+                for row in range(len(arr)):
+                    for col in range(len(arr[row])):
+                        regulated_array[row, col] = META_ARRAY_KEYS[key](arr[row][col])
+                regulated_arrays.append(np.copy(regulated_array))
+
+            metadata[key] = [
+                np.copy(regulated_array) for regulated_array in regulated_arrays
+            ]
+            if len(metadata[key]) == 1:
+                metadata[key] = metadata[key][0]
+
 
         else:
             # Only keep the unique values

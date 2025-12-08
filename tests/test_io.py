@@ -190,6 +190,7 @@ class TestReadMetadata:
 
     def test_read_metadata_doris5(self, res_files_doris5, caplog):
         with caplog.at_level(logging.WARNING):  # Last file has a wrong number of pixels
+            # also catches the multiple orbit warning
             metadata = sarxarray.read_metadata(res_files_doris5, driver="doris5")
         for key in RE_PATTERNS_DORIS5.keys():
             assert key in metadata
@@ -198,9 +199,10 @@ class TestReadMetadata:
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
             elif key in META_ARRAY_KEYS.keys():
-                assert isinstance(metadata[key], np.ndarray)
-                assert len(metadata[key].shape) == 2
-                assert isinstance(metadata[key][0][0], META_ARRAY_KEYS[key])
+                assert isinstance(metadata[key][0], np.ndarray)
+                assert len(metadata[key]) == len(res_files_doris5)
+                assert len(metadata[key][0].shape) == 2
+                assert isinstance(metadata[key][0][0][0], META_ARRAY_KEYS[key])
         for key in RE_PATTERNS_DORIS5_IFG.keys():
             assert key in metadata
             if key in META_FLOAT_KEYS:
@@ -234,6 +236,10 @@ class TestReadMetadata:
                 assert isinstance(metadata[key], float)
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
+            elif key in META_ARRAY_KEYS.keys():
+                assert isinstance(metadata[key], np.ndarray)
+                assert len(metadata[key].shape) == 2
+                assert isinstance(metadata[key][0][0], META_ARRAY_KEYS[key])
         for key in RE_PATTERNS_DORIS5_IFG.keys():
             assert key in metadata
             if key in META_FLOAT_KEYS:
