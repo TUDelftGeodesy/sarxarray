@@ -17,14 +17,14 @@ RE_PATTERNS_DORIS4 = {
         r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
     ),
     "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
-    "range_time_first_pixel": (
+    "first_range_time": (
         r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
     ),
     "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
     "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
     "weighting_range": r"Weighting_range:\s+(.+)",
-    "first_pixel_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
+    "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
 }
 # Regular expressions for reading metadata from DORIS4 files
 RE_PATTERNS_DORIS5 = {
@@ -45,11 +45,11 @@ RE_PATTERNS_DORIS5 = {
     "pulse_repetition_frequency": (
         r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
     ),
-    "first_pixel_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
+    "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
     "azimuth_time_interval": r"Azimuth_time_interval \(s\):\s+([\d\.E\+\-]+)",
     "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
-    "range_time_first_pixel": (
+    "first_range_time": (
         r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
     ),
     "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
@@ -63,6 +63,14 @@ RE_PATTERNS_DORIS5 = {
         r"(\d+)\s+([-+]?\d+\.\d+(?:\.\d+)?)\s+([-+]?\d+"
         r"\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)"
     ),
+    "scene_centre_latitude": (
+        r"Scene_centre_latitude:"
+        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+    ),
+    "scene_centre_longitude": (
+        r"Scene_centre_longitude:"
+        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+    )
 }
 # Regular expressions for reading metadata from DORIS5 interferogram files
 RE_PATTERNS_DORIS5_IFG = {
@@ -75,7 +83,7 @@ META_FLOAT_KEYS = [
     "wavelength",
     "pulse_repetition_frequency",
     "total_azimuth_bandwidth",
-    "range_time_first_pixel",
+    "first_range_time",
     "range_sampling_rate",
     "total_range_bandwidth",
     "range_pixel_spacing",  # from here DORIS5 only
@@ -83,6 +91,8 @@ META_FLOAT_KEYS = [
     "radar_frequency",
     "pulse_repetition_frequency_raw",
     "azimuth_time_interval",
+    "scene_centre_latitude",
+    "scene_centre_longitude"
 ]
 # Integer keys in metadata. They are used to regulate the metadata read as strings
 META_INT_KEYS = [
@@ -101,4 +111,4 @@ META_ARRAY_KEYS = {
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
 # Time stamp key
-TIME_STAMP_KEY = "first_pixel_azimuth_time"
+TIME_STAMP_KEY = "first_azimuth_time"
