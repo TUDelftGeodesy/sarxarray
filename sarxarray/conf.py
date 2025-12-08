@@ -59,6 +59,7 @@ RE_PATTERNS_DORIS5 = {
     "deramp": r"deramp:\s+([\d\.E\+\-]+)",
     "reramp": r"reramp:\s+([\d\.E\+\-]+)",
     "esd_correct": r"ESD_correct:\s+([\d\.E\+\-]+)",
+    "orbit_txyz": r"(\d+)\s+([-+]?\d+\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)",
 }
 # Regular expressions for reading metadata from DORIS5 interferogram files
 RE_PATTERNS_DORIS5_IFG = {
@@ -88,6 +89,11 @@ META_INT_KEYS = [
     "number_of_pixels",
     "esd_correct",
 ]
+# Array keys in metadata and their format. Requires re.findall instead of re.match and custom regulation
+# Expects 2D arrays, and a callable variable type as value associated with each key
+META_ARRAY_KEYS = {
+    "orbit_txyz": float  # DORIS5 only
+}
 # Time formats for DORIS metadata
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
