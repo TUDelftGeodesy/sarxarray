@@ -186,7 +186,7 @@ class TestReadMetadata:
                 assert isinstance(metadata[key], float)
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
-        assert metadata["first_pixel_azimuth_time"].shape[0] == 3
+        assert metadata["first_azimuth_time"].shape[0] == 3
 
     def test_read_metadata_doris5(self, res_files_doris5, caplog):
         with caplog.at_level(logging.WARNING):  # Last file has a wrong number of pixels
@@ -212,7 +212,7 @@ class TestReadMetadata:
                     assert len(metadata[key]) == 2  # Two values for ifg sizes
                 else:
                     assert isinstance(metadata[key], int)
-        assert metadata["first_pixel_azimuth_time"].shape[0] == 3
+        assert metadata["first_azimuth_time"].shape[0] == 3
 
     def test_read_metadata_non_existent_driver(self, res_files_doris4):
         with pytest.raises(NotImplementedError):
@@ -226,7 +226,7 @@ class TestReadMetadata:
                 assert isinstance(metadata[key], float)
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
-        assert np.isscalar(metadata["first_pixel_azimuth_time"])
+        assert np.isscalar(metadata["first_azimuth_time"])
 
     def test_read_metadata_doris5_onefile(self, res_files_doris5, caplog):
         metadata = sarxarray.read_metadata(res_files_doris5[0], driver="doris5")
@@ -246,4 +246,4 @@ class TestReadMetadata:
                 assert isinstance(metadata[key], float)
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
-        assert np.isscalar(metadata["first_pixel_azimuth_time"])
+        assert np.isscalar(metadata["first_azimuth_time"])
