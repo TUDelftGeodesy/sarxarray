@@ -10,6 +10,7 @@ import xarray as xr
 import sarxarray
 from sarxarray._io import _calc_chunksize, _unpack_complex
 from sarxarray.conf import (
+    META_ARRAY_KEYS,
     META_FLOAT_KEYS,
     META_INT_KEYS,
     RE_PATTERNS_DORIS4,
@@ -196,6 +197,10 @@ class TestReadMetadata:
                 assert isinstance(metadata[key], float)
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
+            elif key in META_ARRAY_KEYS.keys():
+                assert isinstance(metadata[key], np.ndarray)
+                assert len(metadata[key].shape) == 2
+                assert isinstance(metadata[key][0][0], META_ARRAY_KEYS[key])
         for key in RE_PATTERNS_DORIS5_IFG.keys():
             assert key in metadata
             if key in META_FLOAT_KEYS:
