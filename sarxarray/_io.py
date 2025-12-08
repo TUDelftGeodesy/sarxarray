@@ -393,7 +393,7 @@ def _parse_metadata(file, driver, ifg_file_name):
     # Read common metadata patterns
     results = {}
     for key, pattern in patterns.items():
-        if key in META_ARRAY_KEYS.keys():  # multiple hits allowed, so we need re.findall
+        if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
             matches = re.findall(pattern, content)
             if matches:
                 results[key] = matches
@@ -414,7 +414,7 @@ def _parse_metadata(file, driver, ifg_file_name):
             with open(file_ifg) as f_ifg:
                 content_ifg = f_ifg.read()
                 for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-                    if key in META_ARRAY_KEYS.keys():  # multiple hits allowed, so we need re.findall
+                    if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
                         matches = re.findall(pattern, content_ifg)
                         if matches:
                             results[key] = matches
@@ -470,7 +470,9 @@ def _regulate_metadata(metadata, driver):
             regulated_array = np.zeros((len(metadata[key]), len(metadata[key][0])))
             for row in range(len(metadata[key])):
                 for col in range(len(metadata[key][row])):
-                    regulated_array[row, col] = META_ARRAY_KEYS[key](metadata[key][row][col])
+                    regulated_array[row, col] = META_ARRAY_KEYS[key](
+                        metadata[key][row][col]
+                    )
             metadata[key] = np.copy(regulated_array)
 
         else:
