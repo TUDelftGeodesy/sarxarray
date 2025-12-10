@@ -12,6 +12,7 @@ import numpy as np
 import xarray as xr
 
 from .conf import (
+    META_ARRAY_KEYS,
     META_FLOAT_KEYS,
     META_INT_KEYS,
     RE_PATTERNS_DORIS4,
@@ -360,7 +361,7 @@ def read_metadata(
     # if a key does not exists, a list will be created
     metadata = defaultdict(list)
     for file in files:
-        res = _parse_metadata(file, driver)
+        res = _parse_metadata(file, driver, ifg_file_name)
         for key, value in res.items():
             metadata[key].append(value)
 
@@ -370,7 +371,7 @@ def read_metadata(
     return metadata
 
 
-def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
+def _parse_metadata(file, driver, ifg_file_name):
     """Parse a single metadata file to a dictionary of strings."""
     # Select the appropriate patterns based on the driver
     if driver == "doris5":
@@ -379,6 +380,11 @@ def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
     elif driver == "doris4":
         patterns = RE_PATTERNS_DORIS4
         patterns_ifg = None
+    else:
+        raise NotImplementedError(
+            f"Driver '{driver}' is not implemented. "
+            "Supported drivers are: 'doris4', 'doris5'."
+        )
 
     # Open the file
     with open(file) as f:
@@ -387,11 +393,18 @@ def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
     # Read common metadata patterns
     results = {}
     for key, pattern in patterns.items():
-        match = re.search(pattern, content)
-        if match:
-            results[key] = match.group(1)
+        if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
+            matches = re.findall(pattern, content)
+            if matches:
+                results[key] = matches
+            else:
+                results[key] = None
         else:
-            results[key] = None
+            match = re.search(pattern, content)
+            if match:
+                results[key] = match.group(1)
+            else:
+                results[key] = None
 
     # Doris5 has size information in ifgs.res file
     # Try to get the ifg size from ifgs.res next to slave.res, if it exists
@@ -400,12 +413,19 @@ def _parse_metadata(file, driver, ifg_file_name="ifgs.res"):
         if file_ifg.exists():
             with open(file_ifg) as f_ifg:
                 content_ifg = f_ifg.read()
-            for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-                match = re.search(pattern, content_ifg)
-                if match:
-                    results[key] = match.group(1)
-                else:
-                    results[key] = None
+                for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
+                    if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
+                        matches = re.findall(pattern, content_ifg)
+                        if matches:
+                            results[key] = matches
+                        else:
+                            results[key] = None
+                    else:
+                        match = re.search(pattern, content_ifg)
+                        if match:
+                            results[key] = match.group(1)
+                        else:
+                            results[key] = None
 
     return results
 
@@ -446,34 +466,51 @@ def _regulate_metadata(metadata, driver):
                 "Different types are found in the value list."
             )
 
-        # Only keep the unique values
-        if isinstance(metadata[key], list):
-            metadata[key] = set(value)
+        if key in META_ARRAY_KEYS.keys():  # need to regulate this one separately
+            regulated_arrays = []
+            for arr in metadata[key]:
+                regulated_array = np.zeros((len(arr), len(arr[0])))
+                for row in range(len(arr)):
+                    for col in range(len(arr[row])):
+                        regulated_array[row, col] = META_ARRAY_KEYS[key](arr[row][col])
+                regulated_arrays.append(np.copy(regulated_array))
 
-        # Unfold the single value set to strings
-        if len(metadata[key]) == 1:
-            metadata[key] = next(iter(metadata[key]))
+            metadata[key] = [
+                np.copy(regulated_array) for regulated_array in regulated_arrays
+            ]
+            if len(metadata[key]) == 1:
+                metadata[key] = metadata[key][0]
 
-        # if float, take the average unless std is larger than 1% of the mean
-        if key in META_FLOAT_KEYS:
-            # Convert to float
-            arr = np.array(value, dtype=np.float64)
-            if np.std(arr) / np.mean(arr) < 0.01:
-                metadata[key] = np.mean(arr).item()  # Convert to scalar
-            else:
-                raise ValueError(
-                    f"Inconsistency found in metadata key:  {key}. "
-                    "Standard deviation is larger than 1% of the mean."
-                )
-        if key in META_INT_KEYS:
-            if isinstance(metadata[key], str):
-                metadata[key] = int(metadata[key])
-            elif len(metadata[key]) > 1:  # set with multiple values
-                metadata[key] = set([int(v) for v in metadata[key]])
 
-        if key in ["number_of_lines", "number_of_pixels"]:
-            if isinstance(metadata[key], set):
-                warning_msg = f"Multiple values found in {key}: {metadata[key]}."
-                logger.warning(warning_msg)
+        else:
+            # Only keep the unique values
+            if isinstance(metadata[key], list):
+                metadata[key] = set(value)
+
+            # Unfold the single value set to strings
+            if len(metadata[key]) == 1:
+                metadata[key] = next(iter(metadata[key]))
+
+            # if float, take the average unless std is larger than 1% of the mean
+            if key in META_FLOAT_KEYS:
+                # Convert to float
+                arr = np.array(value, dtype=np.float64)
+                if np.std(arr) / np.mean(arr) < 0.01:
+                    metadata[key] = np.mean(arr).item()  # Convert to scalar
+                else:
+                    raise ValueError(
+                        f"Inconsistency found in metadata key:  {key}. "
+                        "Standard deviation is larger than 1% of the mean."
+                    )
+            if key in META_INT_KEYS:
+                if isinstance(metadata[key], str):
+                    metadata[key] = int(metadata[key])
+                elif len(metadata[key]) > 1:  # set with multiple values
+                    metadata[key] = set([int(v) for v in metadata[key]])
+
+            if key in ["number_of_lines", "number_of_pixels"]:
+                if isinstance(metadata[key], set):
+                    warning_msg = f"Multiple values found in {key}: {metadata[key]}."
+                    logger.warning(warning_msg)
 
     return metadata
