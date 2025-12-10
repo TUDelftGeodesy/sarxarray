@@ -19,7 +19,7 @@ license = {file = "LICENSE"}
 authors = [
     {name = "Ou Ku", email = "o.ku@esciencecenter.nl"},
     {name = "Fakhereh Sarah Alidoost"},
-    {name = "Simon van Diepen"}
+    {name = "Simon van Diepen"},
     {name = "Pranav Chandramouli"},
     {name = "Francesco Nattino"},
     {name = "Freek van Leijen"},
