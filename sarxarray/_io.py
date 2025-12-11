@@ -15,6 +15,7 @@ from .conf import (
     META_ARRAY_KEYS,
     META_FLOAT_KEYS,
     META_INT_KEYS,
+    META_UNIT_CONVERSION_MULTIPLICATION_KEYS,
     RE_PATTERNS_DORIS4,
     RE_PATTERNS_DORIS5,
     RE_PATTERNS_DORIS5_IFG,
@@ -473,6 +474,8 @@ def _regulate_metadata(metadata, driver):
                 for row in range(len(arr)):
                     for col in range(len(arr[row])):
                         regulated_array[row, col] = META_ARRAY_KEYS[key](arr[row][col])
+                if key in META_UNIT_CONVERSION_MULTIPLICATION_KEYS.keys():
+                    regulated_array *= META_UNIT_CONVERSION_MULTIPLICATION_KEYS[key]
                 regulated_arrays.append(np.copy(regulated_array))
 
             metadata[key] = [
@@ -480,7 +483,6 @@ def _regulate_metadata(metadata, driver):
             ]
             if len(metadata[key]) == 1:
                 metadata[key] = metadata[key][0]
-
 
         else:
             # Only keep the unique values
@@ -502,12 +504,21 @@ def _regulate_metadata(metadata, driver):
                         f"Inconsistency found in metadata key:  {key}. "
                         "Standard deviation is larger than 1% of the mean."
                     )
+                if key in META_UNIT_CONVERSION_MULTIPLICATION_KEYS.keys():
+                    metadata[key] *= META_UNIT_CONVERSION_MULTIPLICATION_KEYS[key]
             if key in META_INT_KEYS:
                 if isinstance(metadata[key], str):
                     metadata[key] = int(metadata[key])
+                    if key in META_UNIT_CONVERSION_MULTIPLICATION_KEYS.keys():
+                        metadata[key] *= META_UNIT_CONVERSION_MULTIPLICATION_KEYS[key]
                 elif len(metadata[key]) > 1:  # set with multiple values
-                    metadata[key] = set([int(v) for v in metadata[key]])
-
+                    if key in META_UNIT_CONVERSION_MULTIPLICATION_KEYS.keys():
+                        metadata[key] = set(
+                            [int(v) * META_UNIT_CONVERSION_MULTIPLICATION_KEYS[key]
+                             for v in metadata[key]]
+                        )
+                    else:
+                        metadata[key] = set([int(v) for v in metadata[key]])
             if key in ["number_of_lines", "number_of_pixels"]:
                 if isinstance(metadata[key], set):
                     warning_msg = f"Multiple values found in {key}: {metadata[key]}."

@@ -107,6 +107,13 @@ META_INT_KEYS = [
 META_ARRAY_KEYS = {
     "orbit_txyz": float  # DORIS5 only
 }
+# Some keys are not read in in SI units. The following dictionary specifies those
+# keys, and the factor they should be multiplied by to restore them to SI units
+META_UNIT_CONVERSION_MULTIPLICATION_KEYS = {
+    "range_sampling_rate": 1_000_000,  # originally MHz
+    "total_range_bandwidth": 1_000_000,  # originally MHz
+    "first_range_time": 0.001,  # originally ms
+}
 # Time formats for DORIS metadata
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
