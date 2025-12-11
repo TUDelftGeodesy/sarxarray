@@ -26,7 +26,7 @@ RE_PATTERNS_DORIS4 = {
     "weighting_range": r"Weighting_range:\s+(.+)",
     "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
 }
-# Regular expressions for reading metadata from DORIS4 files
+# Regular expressions for reading metadata from DORIS5 files
 RE_PATTERNS_DORIS5 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
     "product_type": r"Product type specifier:\s+(.+)",
@@ -109,7 +109,13 @@ META_ARRAY_KEYS = {
 }
 # Some keys are not read in in SI units. The following dictionary specifies those
 # keys, and the factor they should be multiplied by to restore them to SI units
-META_UNIT_CONVERSION_MULTIPLICATION_KEYS = {
+META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4 = {
+    "range_sampling_rate": 1_000_000,  # originally MHz
+    "total_range_bandwidth": 1_000_000,  # originally MHz
+    "first_range_time": 0.001,  # originally ms
+}
+
+META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
     "range_sampling_rate": 1_000_000,  # originally MHz
     "total_range_bandwidth": 1_000_000,  # originally MHz
     "first_range_time": 0.001,  # originally ms
