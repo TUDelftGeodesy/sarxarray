@@ -275,4 +275,7 @@ class TestReadMetadata:
         assert np.isclose(metadata["esd_correct"], 0)
         assert np.isclose(metadata["scene_centre_latitude"], 53.54352136900687)
         assert np.isclose(metadata["scene_centre_longitude"], 6.557386154885761)
-        assert np.allclose(metadata["orbit_txyz"][0],[62569, 4954320.931616273, 78580.69269184131, 5042109.736565054])
+        assert np.allclose(
+            metadata["orbit_txyz"][0],
+            [62569, 4954320.931616273, 78580.69269184131, 5042109.736565054]
+        )
