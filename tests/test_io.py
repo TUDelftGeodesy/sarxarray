@@ -247,3 +247,32 @@ class TestReadMetadata:
             elif key in META_INT_KEYS:
                 assert isinstance(metadata[key], int)
         assert np.isscalar(metadata["first_azimuth_time"])
+
+    def test_read_metadata_doris5_onefile_values(self, res_files_doris5):
+        metadata = sarxarray.read_metadata(res_files_doris5[0], driver="doris5")
+        assert metadata["sar_processor"] == "Sentinel-1B"
+        assert metadata["product_type"] == "S1B"
+        assert metadata["pass_direction"] == "Ascending"
+        assert metadata["swath"] == "IW3"
+        assert metadata["image_mode"] == "IW"
+        assert metadata["polarisation"] == "VV"
+        assert np.isclose(metadata["range_pixel_spacing"], 2.329562e+00)
+        assert np.isclose(metadata["azimuth_pixel_spacing"], 1.385502e+01)
+        assert np.isclose(metadata["radar_frequency"], 5.405000454334350e+09)
+        assert metadata["sensor_platform"] == "S1B"
+        assert np.isclose(metadata["wavelength"], 0.055465760)
+        assert isinstance(metadata["first_azimuth_time"], np.datetime64)
+        assert np.isclose(metadata["azimuth_time_interval"], 2.055556299999998e-03)
+        assert np.isclose(metadata["total_azimuth_bandwidth"], 3.140000000000000e+02)
+        assert metadata["weighting_azimuth"] == "Hamming"
+        assert np.isclose(metadata["first_range_time"], 6.013024343276740/1000)
+        assert np.isclose(metadata["range_sampling_rate"], 64.345238126 * 1_000_000)
+        assert np.isclose(metadata["total_range_bandwidth"], 42.789918403 * 1_000_000)
+        assert metadata["weighting_range"] == "Hamming"
+        assert metadata["dataformat"] == "tiff"
+        assert np.isclose(metadata["deramp"], 0)
+        assert np.isclose(metadata["reramp"], 0)
+        assert np.isclose(metadata["esd_correct"], 0)
+        assert np.isclose(metadata["scene_centre_latitude"], 53.54352136900687)
+        assert np.isclose(metadata["scene_centre_longitude"], 6.557386154885761)
+        assert np.allclose(metadata["orbit_txyz"][0],[62569, 4954320.931616273, 78580.69269184131, 5042109.736565054])

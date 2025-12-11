@@ -12,16 +12,16 @@ RE_PATTERNS_DORIS4 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
     "product_type": r"Product type specifier:\s+(.+)",
     "pass_direction": r"Scene identification:.*?(ASCENDING|DESCENDING)",
-    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
+    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.Ee\+\-]+)",
     "pulse_repetition_frequency": (
-        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
+        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.Ee\+\-]+)"
     ),
-    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
+    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.Ee\+\-]+)",
     "first_range_time": (
-        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
+        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.Ee\+\-]+)"
     ),
-    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
-    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
+    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.Ee\+\-]+)",
+    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.Ee\+\-]+)",
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
     "weighting_range": r"Weighting_range:\s+(.+)",
     "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
@@ -34,31 +34,31 @@ RE_PATTERNS_DORIS5 = {
     "swath": r"SWATH:\s+(.+)",
     "image_mode": r"IMAGE_MODE:\s+(.+)",
     "polarisation": r"polarisation:\s+(.+)",
-    "range_pixel_spacing": r"rangePixelSpacing:\s+([\d\.E\+\-]+)",
-    "azimuth_pixel_spacing": r"azimuthPixelSpacing:\s+([\d\.E\+\-]+)",
-    "radar_frequency": r"RADAR_FREQUENCY \(HZ\):\s+([\d\.E\+\-]+)",
+    "range_pixel_spacing": r"rangePixelSpacing:\s+([\d\.Ee\+\-]+)",
+    "azimuth_pixel_spacing": r"azimuthPixelSpacing:\s+([\d\.Ee\+\-]+)",
+    "radar_frequency": r"RADAR_FREQUENCY \(HZ\):\s+([\d\.Ee\+\-]+)",
     "sensor_platform": r"Sensor platform mission identifer:\s+(.+)",
-    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.E\+\-]+)",
+    "wavelength": r"Radar_wavelength \(m\):\s+([\d\.Ee\+\-]+)",
     "pulse_repetition_frequency_raw": (
-        r"Pulse_Repetition_Frequency_raw_data\(TOPSAR\):\s+([\d\.E\+\-]+)"
+        r"Pulse_Repetition_Frequency_raw_data\(TOPSAR\):\s+([\d\.Ee\+\-]+)"
     ),
     "pulse_repetition_frequency": (
-        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.E\+\-]+)"
+        r"Pulse_Repetition_Frequency \(computed, Hz\):\s+([\d\.Ee\+\-]+)"
     ),
     "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
-    "azimuth_time_interval": r"Azimuth_time_interval \(s\):\s+([\d\.E\+\-]+)",
-    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.E\+\-]+)",
+    "azimuth_time_interval": r"Azimuth_time_interval \(s\):\s+([\d\.Ee\+\-]+)",
+    "total_azimuth_bandwidth": r"Total_azimuth_band_width \(Hz\):\s+([\d\.Ee\+\-]+)",
     "weighting_azimuth": r"Weighting_azimuth:\s+(.+)",
     "first_range_time": (
-        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.E\+\-]+)"
+        r"Range_time_to_first_pixel \(2way\) \(ms\):\s+([\d\.Ee\+\-]+)"
     ),
-    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.E\+\-]+)",
-    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.E\+\-]+)",
+    "range_sampling_rate": r"Range_sampling_rate \(computed, MHz\):\s+([\d\.Ee\+\-]+)",
+    "total_range_bandwidth": r"Total_range_band_width \(MHz\):\s+([\d\.Ee\+\-]+)",
     "weighting_range": r"Weighting_range:\s+(.+)",
     "dataformat": r"Dataformat:\s+(.+)",
-    "deramp": r"deramp:\s+([\d\.E\+\-]+)",
-    "reramp": r"reramp:\s+([\d\.E\+\-]+)",
-    "esd_correct": r"ESD_correct:\s+([\d\.E\+\-]+)",
+    "deramp": r"deramp:\s+([\d\.Ee\+\-]+)",
+    "reramp": r"reramp:\s+([\d\.Ee\+\-]+)",
+    "esd_correct": r"ESD_correct:\s+([\d\.Ee\+\-]+)",
     "orbit_txyz": (
         r"(\d+)\s+([-+]?\d+\.\d+(?:\.\d+)?)\s+([-+]?\d+"
         r"\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)"
