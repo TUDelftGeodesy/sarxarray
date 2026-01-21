@@ -460,7 +460,7 @@ def _regulate_metadata(metadata, driver):
     for time in metadata[TIME_STAMP_KEY]:
         try:
             dt = datetime.strptime(time, time_format)
-            list_time.append(np.datetime64(dt).astype("datetime64[s]"))
+            list_time.append(np.datetime64(dt).astype("datetime64[ns]"))
         except ValueError as e:
             raise ValueError(
                 f"Invalid date format for key: '{TIME_STAMP_KEY}'. "
