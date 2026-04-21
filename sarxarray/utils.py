@@ -1,4 +1,5 @@
 import numpy as np
+import shapely.geometry as sg
 import xarray as xr
 from dask.delayed import Delayed, delayed
 
@@ -152,6 +153,35 @@ def complex_coherence(
         coherence = delayed(_compute_coherence)(numerator, denominator)
 
     return coherence
+
+
+def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
+    """Crop a radar image or stack of radar images to the bounding box of an area of interest.
+
+    Parameters
+    ----------
+    data: xr.Dataset | xr.DataArray
+        The dataset or data array to be cropped in azimuth and range
+    geom: sg.Polygon
+        shapely.geometry.Polygon in radar coordinates of the area that should be kept, in [azimuth, range] format
+
+    Returns
+    -------
+    xr.Dataset | xr.DataArray
+        The dataset or data array cropped to the area of interest
+
+    Raises
+    ------
+    ValueError
+        If the azimuth or range coordinate does not exist in `data`
+    """
+    if not {"azimuth", "range"}.issubset(data.dims):
+        raise ValueError("The data must have azimuth and range dimensions.")
+
+    bounding_box = geom.bounds  # returns (min_az, min_r, max_az, max_r)
+    data = data.sel(azimuth=range(bounding_box[0], bounding_box[2]+1), range=range(bounding_box[1], bounding_box[3]+1))
+
+    return data
 
 
 def _validate_multi_look_inputs(data, window_size, method, statistics):

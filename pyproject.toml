@@ -12,6 +12,7 @@ dependencies = [
     "numpy",
     "distributed",
     "zarr",
+    "shapely",
 ]
 description = "Xarray extension for Synthetic Aperture Radar (SAR) data"
 readme = "README.md"
