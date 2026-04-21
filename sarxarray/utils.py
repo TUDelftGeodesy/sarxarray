@@ -156,14 +156,15 @@ def complex_coherence(
 
 
 def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
-    """Crop a radar image or stack of radar images to the bounding box of an area of interest.
+    """Crop a radar image or stack of radar images to the bounding box of a polygon.
 
     Parameters
     ----------
     data: xr.Dataset | xr.DataArray
         The dataset or data array to be cropped in azimuth and range
     geom: sg.Polygon
-        shapely.geometry.Polygon in radar coordinates of the area that should be kept, in [azimuth, range] format
+        shapely.geometry.Polygon in radar coordinates of the area that should be
+        kept, in [azimuth, range] format
 
     Returns
     -------
@@ -179,7 +180,10 @@ def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
         raise ValueError("The data must have azimuth and range dimensions.")
 
     bounding_box = geom.bounds  # returns (min_az, min_r, max_az, max_r)
-    data = data.sel(azimuth=range(bounding_box[0], bounding_box[2]+1), range=range(bounding_box[1], bounding_box[3]+1))
+    data = data.sel(
+        azimuth=range(bounding_box[0], bounding_box[2]+1),
+        range=range(bounding_box[1], bounding_box[3]+1)
+    )
 
     return data
 
