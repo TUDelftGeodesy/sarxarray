@@ -305,4 +305,4 @@ class TestUtilsCrop:
         da = da.rename({"azimuth": "az"})  # rename azimuth to a wrong name
         geom = crop_geometry
         with pytest.raises(ValueError):
-            da_crop = crop(da, geom)
+            _ = crop(da, geom)
