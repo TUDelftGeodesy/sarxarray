@@ -2,11 +2,13 @@ import numpy as np
 import pytest
 import xarray as xr
 from dask.delayed import Delayed
+from shapely.geometry import Polygon
 
 from sarxarray.utils import (
     _get_chunks,
     _validate_multi_look_inputs,
     complex_coherence,
+    crop,
     multi_look,
 )
 
@@ -27,6 +29,22 @@ def synthetic_dataarray():
         },
     )
 
+# Create a polygon for cropping
+@pytest.fixture
+def crop_geometry():
+    return Polygon([
+        [601.9, 1405],
+        [605, 1407],
+        [606, 1408],
+        [606, 1409],
+        [603, 1409],
+        [601.9, 1405]
+    ])
+
+# Create a bounding box for cropping
+@pytest.fixture
+def crop_geometry_bbox():
+    return (601.9, 1405, 606, 1409)
 
 # this class tests multi_look with dataarray. For testing with dataset, see
 # test_stack.py
@@ -276,3 +294,62 @@ class TestUtilsCoherence:
             complex_coherence(reference, other1, window_size=(2, 2), compute=True)
         with pytest.raises(ValueError):
             complex_coherence(reference, other2, window_size=(2, 2), compute=True)
+
+
+class TestUtilsCrop:
+    def test_crop_poly(self, synthetic_dataarray, crop_geometry):
+        da = synthetic_dataarray
+        geom = crop_geometry
+        da_crop = crop(da, geom)
+        assert da_crop.azimuth.size == 6
+        assert da_crop.range.size == 5
+        assert da_crop.time.size == da.time.size
+
+    def test_crop_bbox(self, synthetic_dataarray, crop_geometry_bbox):
+        da = synthetic_dataarray
+        geom = crop_geometry_bbox
+        da_crop = crop(da, geom)
+        assert da_crop.azimuth.size == 6
+        assert da_crop.range.size == 5
+        assert da_crop.time.size == da.time.size
+
+    def test_crop_wrong_dimname(self, synthetic_dataarray, crop_geometry):
+        da = synthetic_dataarray
+        da = da.rename({"azimuth": "az"})  # rename azimuth to a wrong name
+        geom = crop_geometry
+        with pytest.raises(ValueError):
+            _ = crop(da, geom)
+
+    def test_crop_bbox_wrong_length(self, synthetic_dataarray, crop_geometry_bbox):
+        da = synthetic_dataarray
+        geom = crop_geometry_bbox[:3]
+        with pytest.raises(AssertionError):
+            _ = crop(da, geom)
+
+    def test_crop_bbox_wrong_az(self, synthetic_dataarray, crop_geometry_bbox):
+        da = synthetic_dataarray
+        geom = (  # swap min and max azimuth
+            crop_geometry_bbox[2],
+            crop_geometry_bbox[1],
+            crop_geometry_bbox[0],
+            crop_geometry_bbox[3]
+        )
+        with pytest.raises(AssertionError):
+            _ = crop(da, geom)
+
+    def test_crop_bbox_wrong_r(self, synthetic_dataarray, crop_geometry_bbox):
+        da = synthetic_dataarray
+        geom = (  # swap min and max range
+            crop_geometry_bbox[0],
+            crop_geometry_bbox[3],
+            crop_geometry_bbox[2],
+            crop_geometry_bbox[1]
+        )
+        with pytest.raises(AssertionError):
+            _ = crop(da, geom)
+
+    def test_crop_bbox_wrong_geom_type(self, synthetic_dataarray, crop_geometry_bbox):
+        da = synthetic_dataarray
+        geom = list(crop_geometry_bbox)
+        with pytest.raises(ValueError):
+            _ = crop(da, geom)
