@@ -155,16 +155,17 @@ def complex_coherence(
     return coherence
 
 
-def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
+def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon | tuple) -> xr.Dataset:
     """Crop a radar image or stack of radar images to the bounding box of a polygon.
 
     Parameters
     ----------
     data: xr.Dataset | xr.DataArray
         The dataset or data array to be cropped in azimuth and range
-    geom: sg.Polygon
+    geom: sg.Polygon | tuple
         shapely.geometry.Polygon in radar coordinates of the area that should be
-        kept, in [azimuth, range] format
+        kept, in [azimuth, range] format, OR a tuple of the bounding box of the crop in
+        (min_azimuth, min_range, max_azimuth, max_range) format
 
     Returns
     -------
@@ -174,12 +175,31 @@ def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
     Raises
     ------
     ValueError
-        If the azimuth or range coordinate does not exist in `data`
+        - If the azimuth or range coordinate does not exist in `data`
+        - If `geom` is not `shapely.geometry.Polygon` or `tuple`
+
+    AssertionError
+        - When a tuple is passed to `geom` that falls in one of three categories:
+          - The tuple does not have exactly 4 entries
+          - The minimum azimuth coordinate is larger than or equal
+               to the maximum azimuth coordinate
+          - The minimum range coordinate is larger than or equal
+               to the maximum range coordinate
     """
     if not {"azimuth", "range"}.issubset(data.dims):
         raise ValueError("The data must have azimuth and range dimensions.")
 
-    bounding_box = geom.bounds  # returns (min_az, min_r, max_az, max_r)
+    if isinstance(geom, sg.Polygon):
+        bounding_box = geom.bounds  # returns (min_az, min_r, max_az, max_r)
+    elif isinstance(geom, tuple):
+        assert len(geom) == 4, f"geom as tuple must have four entries, got {len(geom)}"
+        assert geom[0] < geom[2], f"geom Azimuth wrong: min {geom[0]} >= max {geom[2]}"
+        assert geom[1] < geom[3], f"geom Range wrong: min {geom[1]} >= max {geom[3]}"
+        bounding_box = geom
+    else:
+        raise ValueError(
+            f"geom must be tuple or shapely.geometry.Polygon, is {type(geom)}."
+        )
     data = data.sel(
         azimuth=range(int(bounding_box[0]), int(np.ceil(bounding_box[2]))+1),
         range=range(int(bounding_box[1]), int(np.ceil(bounding_box[3]))+1)
