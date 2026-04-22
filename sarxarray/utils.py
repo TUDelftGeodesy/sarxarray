@@ -181,8 +181,8 @@ def crop(data: xr.Dataset | xr.DataArray, geom: sg.Polygon) -> xr.Dataset:
 
     bounding_box = geom.bounds  # returns (min_az, min_r, max_az, max_r)
     data = data.sel(
-        azimuth=range(bounding_box[0], bounding_box[2]+1),
-        range=range(bounding_box[1], bounding_box[3]+1)
+        azimuth=range(int(bounding_box[0]), int(np.ceil(bounding_box[2]))+1),
+        range=range(int(bounding_box[1]), int(np.ceil(bounding_box[3]))+1)
     )
 
     return data
