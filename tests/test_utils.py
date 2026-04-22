@@ -299,3 +299,10 @@ class TestUtilsCrop:
         assert da_crop.azimuth.size == 6
         assert da_crop.range.size == 5
         assert da_crop.time.size == da.time.size
+
+    def test_crop_wrong_dimname(self, synthetic_dataarray, crop_geometry):
+        da = synthetic_dataarray
+        da = da.rename({"azimuth": "az"})  # rename azimuth to a wrong name
+        geom = crop_geometry
+        with pytest.raises(ValueError):
+            da_crop = crop(da, geom)
