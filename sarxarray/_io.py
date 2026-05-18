@@ -85,7 +85,12 @@ def from_dataset(ds: xr.Dataset) -> xr.Dataset:
 
 
 def from_binary(
-    slc_files, shape, vlabel="complex", dtype=np.complex64, chunks=None, ratio=1
+    slc_files: list[str | Path],
+    shape: tuple[int, int],
+    vlabel: str = "complex",
+    dtype: np.dtype = np.complex64,
+    chunks: tuple[int, int] | None = None,
+    ratio: float = 1,
 ):
     """Read a SLC stack or related variables from binary files.
 
