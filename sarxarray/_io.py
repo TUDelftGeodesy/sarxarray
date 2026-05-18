@@ -456,11 +456,6 @@ def _regulate_metadata(metadata, driver):
     elif driver == "doris4":
         time_format = TIME_FORMAT_DORIS4
         unit_conversions = META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4
-    else:
-        raise NotImplementedError(
-            f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
-        )
 
     list_time = []
     # If the time is a single string, convert it to a list
