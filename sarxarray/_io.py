@@ -425,18 +425,11 @@ def _parse_metadata(file, driver, ifg_file_name):
             with open(file_ifg) as f_ifg:
                 content_ifg = f_ifg.read()
                 for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-                    if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
-                        matches = re.findall(pattern, content_ifg)
-                        if matches:
-                            results[key] = matches
-                        else:
-                            results[key] = None
+                    match = re.search(pattern, content_ifg)
+                    if match:
+                        results[key] = match.group(1)
                     else:
-                        match = re.search(pattern, content_ifg)
-                        if match:
-                            results[key] = match.group(1)
-                        else:
-                            results[key] = None
+                        results[key] = None
 
     return results
 
