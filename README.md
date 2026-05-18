@@ -35,7 +35,7 @@ SARXarray has some optional dependencies to support additional functionality bes
 
 ```sh
 pip install 'sarxarray[demo]'    # to run the demo notebook
-pip install 'sarxarray[dev]'     # to run the test suite
+pip install 'sarxarray[dev]'     # to run the test suite and enable code quality checks for developers
 pip install 'sarxarray[docs]'    # to build the docs locally
 ```
 

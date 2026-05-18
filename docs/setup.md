@@ -3,7 +3,7 @@
 SARXarray can be installed from PyPI:
 
 ```sh
-pip install sarxarray
+pip install 'sarxarray'
 ```
 
 or from the source:
