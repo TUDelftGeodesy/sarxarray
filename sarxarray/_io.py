@@ -451,9 +451,6 @@ def _regulate_metadata(metadata, driver):
         unit_conversions = META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4
 
     list_time = []
-    # If the time is a single string, convert it to a list
-    if isinstance(metadata[TIME_STAMP_KEY], str):
-        metadata[TIME_STAMP_KEY] = [metadata[TIME_STAMP_KEY]]
     for time in metadata[TIME_STAMP_KEY]:
         try:
             dt = datetime.strptime(time, time_format)
