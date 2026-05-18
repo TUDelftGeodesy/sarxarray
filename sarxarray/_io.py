@@ -131,6 +131,15 @@ def from_binary(
     if chunks is None:
         chunks = _calc_chunksize(shape, dtype, ratio)
 
+    # Check if slc_files is a non empty Iterable and not a string
+    if not hasattr(slc_files, "__iter__") or isinstance(slc_files, str):
+        raise ValueError(
+            "slc_files should be a non-empty Iterable and not a string."
+            "If you have only one file, please put it in a list, e.g. slc_files=[file]."
+        )
+    if len(slc_files) == 0:
+        raise ValueError("slc_files should be a non-empty Iterable.")
+
     # Read in all SLCs
     slcs = None
     for f_slc in slc_files:

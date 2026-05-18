@@ -28,6 +28,18 @@ def test_slcs():
     ]
 
 
+# A file in str format, should raise an error
+@pytest.fixture()
+def test_slcs_string_failing():
+    return f"{os.path.dirname(__file__)}/data/scene_0.binaray"
+
+
+# An empty list, should raise an error
+@pytest.fixture()
+def test_slcs_empty_failing():
+    return []
+
+
 # Example metadata files DORIS4
 @pytest.fixture()
 def res_files_doris4():
@@ -149,6 +161,21 @@ class TestFromBinary:
             [k for k in stack.coords.keys()]
         )
         assert stack.sizes == {"azimuth": 100, "range": 100, "time": 1}
+
+    def test_loading_slcs_string_failing(self, test_slcs_string_failing):
+        with pytest.raises(ValueError):
+            sarxarray.from_binary(
+                test_slcs_string_failing,
+                (100, 100),
+                dtype=np.complex64,
+                chunks=(10, 10),
+            )
+
+    def test_loading_slcs_empty_failing(self, test_slcs_empty_failing):
+        with pytest.raises(ValueError):
+            sarxarray.from_binary(
+                test_slcs_empty_failing, (100, 100), dtype=np.complex64, chunks=(10, 10)
+            )
 
 
 class TestUtils:
