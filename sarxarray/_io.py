@@ -396,11 +396,6 @@ def _parse_metadata(file, driver, ifg_file_name):
     elif driver == "doris4":
         patterns = RE_PATTERNS_DORIS4
         patterns_ifg = None
-    else:
-        raise NotImplementedError(
-            f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
-        )
 
     # Open the file
     with open(file) as f:
