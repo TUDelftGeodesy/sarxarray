@@ -16,7 +16,7 @@ SARXarray is an open-source Xarray extension for Synthetic Aperture Radar (SAR) 
 SARXarray can be installed from PyPI:
 
 ```sh
-pip install sarxarray
+pip install 'sarxarray'
 ```
 
 or from the source:
@@ -29,12 +29,22 @@ pip install .
 
 Note that Python version `>=3.10` is required for SARXarray.
 
+### Install extra dependencies
+
+SARXarray has some optional dependencies to support additional functionality besides the core features. You can install them depending on your needs:
+
+```sh
+pip install 'sarxarray[demo]'    # to run the demo notebook
+pip install 'sarxarray[dev]'     # to run the test suite and enable code quality checks for developers
+pip install 'sarxarray[docs]'    # to build the docs locally
+```
+
 ## Documentation
 
 For more information on usage and examples of SARXarray, please refer to the [documentation](https://tudelftgeodesy.github.io/sarxarray/).
 
 ## License
 
-Copyright (c) 2022 - 2025, Netherlands eScience Center & Delft University of Technology
+This software is licensed under the Apache License 2.0. See the LICENSE file for full text and copyright details.
 
-Apache Software License 2.0
+Co-developed by Netherlands eScience Center and Delft University of Technology.
