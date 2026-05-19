@@ -14,6 +14,9 @@ authors:
   - name: Fakhereh Alidoost
     orcid: 0000-0001-8407-6472
     affiliation: 1
+  - name: Simon van Diepen
+    orcid: 0000-0002-9350-3779
+    affiliation: 2
   - name: Freek van Leijen
     orcid: 0000-0002-2582-9267
     affiliation: 2
