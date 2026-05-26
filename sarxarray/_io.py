@@ -160,20 +160,26 @@ def from_binary(
 
 
 def to_binary(
-        output_path: str, data: xr.Dataset | xr.DataArray, data_var_name: str | None = None
+        output_path: str,
+        data: xr.Dataset | xr.DataArray,
+        data_var_name: str | None = None
 ):
     """Write a zarr data layer to a binary file.
+
+    The dtype and shape of the resulting binary file will be the same as the input
+    data.
 
     Parameters
     ----------
     output_path: str
         Path to where the binary data file should be stored
     data: xr.Dataset | xr.DataArray
-        Dataset or DataArray containing the data variable that should be written to the binary data file. If `data`
-        is an `xr.Dataset`, the argument `data_var_name` is required to indicate which data variable should be written.
+        Dataset or DataArray containing the data variable that should be written to
+        the binary data file. If `data` is an `xr.Dataset`, the argument
+        `data_var_name` is required to indicate which data variable should be written.
     data_var_name: str | None
-        Name of the data variable that should be written to the binary file. Only used if `data` is an `xr.Dataset`,
-        otherwise ignored. Default is `None`
+        Name of the data variable that should be written to the binary file. Only used
+        if `data` is an `xr.Dataset`, otherwise ignored. Default is `None`
 
     Returns
     -------
