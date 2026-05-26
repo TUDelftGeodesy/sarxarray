@@ -85,7 +85,12 @@ def from_dataset(ds: xr.Dataset) -> xr.Dataset:
 
 
 def from_binary(
-    slc_files, shape, vlabel="complex", dtype=np.complex64, chunks=None, ratio=1
+    slc_files: list[str | Path],
+    shape: tuple[int, int],
+    vlabel: str = "complex",
+    dtype: np.dtype = np.complex64,
+    chunks: tuple[int, int] | None = None,
+    ratio: float = 1,
 ):
     """Read a SLC stack or related variables from binary files.
 
@@ -130,6 +135,15 @@ def from_binary(
     # Calculate appropriate chunk size if not user-defined
     if chunks is None:
         chunks = _calc_chunksize(shape, dtype, ratio)
+
+    # Check if slc_files is a non empty Iterable and not a string
+    if not hasattr(slc_files, "__iter__") or isinstance(slc_files, str):
+        raise ValueError(
+            "slc_files should be a non-empty Iterable and not a string."
+            "If you have only one file, please put it in a list, e.g. slc_files=[file]."
+        )
+    if len(slc_files) == 0:
+        raise ValueError("slc_files should be a non-empty Iterable.")
 
     # Read in all SLCs
     slcs = None
@@ -431,11 +445,6 @@ def _parse_metadata(file, driver, ifg_file_name):
     elif driver == "doris4":
         patterns = RE_PATTERNS_DORIS4
         patterns_ifg = None
-    else:
-        raise NotImplementedError(
-            f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
-        )
 
     # Open the file
     with open(file) as f:
@@ -465,18 +474,11 @@ def _parse_metadata(file, driver, ifg_file_name):
             with open(file_ifg) as f_ifg:
                 content_ifg = f_ifg.read()
                 for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-                    if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
-                        matches = re.findall(pattern, content_ifg)
-                        if matches:
-                            results[key] = matches
-                        else:
-                            results[key] = None
+                    match = re.search(pattern, content_ifg)
+                    if match:
+                        results[key] = match.group(1)
                     else:
-                        match = re.search(pattern, content_ifg)
-                        if match:
-                            results[key] = match.group(1)
-                        else:
-                            results[key] = None
+                        results[key] = None
 
     return results
 
@@ -496,16 +498,8 @@ def _regulate_metadata(metadata, driver):
     elif driver == "doris4":
         time_format = TIME_FORMAT_DORIS4
         unit_conversions = META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4
-    else:
-        raise NotImplementedError(
-            f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
-        )
 
     list_time = []
-    # If the time is a single string, convert it to a list
-    if isinstance(metadata[TIME_STAMP_KEY], str):
-        metadata[TIME_STAMP_KEY] = [metadata[TIME_STAMP_KEY]]
     for time in metadata[TIME_STAMP_KEY]:
         try:
             dt = datetime.strptime(time, time_format)
