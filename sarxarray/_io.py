@@ -181,8 +181,15 @@ def to_binary(
         Name of the data variable that should be written to the binary file. Only used
         if `data` is an `xr.Dataset`, otherwise ignored. Default is `None`
 
-    Returns
-    -------
+    Raises
+    ------
+    ValueError
+        - When `data` is an `xr.Dataset` but `data_var_name` is `None`
+        - When `data` is not an `xr.Dataset` or `xr.DataArray`
+
+    KeyError
+        When `data` is an `xr.Dataset` and `data_var_name` is not a data variable in 
+        `data`
 
     """
     if isinstance(data, xr.Dataset):
