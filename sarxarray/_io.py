@@ -159,6 +159,49 @@ def from_binary(
     return ds_stack
 
 
+def to_binary(
+        output_path: str, data: xr.Dataset | xr.DataArray, data_var_name: str | None = None
+):
+    """Write a zarr data layer to a binary file.
+
+    Parameters
+    ----------
+    output_path: str
+        Path to where the binary data file should be stored
+    data: xr.Dataset | xr.DataArray
+        Dataset or DataArray containing the data variable that should be written to the binary data file. If `data`
+        is an `xr.Dataset`, the argument `data_var_name` is required to indicate which data variable should be written.
+    data_var_name: str | None
+        Name of the data variable that should be written to the binary file. Only used if `data` is an `xr.Dataset`,
+        otherwise ignored. Default is `None`
+
+    Returns
+    -------
+
+    """
+    if isinstance(data, xr.Dataset):
+        if data_var_name is not None:
+            datalayer = xr.DataArray(data[data_var_name])
+        else:
+            raise ValueError("Dataset provided but layer_name is None!")
+    elif isinstance(data, xr.DataArray):
+        datalayer = data
+    else:
+        raise ValueError(f"data is not xr.DataArray or xr.Dataset!")
+
+    # Create the memmap
+    memmap = np.memmap(
+        output_path,
+        dtype=datalayer.dtype,
+        mode="w+",
+        shape=datalayer.shape
+    )
+    # Assign the data to the memmap
+    memmap[:] = datalayer.data[:]
+    # Save the memmap
+    memmap.flush()
+
+
 def _mmap_dask_array(filename, shape, dtype, chunks):
     """Create a Dask array from raw binary data by memory mapping.
 
