@@ -28,6 +28,18 @@ def test_slcs():
     ]
 
 
+# A file in str format, should raise an error
+@pytest.fixture()
+def test_slcs_string_failing():
+    return f"{os.path.dirname(__file__)}/data/scene_0.binaray"
+
+
+# An empty list, should raise an error
+@pytest.fixture()
+def test_slcs_empty_failing():
+    return []
+
+
 # Example metadata files DORIS4
 @pytest.fixture()
 def res_files_doris4():
@@ -50,6 +62,48 @@ def res_files_doris5():
         f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res",
         f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180318/metadata.res",
     ]
+
+
+@pytest.fixture()
+def res_files_doris5_err_wavelength():
+    # This list has a metadata.res file with errors in 20180318_error
+    # The wavelength is manually increased to a very large value
+    return [
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180306/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180318_error_wavelength/metadata.res",
+    ]
+
+
+@pytest.fixture()
+def res_files_doris5_err_timestamp():
+    # This list has a metadata.res file with errors in 20180318_error
+    # The timestamp is manually set to an invalid value
+    return [
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180306/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180318_error_timestamp/metadata.res",
+    ]
+
+
+@pytest.fixture()
+def res_files_doris5_err_missing_fields():
+    # This list has a metadata.res file with errors in 20180318_error
+    # The wavelength and orbit fields are manually removed
+    # It should fails on the type check since the missing fields are None
+    return [
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180306/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res",
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180318_missing_fields/metadata.res",
+    ]
+
+
+@pytest.fixture()
+def res_files_doris5_onefile():
+    # Only one file, should be read without error
+    return (
+        f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res"
+    )
 
 
 class TestFromDS:
@@ -95,6 +149,9 @@ class TestFromBinary:
             [k for k in stack.coords.keys()]
         )
         assert stack.sizes == {"azimuth": 100, "range": 100, "time": 2}
+
+        # Test data can be loaded without error
+        _ = stack.compute()
 
     def test_loading_custom_var(self, test_slcs):
         """When other var names specified, do not compute amplitude and range"""
@@ -149,6 +206,49 @@ class TestFromBinary:
             [k for k in stack.coords.keys()]
         )
         assert stack.sizes == {"azimuth": 100, "range": 100, "time": 1}
+
+    def test_loading_slcs_string_failing(self, test_slcs_string_failing):
+        with pytest.raises(ValueError):
+            sarxarray.from_binary(
+                test_slcs_string_failing,
+                (100, 100),
+                dtype=np.complex64,
+                chunks=(10, 10),
+            )
+
+    def test_loading_slcs_empty_failing(self, test_slcs_empty_failing):
+        with pytest.raises(ValueError):
+            sarxarray.from_binary(
+                test_slcs_empty_failing, (100, 100), dtype=np.complex64, chunks=(10, 10)
+            )
+
+    def test_loading_slcs_wrong_customized_dtype_failing(self, test_slcs):
+        with pytest.raises(TypeError):
+            sarxarray.from_binary(
+                test_slcs,
+                (100, 100),
+                dtype=np.dtype([("error1", np.float32), ("error2", np.float32)]),
+                chunks=(10, 10),
+            )
+
+    def test_read_metadata_doris5_wrong_values(self, res_files_doris5_err_wavelength):
+        with pytest.raises(ValueError):
+            sarxarray.read_metadata(res_files_doris5_err_wavelength, driver="doris5")
+
+    def test_read_metadata_doris5_wrong_timestamp(self, res_files_doris5_err_timestamp):
+        with pytest.raises(ValueError):
+            sarxarray.read_metadata(res_files_doris5_err_timestamp, driver="doris5")
+
+    def test_read_metadata_doris5_missing_fields(
+        self, res_files_doris5_err_missing_fields
+    ):
+        with pytest.raises(TypeError):
+            sarxarray.read_metadata(
+                res_files_doris5_err_missing_fields, driver="doris5"
+            )
+
+    def test_read_metadata_doris5_onefile(self, res_files_doris5_onefile):
+        _ = sarxarray.read_metadata(res_files_doris5_onefile, driver="doris5")
 
 
 class TestUtils:
