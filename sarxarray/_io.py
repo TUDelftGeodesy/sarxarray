@@ -214,7 +214,7 @@ def to_binary(
     elif isinstance(data, xr.DataArray):
         datalayer = data
     else:
-        raise ValueError(f"data is not xr.DataArray or xr.Dataset!")
+        raise ValueError("data is not xr.DataArray or xr.Dataset!")
 
     # Create the memmap
     memmap = np.memmap(

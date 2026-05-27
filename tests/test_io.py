@@ -391,3 +391,29 @@ class TestReadMetadata:
             metadata["orbit_txyz"][0],
             [62569, 4954320.931616273, 78580.69269184131, 5042109.736565054],
         )
+
+
+class TestToBinary:
+    """to_binary in _io.py"""
+
+    def test_empty_data_var_with_dataset(self, test_slcs):
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        with pytest.raises(ValueError):
+            sarxarray.to_binary("dummy.raw", stack, data_var_name=None)
+
+    def test_invalid_data_var(self, test_slcs):
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        with pytest.raises(KeyError):
+            sarxarray.to_binary("dummy.raw", stack, data_var_name="cmplx")
+
+    def test_invalid_data_type(self, test_slcs):
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        data = np.array(stack.complex.values)
+        with pytest.raises(ValueError):
+            sarxarray.to_binary("dummy.raw", data)
