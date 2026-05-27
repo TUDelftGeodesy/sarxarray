@@ -396,12 +396,21 @@ class TestReadMetadata:
 class TestToBinary:
     """to_binary in _io.py"""
 
-    def test_to_binary_normal(self, test_slcs, tmp_path):
-        output_path = tmp_path / "dummy.raw"
+    def test_to_binary_normal_dataset(self, test_slcs, tmp_path):
+        output_path = tmp_path / "dummy_ds.raw"
         stack = sarxarray.from_binary(
             test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
         )
         sarxarray.to_binary(str(output_path), stack, data_var_name="complex")
+        assert output_path.exists()
+
+    def test_to_binary_normal_dataarray(self, test_slcs, tmp_path):
+        output_path = tmp_path / "dummy_arr.raw"
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        arr = xr.DataArray(stack.complex)
+        sarxarray.to_binary(str(output_path), arr)
         assert output_path.exists()
 
     def test_empty_data_var_with_dataset(self, test_slcs):
