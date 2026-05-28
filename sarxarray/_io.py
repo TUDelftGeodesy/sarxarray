@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -176,7 +177,8 @@ def from_binary(
 def to_binary(
         output_path: str,
         data: xr.Dataset | xr.DataArray,
-        data_var_name: str | None = None
+        data_var_name: str | None = None,
+        allow_overwrite: bool = False
 ):
     """Write a zarr data layer to a binary file.
 
@@ -194,6 +196,12 @@ def to_binary(
     data_var_name: str | None
         Name of the data variable that should be written to the binary file. Only used
         if `data` is an `xr.Dataset`, otherwise ignored. Default is `None`
+    allow_overwrite: bool
+        Whether or not to allow overwriting the file specified by `output_path` when
+        that file already exists. If `output_path` exists and `allow_overwrite=False`,
+        an OSError is raised. If `output_path` exists and `allow_overwrite=True`, the
+        file in `output_path` is overwritten. If `output_path does not exist, this
+        input argument is ignored. Default is `False`
 
     Raises
     ------
@@ -205,7 +213,13 @@ def to_binary(
         When `data` is an `xr.Dataset` and `data_var_name` is not a data variable in 
         `data`
 
+    OSError
+        When `output_path` exists and `allow_overwrite` is set to `False`
+
     """
+    if os.path.exists(output_path) and not allow_overwrite:
+        raise OSError("Requested output file exists and overwriting is not allowed!")
+
     if isinstance(data, xr.Dataset):
         if data_var_name is not None:
             datalayer = xr.DataArray(data[data_var_name])

@@ -434,3 +434,39 @@ class TestToBinary:
         data = np.array(stack.complex.values)
         with pytest.raises(ValueError):
             sarxarray.to_binary("dummy.raw", data)
+
+    def test_to_binary_path_exists_no_overwrite(self, test_slcs, tmp_path):
+        output_path = tmp_path / "dummy_ds.raw"
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        sarxarray.to_binary(str(output_path), stack, data_var_name="complex")
+        assert output_path.exists()
+        with pytest.raises(OSError):
+            sarxarray.to_binary(
+                str(output_path), stack, data_var_name="complex", allow_overwrite=False
+            )
+
+    def test_to_binary_path_exists_no_overwrite_default_arg(self, test_slcs, tmp_path):
+        output_path = tmp_path / "dummy_ds.raw"
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        sarxarray.to_binary(str(output_path), stack, data_var_name="complex")
+        assert output_path.exists()
+        with pytest.raises(OSError):
+            # Here without specifying allow_overwrite so that this test will fail if
+            # the default is ever changed to the less safe allow_overwrite=True
+            sarxarray.to_binary(str(output_path), stack, data_var_name="complex")
+
+    def test_to_binary_path_exists_allow_overwrite(self, test_slcs, tmp_path):
+        output_path = tmp_path / "dummy_ds.raw"
+        stack = sarxarray.from_binary(
+            test_slcs[-1:], (100, 100), dtype=np.complex64, chunks=(10, 10)
+        )
+        sarxarray.to_binary(str(output_path), stack, data_var_name="complex")
+        assert output_path.exists()
+        sarxarray.to_binary(
+            str(output_path), stack, data_var_name="complex", allow_overwrite=True
+        )
+        assert output_path.exists()
