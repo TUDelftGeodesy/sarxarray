@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -171,6 +172,75 @@ def from_binary(
         ds_stack = ds_stack.slcstack._get_phase()
 
     return ds_stack
+
+
+def to_binary(
+        output_path: str,
+        data: xr.Dataset | xr.DataArray,
+        data_var_name: str | None = None,
+        allow_overwrite: bool = False
+):
+    """Write a zarr data layer to a binary file.
+
+    The dtype and shape of the resulting binary file will be the same as the input
+    data.
+
+    Parameters
+    ----------
+    output_path: str
+        Path to where the binary data file should be stored
+    data: xr.Dataset | xr.DataArray
+        Dataset or DataArray containing the data variable that should be written to
+        the binary data file. If `data` is an `xr.Dataset`, the argument
+        `data_var_name` is required to indicate which data variable should be written.
+    data_var_name: str | None
+        Name of the data variable that should be written to the binary file. Only used
+        if `data` is an `xr.Dataset`, otherwise ignored. Default is `None`
+    allow_overwrite: bool
+        Whether or not to allow overwriting the file specified by `output_path` when
+        that file already exists. If `output_path` exists and `allow_overwrite=False`,
+        an OSError is raised. If `output_path` exists and `allow_overwrite=True`, the
+        file in `output_path` is overwritten. If `output_path` does not exist, this
+        input argument is ignored. Default is `False`
+
+    Raises
+    ------
+    ValueError
+        - When `data` is an `xr.Dataset` but `data_var_name` is `None`
+        - When `data` is not an `xr.Dataset` or `xr.DataArray`
+
+    KeyError
+        When `data` is an `xr.Dataset` and `data_var_name` is not a data variable in 
+        `data`
+
+    OSError
+        When `output_path` exists and `allow_overwrite` is set to `False`
+
+    """
+    if os.path.exists(output_path) and not allow_overwrite:
+        raise OSError("Requested output file exists and overwriting is not allowed!")
+
+    if isinstance(data, xr.Dataset):
+        if data_var_name is not None:
+            datalayer = xr.DataArray(data[data_var_name])
+        else:
+            raise ValueError("Dataset provided but layer_name is None!")
+    elif isinstance(data, xr.DataArray):
+        datalayer = data
+    else:
+        raise ValueError("data is not xr.DataArray or xr.Dataset!")
+
+    # Create the memmap
+    memmap = np.memmap(
+        output_path,
+        dtype=datalayer.dtype,
+        mode="w+",
+        shape=datalayer.shape
+    )
+    # Assign the data to the memmap
+    memmap[:] = datalayer.data[:]
+    # Save the memmap
+    memmap.flush()
 
 
 def _mmap_dask_array(filename, shape, dtype, chunks):
