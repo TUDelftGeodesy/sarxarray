@@ -200,7 +200,7 @@ def to_binary(
         Whether or not to allow overwriting the file specified by `output_path` when
         that file already exists. If `output_path` exists and `allow_overwrite=False`,
         an OSError is raised. If `output_path` exists and `allow_overwrite=True`, the
-        file in `output_path` is overwritten. If `output_path does not exist, this
+        file in `output_path` is overwritten. If `output_path` does not exist, this
         input argument is ignored. Default is `False`
 
     Raises
