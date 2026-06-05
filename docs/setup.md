@@ -28,4 +28,4 @@ pip install 'sarxarray[docs]'    # to build the docs locally
 
 ## Tips
 
-We strongly recommend installing separately from your default Python environment. E.g. you can use environment manager (e.g. [mamba](https://mamba.readthedocs.io/en/latest/mamba-installation.html)) to create a separate environment.
+We strongly recommend installing separately from your default Python environment. E.g. you can use environment manager (e.g. [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)) to create a separate environment.
