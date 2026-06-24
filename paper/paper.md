@@ -84,6 +84,8 @@ We would also like to thank Dr. Francesco Nattino and Dr. Meiert Willem Grootes 
 
 In writing the software documentation and the JOSS paper, GPT-5 was used for language improvements for grammar correction and style edits.
 
+Specifically, in the documentation process, an agent skill (under path `.github/skills/release-changelog`) is used to generate changelog entries from git tags and commit history. The generated content was always reviewed and edited by a human before being committed to the repository.
+
 Additionally, various language models were used via [GitHub Copilot](https://copilot.github.com/) in Pull Requests reviews, for pre-filtering obvious issues such as typos, small logical errors, and for suggesting code improvements. All suggestions from AI were reviewed and verified by the authors before merging into the codebase. The correctness of the code was ensured by the unit tests.
 
 ## References
