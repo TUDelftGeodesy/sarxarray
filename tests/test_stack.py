@@ -1,5 +1,5 @@
-"""test stack.py
-"""
+"""test stack.py"""
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -56,9 +56,13 @@ class TestStackSARrelated:
     def test_stack_pointselection_all(self, synthetic_dataset):
         synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
         synthetic_dataset = synthetic_dataset.slcstack._get_phase()
-        stm = synthetic_dataset.slcstack.point_selection(
-            threshold=100, method="amplitude_dispersion"
-        )  # select all
+        with pytest.warns(
+            DeprecationWarning,
+            match="point_selection.*deprecated.*depsi\\.ps_selection",
+        ):
+            stm = synthetic_dataset.slcstack.point_selection(
+                threshold=100, method="amplitude_dispersion"
+            )  # select all
         assert stm.space.shape[0] == 100
         assert set([k for k in stm.coords.keys()]).issubset(
             ["time", "azimuth", "range"]
@@ -70,9 +74,13 @@ class TestStackSARrelated:
     def test_stack_pointselection_some(self, synthetic_dataset):
         synthetic_dataset = synthetic_dataset.slcstack._get_amplitude()
         synthetic_dataset = synthetic_dataset.slcstack._get_phase()
-        stm = synthetic_dataset.slcstack.point_selection(
-            threshold=0.2, method="amplitude_dispersion"
-        )  # select some
+        with pytest.warns(
+            DeprecationWarning,
+            match="point_selection.*deprecated.*depsi\\.ps_selection",
+        ):
+            stm = synthetic_dataset.slcstack.point_selection(
+                threshold=0.2, method="amplitude_dispersion"
+            )  # select some
         assert stm.space.shape[0] == 4
         assert set([k for k in stm.coords.keys()]).issubset(
             ["time", "azimuth", "range"]
@@ -99,13 +107,15 @@ class TestStackSARrelated:
         )
         ds_nan = ds_nan.slcstack._get_amplitude()
         ds_nan = ds_nan.slcstack._get_phase()
-        stm = ds_nan.slcstack.point_selection(
-            threshold=100, method="amplitude_dispersion"
-        )
+        with pytest.warns(
+            DeprecationWarning,
+            match="point_selection.*deprecated.*depsi\\.ps_selection",
+        ):
+            stm = ds_nan.slcstack.point_selection(
+                threshold=100, method="amplitude_dispersion"
+            )
         assert stm.space.shape[0] == 99  # only the nan is removed
-        assert set(list(stm.coords.keys())).issubset(
-            ["time", "azimuth", "range"]
-        )
+        assert set(list(stm.coords.keys())).issubset(["time", "azimuth", "range"])
         assert set(list(stm.data_vars.keys())).issubset(
             ["complex", "amplitude", "phase"]
         )
