@@ -61,7 +61,9 @@ class Stack:
         # Add deprecation warning for this function
         msg = (
             "The `point_selection` method is deprecated and will be removed in "
-            "a future release. Please use `depsi.ps_selection` instead."
+            "a future release. Please use `depsi.ps_selection` instead. "
+            "See depsi documentation: "
+            "https://tudelftgeodesy.github.io/DePSI/api/classification/"
         )
         warnings.warn(
             msg,
