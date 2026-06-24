@@ -16,3 +16,5 @@ I will make a new release by preforming the following procedures:
 
 Hints:
 - Step 1 and 2 can be done semi-automatically by calling agent skill in [release-changelog](.github/skills/release-changelog). However the changes will always be reviewed and commited by human.
+- The agent skill can be executed in GenAI prompt, e.g. GitHub Copilot Chat, by `/release-changelog vX.Y.Z` command, where `vX.Y.Z` is the new version label.
+- Alternatively, one can run the helper script `bash .github/skills/release-changelog/scripts/generate_release_section.sh vX.Y.Z` to get bullets for the new release section.
