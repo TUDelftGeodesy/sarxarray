@@ -1,3 +1,5 @@
+import warnings
+
 import dask.array as da
 import numpy as np
 import xarray as xr
@@ -56,6 +58,16 @@ class Stack:
         xarray.Dataset
             An xarray.Dataset with two dimensions: (space, time).
         """
+        # Add deprecation warning for this function
+        msg = (
+            "The `point_selection` method is deprecated and will be removed in "
+            "a future release. Please use `depsi.ps_selection` instead."
+        )
+        warnings.warn(
+            msg,
+            DeprecationWarning,
+            stacklevel=2,
+        )
         match method:
             case "amplitude_dispersion":
                 # Amplitude dispersion thresholding
