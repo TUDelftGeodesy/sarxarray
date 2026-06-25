@@ -196,6 +196,9 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     are passed on as well, either as (azimuth, range, time) variables (if
     present at a daughter epochs) or as (azimuth, range) variables (if
     present only at the mother epoch (which is automatically detected)).
+    The mother image is assigned to the file that contains a latitude,
+    longitude, or elevation layer. If it cannot be found, the chronologically
+    first image is used instead, and a warning is thrown.
 
     ZNAP archives can also contain 'tiepoint grids' with xt/yt coordinates.
     These layers are not passed on, as they do not fit into the azimuth/range

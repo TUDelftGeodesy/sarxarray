@@ -87,7 +87,9 @@ RE_PATTERNS_SNAP = {
     "pass_direction": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PASS",
     "swath": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.SWATH",
     "image_mode": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.ACQUISITION_MODE",
-    "polarisation": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.mds[\d]+_tx_rx_polar",
+    "polarisations": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.mds[\d]+_tx_rx_polar"
+    ),
     "range_pixel_spacing": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_spacing",
     "azimuth_pixel_spacing": (
         r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_spacing"
@@ -173,7 +175,7 @@ META_ARRAY_KEYS = {
     "orbit_time": float,  # from here SNAP only
     "orbit_position": float,
     "orbit_velocity": float,
-    "polarisation": str,
+    "polarisations": str,
 }
 # SNAP returns flattened 1D arrays, so we need to tell it the shapes. The auto
 # dimension gets expanded to the total number of inputs, and is required
@@ -181,7 +183,7 @@ META_ARRAY_SHAPES_SNAP = {
     "orbit_time": ("auto", 1),
     "orbit_position": ("auto", 3),
     "orbit_velocity": ("auto", 3),
-    "polarisation": ("auto", 1),
+    "polarisations": ("auto", 1),
 }
 # Some keys are not read in in SI units. The following dictionary specifies those
 # keys, and the factor they should be multiplied by to restore them to SI units
