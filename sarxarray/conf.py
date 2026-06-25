@@ -79,7 +79,9 @@ RE_PATTERNS_DORIS5_IFG = {
 }
 # Regular expressions for reading metadata from SNAP
 RE_PATTERNS_SNAP = {
-    "sar_processor": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.Processing_system_identifier",
+    "sar_processor": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.Processing_system_identifier"
+    ),
     "product_type": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PRODUCT_TYPE",
     "orbit": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.REL_ORBIT",
     "pass_direction": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PASS",
@@ -87,25 +89,54 @@ RE_PATTERNS_SNAP = {
     "image_mode": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.ACQUISITION_MODE",
     "polarisation": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.mds[\d]+_tx_rx_polar",
     "range_pixel_spacing": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_spacing",
-    "azimuth_pixel_spacing": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_spacing",
+    "azimuth_pixel_spacing": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_spacing"
+    ),
     "radar_frequency": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.radar_frequency",
     "sensor_platform": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.MISSION",
-    "pulse_repetition_frequency": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.pulse_repetition_frequency",
-    "first_azimuth_time": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.first_line_time",
-    "azimuth_time_interval": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.line_time_interval",
-    "total_azimuth_bandwidth": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_bandwidth",
+    "pulse_repetition_frequency": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.pulse_repetition_frequency"
+    ),
+    "first_azimuth_time": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.first_line_time"
+    ),
+    "azimuth_time_interval": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.line_time_interval"
+    ),
+    "total_azimuth_bandwidth": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_bandwidth"
+    ),
     "weighting_azimuth": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_looks",
-    "first_range_time": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.slrTimeToFirstValidPixel",
-    "range_sampling_rate": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_sampling_rate",
-    "total_range_bandwidth": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_bandwidth",
-    "orbit_time": r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements.[\d]+.orbit_vector[\d]+.attributes.[\d]+.time",
-    "orbit_position": r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements.[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_pos",
-    "orbit_velocity": r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements.[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_vel",
+    "first_range_time": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.slrTimeToFirstValidPixel"
+    ),
+    "range_sampling_rate": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_sampling_rate"
+    ),
+    "total_range_bandwidth": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_bandwidth"
+    ),
+    "orbit_time": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.time"
+    ),
+    "orbit_position": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_pos"
+    ),
+    "orbit_velocity": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_vel"
+    ),
     "scene_centre_latitude": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.centre_lat",
     "scene_centre_longitude": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.centre_lon",
     "number_of_lines": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.num_output_lines",
-    "number_of_pixels": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.num_samples_per_line",
-    "first_pixel_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_x",
+    "number_of_pixels": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.num_samples_per_line"
+    ),
+    "first_pixel_number": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_x"
+    ),
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
 }
 # Float keys in metadata. They are used to regulate the metadata read as strings

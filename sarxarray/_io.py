@@ -764,7 +764,7 @@ def _parse_metadata(file, driver, ifg_file_name):
 
 
 def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
-    """Extract all values in a nested dict/list into a dict with as key the path"""
+    """Extract all values in a nested dict/list into a dict with as key the path."""
     all_values = []
     if isinstance(content, list):
         for key in range(len(content)):
@@ -855,7 +855,7 @@ def _regulate_metadata(metadata, driver):
         if key in META_ARRAY_KEYS.keys():  # need to regulate this one separately
             regulated_arrays = []
             for arr in metadata[key]:
-                if META_ARRAY_KEYS[key] == str:
+                if META_ARRAY_KEYS[key] is str:
                     regulated_array = np.zeros(
                         (len(arr), len(arr[0])), dtype=np.dtypes.StringDType
                     )
