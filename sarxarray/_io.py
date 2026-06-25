@@ -1,9 +1,10 @@
+import json
 import logging
 import math
 import os
 import re
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -14,15 +15,19 @@ import xarray as xr
 
 from .conf import (
     META_ARRAY_KEYS,
+    META_ARRAY_SHAPES_SNAP,
     META_FLOAT_KEYS,
     META_INT_KEYS,
     META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4,
     META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5,
+    META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP,
     RE_PATTERNS_DORIS4,
     RE_PATTERNS_DORIS5,
     RE_PATTERNS_DORIS5_IFG,
+    RE_PATTERNS_SNAP,
     TIME_FORMAT_DORIS4,
     TIME_FORMAT_DORIS5,
+    TIME_FORMAT_SNAP,
     TIME_STAMP_KEY,
     _dtypes,
     _memsize_chunk_mb,
@@ -37,7 +42,7 @@ def from_dataset(ds: xr.Dataset) -> xr.Dataset:
     This function create tasks graph converting the two data variables of complex data:
     `real` and `imag`, to three variables: `complex`, `amplitude`, and `phase`.
 
-    The function is intented for an SLC stack in `xr.Dataset` loaded from a Zarr file.
+    The function is intended for an SLC stack in `xr.Dataset` loaded from a Zarr file.
 
     For other datasets, such as lat, lon, etc., please use `xr.open_zarr` directly.
 
@@ -170,6 +175,227 @@ def from_binary(
     if vlabel == "complex":
         ds_stack = ds_stack.slcstack._get_amplitude()
         ds_stack = ds_stack.slcstack._get_phase()
+
+    return ds_stack
+
+
+def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
+    """Read an SLC stack from a list of ZNAP archives produced by SNAP.
+
+    SNAP produces .znap-archives, which are very similar to the .zarr
+    archives used by sarxarray except for a few key differences:
+    - ZNAPs use a local xy-coordinate system instead of radar coordinates
+    - ZNAPs separate the real and complex part of the observation
+    - SNAP produces one ZNAP for each image
+
+    This function takes a series of ZNAPs and converts them to the
+    standard sarxarray output: one .zarr archive with coordinates
+    azimuth and range (corrected for the offset of the local coordinate
+    system) and time, and the complex data layer for the observations.
+    Additional data layers present in the ZNAP archives with xy-coordinates
+    are passed on as well, either as (azimuth, range, time) variables (if
+    present at a daughter epochs) or as (azimuth, range) variables (if
+    present only at the mother epoch (which is automatically detected)).
+
+    ZNAP archives can also contain 'tiepoint grids' with xt/yt coordinates.
+    These layers are not passed on, as they do not fit into the azimuth/range
+    coordinate system of sarxarray.
+
+    Parameters
+    ----------
+    snap_znap_archives: list[str, Path]
+        List of .znap archives to be read into an xarray Dataset
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset containing:
+            - the coordinates azimuth/range (corrected for cropping offsets) and time
+            - complex data layer based on ZNAPs i and q data layers
+            - amplitude and phase data layers as calculated from the complex data
+            - any extra data layers present in the ZNAPs at a daughter acquisition as
+                (azimuth, range, time) data variables
+            - any extra data layers present only in the mother ZNAP archive as
+                (azimuth, range) data variables
+
+    Raises
+    ------
+    ValueError
+        If `snap_znap_archives` is empty or not iterable
+    """
+    # Check if snap_znap_archives is a non empty Iterable and not a string
+    if not hasattr(snap_znap_archives, "__iter__") or isinstance(
+            snap_znap_archives, str
+    ):
+        raise ValueError(
+            "snap_znap_archives should be a non-empty Iterable and not a string."
+            "If you have only one file, please put it in a list, e.g. "
+            "snap_znap_archives=[file]."
+        )
+    if len(snap_znap_archives) == 0:
+        raise ValueError("snap_znap_archives should be a non-empty Iterable.")
+
+    # in the .znaps, the dimension x is range, y is azimuth
+    # xt and yt are interpolated values at coarse resolution
+    full_data = {}
+    mother_epoch = None
+
+    for file in snap_znap_archives:
+        data = xr.open_zarr(file, consolidated=False)
+        data_layers = data.original_raster_data_node_order
+        cur_epoch = data_layers[0].split("_")[-1]
+        epoch = datetime.strptime(cur_epoch, "%d%b%Y").strftime("%Y%m%d")
+
+        # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
+        # we only preserve the full data layers, as the others cannot be placed
+        cleaned_data_layer = {}
+        for layer in data_layers:
+            dims = data[layer].dims
+            if "x" in dims and "y" in dims and len(dims) == 2:
+                cleaned_name = layer
+                cleaned_name = cleaned_name.replace(f"_{cur_epoch}", "")
+                for pol in ["VV", "VH", "HH", "HV"]:
+                    cleaned_name = cleaned_name.replace(f"_{pol}", "")
+
+                cleaned_data_layer[cleaned_name] = layer
+                if cleaned_name in [
+                    "latitude", "longitude", "elevation"
+                ] and mother_epoch is None:  # these are expected only at the mother
+                    mother_epoch = epoch
+
+        full_data[epoch] = {
+            "data": data,
+            "cleaned_data_layers": cleaned_data_layer,
+            "filename": file
+        }
+
+    # sort the provided files chronologically
+    sorted_epochs = list(sorted(list(full_data.keys())))
+
+    # fallback for when mother epoch is not in the stack
+    if mother_epoch is None:
+        warning_msg = (
+            f"Mother has not been identified. Using first epoch {sorted_epochs[0]} "
+            "for metadata instead."
+        )
+        logger.warning(warning_msg)
+        mother_epoch = sorted_epochs[0]
+    daughter_epochs = [epoch for epoch in sorted_epochs if epoch != mother_epoch]
+
+    # read metadata to find the azimuth and range coordinate offsets
+    metadata_file = f"{full_data[mother_epoch]['filename']}/SNAP/product_metadata.json"
+    metadata = read_metadata(metadata_file, driver="snap")
+
+    #  Initialize stack as a Dataset
+    coords = {
+        "azimuth": range(
+            metadata["first_line_number"],
+            metadata["first_line_number"] + metadata["number_of_lines"]
+        ),
+        "range": range(
+            metadata["first_pixel_number"],
+            metadata["first_pixel_number"] + metadata["number_of_pixels"]
+        ),
+        "time": sorted_epochs,
+    }
+    ds_stack = xr.Dataset(coords=coords)
+
+    # handle the complex data, i = real, q = complex
+    slcs = None
+    for epoch in sorted_epochs:
+        cplx = (
+            full_data[epoch]["data"][full_data[epoch]["cleaned_data_layers"]["i"]].data
+            + 1j *
+            full_data[epoch]["data"][full_data[epoch]["cleaned_data_layers"]["q"]].data
+        )
+
+        if slcs is None:
+            slc = cplx.reshape(
+                (metadata["number_of_lines"], metadata["number_of_pixels"], 1)
+            )
+            slcs = slc
+        else:
+            slc = cplx.reshape(
+                (metadata["number_of_lines"], metadata["number_of_pixels"], 1)
+            )
+            slcs = da.concatenate([slcs, slc], axis=2)
+
+    ds_stack = ds_stack.assign({"complex": (("azimuth", "range", "time"), slcs)})
+
+    # retain the additional layers in the daughter znaps (which are time-variant)
+    if len(daughter_epochs) > 0:
+        for layer in full_data[daughter_epochs[0]]["cleaned_data_layers"].keys():
+            if layer in ["i", "q"]:
+                continue  # these are handled separately above
+            layer_data = None
+            for epoch in sorted_epochs:
+                if layer_data is None:
+                    if layer not in full_data[epoch]["cleaned_data_layers"].keys():
+                        # e.g. it does not exist in the mother epoch, so we add zeros
+                        layer_data = da.zeros(
+                            (
+                                metadata["number_of_lines"],
+                                metadata["number_of_pixels"],
+                                1
+                            )
+                        )
+                    else:
+                        layer_data = full_data[epoch]["data"][
+                            full_data[epoch]["cleaned_data_layers"][layer]
+                        ].data
+                        layer_data = layer_data.reshape(
+                            (
+                                metadata["number_of_lines"],
+                                metadata["number_of_pixels"],
+                                1
+                            )
+                        )
+                else:
+                    if layer not in full_data[epoch]["cleaned_data_layers"].keys():
+                        # e.g. it does not exist in the mother epoch, so we add zeros
+                        cur_layer_data = da.zeros(
+                            (
+                                metadata["number_of_lines"],
+                                metadata["number_of_pixels"],
+                                1
+                            )
+                        )
+                    else:
+                        cur_layer_data = full_data[epoch]["data"][
+                            full_data[epoch]["cleaned_layer_names"][layer]
+                        ].data
+                        cur_layer_data = cur_layer_data.reshape(
+                            (
+                                metadata["number_of_lines"],
+                                metadata["number_of_pixels"],
+                                1
+                            )
+                        )
+                    layer_data = da.concatenate(
+                        [layer_data, cur_layer_data], axis=2
+                    )
+
+            ds_stack = ds_stack.assign(
+                {layer: (("azimuth", "range", "time"), layer_data)}
+            )
+
+    # retain the additional layers in the mother znap (which is time-invariant)
+    for layer in full_data[mother_epoch]["cleaned_data_layers"].keys():
+        if layer in ds_stack.data_vars.keys() or layer in ["i", "q"]:
+            continue  # these are already included
+        ds_stack = ds_stack.assign(
+            {
+                layer: (
+                    ("azimuth", "range"),
+                    full_data[mother_epoch]["data"][
+                        full_data[mother_epoch]["cleaned_data_layers"][layer]
+                    ].data
+                )
+            }
+        )
+
+    ds_stack = ds_stack.slcstack._get_amplitude()
+    ds_stack = ds_stack.slcstack._get_phase()
 
     return ds_stack
 
@@ -371,7 +597,7 @@ def _calc_chunksize(shape: tuple, dtype: np.dtype, ratio: int):
 
 def read_metadata(
     files: str | list | Path,
-    driver: Literal["doris4", "doris5"] = "doris5",
+    driver: Literal["doris4", "doris5", "snap"] = "doris5",
     ifg_file_name: str = "ifgs.res",
 ) -> dict:
     """Read metadata of a coregistered interferogram stack.
@@ -379,10 +605,10 @@ def read_metadata(
     This function reads metadata from one or more metadata files from a coregistered
     interferogram stack, and returns the metadata as a dictionary format.
 
-    This function supports two drivers: "doris4" for DORIS4 metadata files, e.g.
+    This function supports three drivers: "doris4" for DORIS4 metadata files, e.g.
     coregistration results from TerraSAR-X; "doris5" for DORIS5 metadata files,
-    e.g. coregistration results from Sentinel-1. More support for other drivers
-    will be added in the future.
+    e.g. coregistration results from Sentinel-1; "snap" for SNAP metadata files.
+    More support for other drivers will be added in the future.
 
     For drivers "doris4" and "doris5", it parses the metadata with predefined regular
     expressions, returning a dictionary with predefined keys. Check conf.py for
@@ -412,7 +638,7 @@ def read_metadata(
         Path(s) to the metadata files.
     driver : str, optional
         The driver to use for reading metadata. Supported drivers are "doris4" and
-        "doris5". Default is "doris5".
+        "doris5" and "snap". Default is "doris5".
     ifg_file_name : str, optional
         The name of the interferogram size file for the "doris5" driver.
         We assume this file is next to each metadata file and use it to read the
@@ -430,10 +656,10 @@ def read_metadata(
         If the driver is not "doris4" or "doris5".
     """
     # Check driver
-    if driver not in ["doris4", "doris5"]:
+    if driver not in ["doris4", "doris5", "snap"]:
         raise NotImplementedError(
             f"Driver '{driver}' is not implemented. "
-            "Supported drivers are: 'doris4', 'doris5'."
+            "Supported drivers are: 'doris4', 'doris5', 'snap'."
         )
 
     # If there is only one file, convert it to a list
@@ -461,46 +687,126 @@ def _parse_metadata(file, driver, ifg_file_name):
     """Parse a single metadata file to a dictionary of strings."""
     # Select the appropriate patterns based on the driver
     if driver == "doris5":
+        mode = "regex"
         patterns = RE_PATTERNS_DORIS5
         patterns_ifg = RE_PATTERNS_DORIS5_IFG
+        array_shapes = None
     elif driver == "doris4":
+        mode = "regex"
         patterns = RE_PATTERNS_DORIS4
         patterns_ifg = None
-
-    # Open the file
-    with open(file) as f:
-        content = f.read()
+        array_shapes = None
+    elif driver == "snap":
+        mode = "json"
+        patterns = RE_PATTERNS_SNAP
+        patterns_ifg = None
+        array_shapes = META_ARRAY_SHAPES_SNAP
 
     # Read common metadata patterns
     results = {}
-    for key, pattern in patterns.items():
-        if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
-            matches = re.findall(pattern, content)
-            if matches:
-                results[key] = matches
+    if mode == "regex":
+        # Open the file
+        with open(file) as f:
+            content = f.read()
+
+        for key, pattern in patterns.items():
+            if key in META_ARRAY_KEYS.keys():  # multiple hits allowed
+                matches = re.findall(pattern, content)
+                if matches:
+                    results[key] = matches
+                else:
+                    results[key] = None
             else:
-                results[key] = None
+                match = re.search(pattern, content)
+                if match:
+                    results[key] = match.group(1)
+                else:
+                    results[key] = None
+
+        # Doris5 has size information in ifgs.res file
+        # Try to get the ifg size from ifgs.res next to slave.res, if it exists
+        if patterns_ifg is not None:
+            file_ifg = file.with_name(ifg_file_name)
+            if file_ifg.exists():
+                with open(file_ifg) as f_ifg:
+                    content_ifg = f_ifg.read()
+                    for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
+                        match = re.search(pattern, content_ifg)
+                        if match:
+                            results[key] = match.group(1)
+                        else:
+                            results[key] = None
+    elif mode == "json":
+        # Open the file
+        with open(file) as f:
+            content = json.load(f)
+
+        raw_results = _flatten_snap_json_metadata(content)
+        raw_keys = [key for key in raw_results.keys()]
+        for key, pattern in patterns.items():
+            matches = list(filter(re.compile(pattern).match, raw_keys))
+            if len(matches) == 1:
+                results[key] = raw_results[matches[0]]
+            else:
+                results[key] = [raw_results[match] for match in matches]
+                if key in array_shapes.keys():
+                    fixed_dims = [dim for dim in array_shapes[key] if dim != "auto"]
+                    auto_dim = len(results[key]) // np.prod(fixed_dims)
+                    if len(results[key]) % auto_dim != 0:
+                        raise ValueError(
+                            f"{len(results[key])} items do not fit in an array of "
+                            f"shape {array_shapes[key]} for key {key}."
+                        )
+                    fixed_dims.insert(array_shapes[key].index("auto"), auto_dim)
+                    results[key] = np.array(results[key]).reshape(tuple(fixed_dims))
+
+    return results
+
+
+def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
+    """Extract all values in a nested dict/list into a dict with as key the path"""
+    all_values = []
+    if isinstance(content, list):
+        for key in range(len(content)):
+            cur_keys_loop = cur_keys + (str(key), )
+            part_values = _flatten_snap_json_metadata(content[key], cur_keys_loop)
+            all_values = [*all_values, *part_values]
+    elif isinstance(content, dict):
+        if "data" in content.keys():  # we have hit a data entry
+            if content["data"]["type"] == "utc":  # in MJD
+                val = datetime(2000, 1, 1) + timedelta(
+                    days=content["data"]["elems"][0],
+                    seconds=content["data"]["elems"][1],
+                    microseconds=content["data"]["elems"][2],
+                )
+                val = val.timestamp()
+            elif len(content["data"]["elems"]) == 1:
+                val = content["data"]["elems"][0]
+            else:
+                val = content["data"]["elems"]
+            cur_keys_save = cur_keys + (content["name"], )
+            all_values.append([val, cur_keys_save])
+
         else:
-            match = re.search(pattern, content)
-            if match:
-                results[key] = match.group(1)
-            else:
-                results[key] = None
+            cur_keys_loop = cur_keys + (content["name"], )
+            if "elements" in content.keys():
+                cur_keys_loop_el = cur_keys_loop + ("elements", )
+                part_values = _flatten_snap_json_metadata(
+                    content["elements"], cur_keys_loop_el
+                )
+                all_values = [*all_values, *part_values]
+            if "attributes" in content.keys():
+                cur_keys_loop_at = cur_keys_loop + ("attributes", )
+                part_values = _flatten_snap_json_metadata(
+                    content["attributes"], cur_keys_loop_at
+                )
+                all_values = [*all_values, *part_values]
 
-    # Doris5 has size information in ifgs.res file
-    # Try to get the ifg size from ifgs.res next to slave.res, if it exists
-    if patterns_ifg is not None:
-        file_ifg = file.with_name(ifg_file_name)
-        if file_ifg.exists():
-            with open(file_ifg) as f_ifg:
-                content_ifg = f_ifg.read()
-                for key, pattern in RE_PATTERNS_DORIS5_IFG.items():
-                    match = re.search(pattern, content_ifg)
-                    if match:
-                        results[key] = match.group(1)
-                    else:
-                        results[key] = None
-
+    if cur_keys != ():  # we're still in a recursive call
+        return all_values
+    results = {}
+    for val in all_values:
+        results[".".join(val[1])] = val[0]
     return results
 
 
@@ -519,16 +825,22 @@ def _regulate_metadata(metadata, driver):
     elif driver == "doris4":
         time_format = TIME_FORMAT_DORIS4
         unit_conversions = META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4
+    elif driver == "snap":
+        time_format = TIME_FORMAT_SNAP
+        unit_conversions = META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP
 
     list_time = []
     for time in metadata[TIME_STAMP_KEY]:
         try:
-            dt = datetime.strptime(time, time_format)
+            if time_format == "timestamp":  # SNAP returns timestamps
+                dt = datetime.fromtimestamp(time)
+            else:
+                dt = datetime.strptime(time, time_format)
             list_time.append(np.datetime64(dt).astype("datetime64[ns]"))
         except ValueError as e:
             raise ValueError(
                 f"Invalid date format for key: '{TIME_STAMP_KEY}'. "
-                f"Expected format is '{time_format}'."
+                f"Expected format is '{time_format}', got {time}."
             ) from e
     metadata[TIME_STAMP_KEY] = np.sort(np.array(list_time))
 
@@ -543,7 +855,12 @@ def _regulate_metadata(metadata, driver):
         if key in META_ARRAY_KEYS.keys():  # need to regulate this one separately
             regulated_arrays = []
             for arr in metadata[key]:
-                regulated_array = np.zeros((len(arr), len(arr[0])))
+                if META_ARRAY_KEYS[key] == str:
+                    regulated_array = np.zeros(
+                        (len(arr), len(arr[0])), dtype=np.dtypes.StringDType
+                    )
+                else:
+                    regulated_array = np.zeros((len(arr), len(arr[0])))
                 for row in range(len(arr)):
                     for col in range(len(arr[row])):
                         regulated_array[row, col] = META_ARRAY_KEYS[key](arr[row][col])
@@ -582,6 +899,9 @@ def _regulate_metadata(metadata, driver):
             if key in META_INT_KEYS:
                 if isinstance(metadata[key], str):
                     metadata[key] = int(metadata[key])
+                    if key in unit_conversions.keys():
+                        metadata[key] *= unit_conversions[key]
+                elif isinstance(metadata[key], int):  # in case it already is an int
                     if key in unit_conversions.keys():
                         metadata[key] *= unit_conversions[key]
                 elif len(metadata[key]) > 1:  # set with multiple values
