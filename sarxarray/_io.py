@@ -253,34 +253,33 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         dims_non_xy = [dim for dim in data.dims if dim not in ["x", "y"]]
         data = data.drop_dims(dims_non_xy)  # Drop all non-x/y dims
 
+        # Get current epoch
         cur_epoch = data.attrs["time_coverage_start"]
         time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
         epoch = time_stamp.strftime("%Y%m%d")
 
         # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
-        cleaned_data_layer = {}
+        cleaned_data_layers = {}
         for layer in data.data_vars.keys():
             cleaned_name = layer
             for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
                 if re.match(pattern, layer):
                     cleaned_name = key
-            cleaned_data_layer[cleaned_name] = layer
+            cleaned_data_layers[cleaned_name] = layer
 
+        # Assign data
         full_data[epoch] = {
             "data": data,
-            "cleaned_data_layers": cleaned_data_layer,
+            "cleaned_data_layers": cleaned_data_layers,
             "filename": file,
         }
 
-    # Guess mother epoch in full_data by looking for a layer with lat/lon/elev
-    for epoch, data_dict in full_data.items():
-        data = data_dict["data"]
+        # Check if mother epoch
         if any(
-            layer in data.data_vars.keys()
+            layer in cleaned_data_layers
             for layer in ["latitude", "longitude", "elevation"]
         ):
             mother_epoch = epoch
-            break
 
     # sort the provided files chronologically
     sorted_epochs = list(sorted(list(full_data.keys())))
