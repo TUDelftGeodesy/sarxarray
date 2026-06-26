@@ -64,13 +64,11 @@ RE_PATTERNS_DORIS5 = {
         r"\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)"
     ),
     "scene_centre_latitude": (
-        r"Scene_centre_latitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+        r"Scene_centre_latitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
     ),
     "scene_centre_longitude": (
-        r"Scene_centre_longitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
-    )
+        r"Scene_centre_longitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+    ),
 }
 # Regular expressions for reading metadata from DORIS5 interferogram files
 RE_PATTERNS_DORIS5_IFG = {
@@ -141,6 +139,12 @@ RE_PATTERNS_SNAP = {
     ),
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
 }
+# Regular expressions for renaming SNAP Zarr file (ZNAP) datalayers.
+RE_PATTERNS_SNAP_DATALAYER = {
+    "i": r"^i_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
+    "q": r"^q_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., q_VV_19Mar2023
+    "h2ph": r"^h2ph_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., h2ph_VV_19Mar2023
+}
 # Float keys in metadata. They are used to regulate the metadata read as strings
 # Some of these are from DORIS5 only
 META_FLOAT_KEYS = [
@@ -156,7 +160,7 @@ META_FLOAT_KEYS = [
     "pulse_repetition_frequency_raw",
     "azimuth_time_interval",
     "scene_centre_latitude",
-    "scene_centre_longitude"
+    "scene_centre_longitude",
 ]
 # Integer keys in metadata. They are used to regulate the metadata read as strings
 META_INT_KEYS = [
@@ -200,7 +204,7 @@ META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
 }
 
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP = {
-    "radar_frequency": 1_000_000, # originally MHz
+    "radar_frequency": 1_000_000,  # originally MHz
 }
 
 # Time formats for DORIS metadata

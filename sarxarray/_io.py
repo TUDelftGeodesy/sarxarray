@@ -25,6 +25,7 @@ from .conf import (
     RE_PATTERNS_DORIS5,
     RE_PATTERNS_DORIS5_IFG,
     RE_PATTERNS_SNAP,
+    RE_PATTERNS_SNAP_DATALAYER,
     TIME_FORMAT_DORIS4,
     TIME_FORMAT_DORIS5,
     TIME_FORMAT_SNAP,
@@ -256,23 +257,28 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         for layer in data_layers:
             dims = data[layer].dims
             if "x" in dims and "y" in dims and len(dims) == 2:
-                cleaned_name = layer
-                cleaned_name = cleaned_name.replace(f"_{cur_epoch}", "")
-                for pol in ["VV", "VH", "HH", "HV"]:
-                    cleaned_name = cleaned_name.replace(f"_{pol}", "")
+                # clean the layer name as RE_PATTERNS_SNAP_DATALAYER
+                for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
+                    if re.match(pattern, layer):
+                        cleaned_name = key
 
                 cleaned_data_layer[cleaned_name] = layer
-                if (
-                    cleaned_name in ["latitude", "longitude", "elevation"]
-                    and mother_epoch is None
-                ):  # these are expected only at the mother
-                    mother_epoch = epoch
 
         full_data[epoch] = {
             "data": data,
             "cleaned_data_layers": cleaned_data_layer,
             "filename": file,
         }
+
+    # Guess mother epoch in full_data by looking for a layer with lat/lon/elev
+    for epoch, data_dict in full_data.items():
+        data = data_dict["data"]
+        if any(
+            layer in data.data_vars.keys()
+            for layer in ["latitude", "longitude", "elevation"]
+        ):
+            mother_epoch = epoch
+            break
 
     # sort the provided files chronologically
     sorted_epochs = list(sorted(list(full_data.keys())))
@@ -919,3 +925,10 @@ def _regulate_metadata(metadata, driver):
                     logger.warning(warning_msg)
 
     return metadata
+
+
+# def _regulate_znap_layer_name(orig_name:str, cleaned_name:str):
+#     cleaned_name = orig_name
+#     cleaned_name = cleaned_name.replace(f"_{cur_epoch}", "")
+#     for pol in ["VV", "VH", "HH", "HV"]:
+#         cleaned_name = cleaned_name.replace(f"_{pol}", "")
