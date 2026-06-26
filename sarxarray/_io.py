@@ -228,7 +228,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     """
     # Check if snap_znap_archives is a non empty Iterable and not a string
     if not hasattr(snap_znap_archives, "__iter__") or isinstance(
-            snap_znap_archives, str
+        snap_znap_archives, str
     ):
         raise ValueError(
             "snap_znap_archives should be a non-empty Iterable and not a string."
@@ -245,12 +245,13 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
 
     for file in snap_znap_archives:
         data = xr.open_zarr(file, consolidated=False)
-        data_layers = data.original_raster_data_node_order
-        cur_epoch = data_layers[0].split("_")[-1]
-        epoch = datetime.strptime(cur_epoch, "%d%b%Y").strftime("%Y%m%d")
+        cur_epoch = data.attrs["time_coverage_start"]
+        time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
+        epoch = time_stamp.strftime("%Y%m%d")
 
         # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
         # we only preserve the full data layers, as the others cannot be placed
+        data_layers = data.attrs["original_raster_data_node_order"]
         cleaned_data_layer = {}
         for layer in data_layers:
             dims = data[layer].dims
@@ -261,15 +262,16 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                     cleaned_name = cleaned_name.replace(f"_{pol}", "")
 
                 cleaned_data_layer[cleaned_name] = layer
-                if cleaned_name in [
-                    "latitude", "longitude", "elevation"
-                ] and mother_epoch is None:  # these are expected only at the mother
+                if (
+                    cleaned_name in ["latitude", "longitude", "elevation"]
+                    and mother_epoch is None
+                ):  # these are expected only at the mother
                     mother_epoch = epoch
 
         full_data[epoch] = {
             "data": data,
             "cleaned_data_layers": cleaned_data_layer,
-            "filename": file
+            "filename": file,
         }
 
     # sort the provided files chronologically
@@ -293,11 +295,11 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     coords = {
         "azimuth": range(
             metadata["first_line_number"],
-            metadata["first_line_number"] + metadata["number_of_lines"]
+            metadata["first_line_number"] + metadata["number_of_lines"],
         ),
         "range": range(
             metadata["first_pixel_number"],
-            metadata["first_pixel_number"] + metadata["number_of_pixels"]
+            metadata["first_pixel_number"] + metadata["number_of_pixels"],
         ),
         "time": sorted_epochs,
     }
@@ -308,8 +310,10 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     for epoch in sorted_epochs:
         cplx = (
             full_data[epoch]["data"][full_data[epoch]["cleaned_data_layers"]["i"]].data
-            + 1j *
-            full_data[epoch]["data"][full_data[epoch]["cleaned_data_layers"]["q"]].data
+            + 1j
+            * full_data[epoch]["data"][
+                full_data[epoch]["cleaned_data_layers"]["q"]
+            ].data
         )
 
         if slcs is None:
@@ -339,7 +343,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                             (
                                 metadata["number_of_lines"],
                                 metadata["number_of_pixels"],
-                                1
+                                1,
                             )
                         )
                     else:
@@ -350,7 +354,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                             (
                                 metadata["number_of_lines"],
                                 metadata["number_of_pixels"],
-                                1
+                                1,
                             )
                         )
                 else:
@@ -360,7 +364,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                             (
                                 metadata["number_of_lines"],
                                 metadata["number_of_pixels"],
-                                1
+                                1,
                             )
                         )
                     else:
@@ -371,12 +375,10 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                             (
                                 metadata["number_of_lines"],
                                 metadata["number_of_pixels"],
-                                1
+                                1,
                             )
                         )
-                    layer_data = da.concatenate(
-                        [layer_data, cur_layer_data], axis=2
-                    )
+                    layer_data = da.concatenate([layer_data, cur_layer_data], axis=2)
 
             ds_stack = ds_stack.assign(
                 {layer: (("azimuth", "range", "time"), layer_data)}
@@ -392,7 +394,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                     ("azimuth", "range"),
                     full_data[mother_epoch]["data"][
                         full_data[mother_epoch]["cleaned_data_layers"][layer]
-                    ].data
+                    ].data,
                 )
             }
         )
@@ -404,10 +406,10 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
 
 
 def to_binary(
-        output_path: str,
-        data: xr.Dataset | xr.DataArray,
-        data_var_name: str | None = None,
-        allow_overwrite: bool = False
+    output_path: str,
+    data: xr.Dataset | xr.DataArray,
+    data_var_name: str | None = None,
+    allow_overwrite: bool = False,
 ):
     """Write a zarr data layer to a binary file.
 
@@ -439,7 +441,7 @@ def to_binary(
         - When `data` is not an `xr.Dataset` or `xr.DataArray`
 
     KeyError
-        When `data` is an `xr.Dataset` and `data_var_name` is not a data variable in 
+        When `data` is an `xr.Dataset` and `data_var_name` is not a data variable in
         `data`
 
     OSError
@@ -461,10 +463,7 @@ def to_binary(
 
     # Create the memmap
     memmap = np.memmap(
-        output_path,
-        dtype=datalayer.dtype,
-        mode="w+",
-        shape=datalayer.shape
+        output_path, dtype=datalayer.dtype, mode="w+", shape=datalayer.shape
     )
     # Assign the data to the memmap
     memmap[:] = datalayer.data[:]
@@ -771,7 +770,7 @@ def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
     all_values = []
     if isinstance(content, list):
         for key in range(len(content)):
-            cur_keys_loop = cur_keys + (str(key), )
+            cur_keys_loop = cur_keys + (str(key),)
             part_values = _flatten_snap_json_metadata(content[key], cur_keys_loop)
             all_values = [*all_values, *part_values]
     elif isinstance(content, dict):
@@ -787,19 +786,19 @@ def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
                 val = content["data"]["elems"][0]
             else:
                 val = content["data"]["elems"]
-            cur_keys_save = cur_keys + (content["name"], )
+            cur_keys_save = cur_keys + (content["name"],)
             all_values.append([val, cur_keys_save])
 
         else:
-            cur_keys_loop = cur_keys + (content["name"], )
+            cur_keys_loop = cur_keys + (content["name"],)
             if "elements" in content.keys():
-                cur_keys_loop_el = cur_keys_loop + ("elements", )
+                cur_keys_loop_el = cur_keys_loop + ("elements",)
                 part_values = _flatten_snap_json_metadata(
                     content["elements"], cur_keys_loop_el
                 )
                 all_values = [*all_values, *part_values]
             if "attributes" in content.keys():
-                cur_keys_loop_at = cur_keys_loop + ("attributes", )
+                cur_keys_loop_at = cur_keys_loop + ("attributes",)
                 part_values = _flatten_snap_json_metadata(
                     content["attributes"], cur_keys_loop_at
                 )
