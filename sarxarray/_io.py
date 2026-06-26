@@ -30,6 +30,7 @@ from .conf import (
     TIME_FORMAT_DORIS5,
     TIME_FORMAT_SNAP,
     TIME_STAMP_KEY,
+    ZNAP_DATA_VAR_MOTHER,
     _dtypes,
     _memsize_chunk_mb,
 )
@@ -241,173 +242,89 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
 
     # in the .znaps, the dimension x is range, y is azimuth
     # xt and yt are interpolated values at coarse resolution
-    full_data = {}
-    mother_epoch = None
+    ds_stack = None
+    is_mother = False
 
+    # Loop over all ZNAP archives and read into ds_stack
     for file in snap_znap_archives:
-        # open one ZNAP archive
-        data = xr.open_zarr(file, consolidated=False)
-
-        # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
-        # we only preserve the full data layers, as the others cannot be placed
-        dims_non_xy = [dim for dim in data.dims if dim not in ["x", "y"]]
-        data = data.drop_dims(dims_non_xy)  # Drop all non-x/y dims
+        # Read the ZNAP archive and check if it is a mother epoch
+        data, is_mother = _read_one_znap_archive(file)
 
         # Get current epoch
         cur_epoch = data.attrs["time_coverage_start"]
         time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
         epoch = time_stamp.strftime("%Y%m%d")
 
-        # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
-        cleaned_data_layers = {}
-        for layer in data.data_vars.keys():
-            cleaned_name = layer
-            for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
-                if re.match(pattern, layer):
-                    cleaned_name = key
-            cleaned_data_layers[cleaned_name] = layer
+        # If mother epoch
+        # keep variables ZNAP_DATA_VAR_MOTHER separately
+        # Assign an all zero h2ph variable
+        if is_mother:
+            data_mother = data[ZNAP_DATA_VAR_MOTHER]
+            data = data.drop_vars(ZNAP_DATA_VAR_MOTHER)
+            data = data.assign(
+                {"h2ph": (("y", "x"), np.zeros((data.sizes["y"], data.sizes["x"])))}
+            )
 
-        # Assign data
-        full_data[epoch] = {
-            "data": data,
-            "cleaned_data_layers": cleaned_data_layers,
-            "filename": file,
-        }
+        # Assign to ds_stack along the time dimension
+        if ds_stack is None:  # first epoch, initialize ds_stack
+            ds_stack = data.expand_dims(time=[time_stamp])
+            # Drop attrs inherited from the first epoch
+            ds_stack.attrs = {}
+            # Always initialize mother_epoch to None
+            # If first epoch is mother, it will be set to epoch below
+            ds_stack = ds_stack.assign_attrs({"mother_epoch": None})
+        else:
+            ds_stack = xr.concat(
+                [ds_stack, data.expand_dims(time=[time_stamp])],
+                dim="time",
+                combine_attrs="override",  # override the attrs of the first epoch
+            )
 
-        # Check if mother epoch
-        if any(
-            layer in cleaned_data_layers
-            for layer in ["latitude", "longitude", "elevation"]
-        ):
-            mother_epoch = epoch
+        # Modify the ds_stack if mother epoch
+        if is_mother:
+            ds_stack = ds_stack.assign_attrs({"mother_epoch": epoch})
 
-    # sort the provided files chronologically
-    sorted_epochs = list(sorted(list(full_data.keys())))
+    # Assign the mother epoch data to ds_stack
+    ds_stack = ds_stack.assign(data_mother)
 
-    # fallback for when mother epoch is not in the stack
-    if mother_epoch is None:
+    # Read the metadata from the mother epoch if it exists
+    if ds_stack.attrs["mother_epoch"] is not None:
+        ds_stack.attrs["mother_epoch"] = epoch
+        metadata_file = f"{file}/SNAP/product_metadata.json"
+        metadata = read_metadata(metadata_file, driver="snap")
+    else:
         warning_msg = (
-            f"Mother has not been identified. Using first epoch {sorted_epochs[0]} "
-            "for metadata instead."
+            "Mother epoch has not been identified. "
+            "Using first epoch for metadata instead."
         )
         logger.warning(warning_msg)
-        mother_epoch = sorted_epochs[0]
-    daughter_epochs = [epoch for epoch in sorted_epochs if epoch != mother_epoch]
+        metadata_file = f"{snap_znap_archives[0]}/SNAP/product_metadata.json"
+        metadata = read_metadata(metadata_file, driver="snap")
 
-    # read metadata to find the azimuth and range coordinate offsets
-    metadata_file = f"{full_data[mother_epoch]['filename']}/SNAP/product_metadata.json"
-    metadata = read_metadata(metadata_file, driver="snap")
+    # Assign the metadata to the ds_stack attributes
+    ds_stack = ds_stack.assign_attrs({"metadata_mother": metadata})
 
-    #  Initialize stack as a Dataset
-    coords = {
-        "azimuth": range(
-            metadata["first_line_number"],
-            metadata["first_line_number"] + metadata["number_of_lines"],
-        ),
-        "range": range(
-            metadata["first_pixel_number"],
-            metadata["first_pixel_number"] + metadata["number_of_pixels"],
-        ),
-        "time": sorted_epochs,
-    }
-    ds_stack = xr.Dataset(coords=coords)
+    # Rename the coordinates to azimuth and range
+    ds_stack = ds_stack.rename({"y": "azimuth", "x": "range"})
 
-    # handle the complex data, i = real, q = complex
-    slcs = None
-    for epoch in sorted_epochs:
-        cplx = (
-            full_data[epoch]["data"][full_data[epoch]["cleaned_data_layers"]["i"]].data
-            + 1j
-            * full_data[epoch]["data"][
-                full_data[epoch]["cleaned_data_layers"]["q"]
-            ].data
-        )
+    # Re-order dimensions to community preferred ("azimuth", "range", "time") order
+    ds_stack = ds_stack.transpose("azimuth", "range", "time")
 
-        if slcs is None:
-            slc = cplx.reshape(
-                (metadata["number_of_lines"], metadata["number_of_pixels"], 1)
-            )
-            slcs = slc
-        else:
-            slc = cplx.reshape(
-                (metadata["number_of_lines"], metadata["number_of_pixels"], 1)
-            )
-            slcs = da.concatenate([slcs, slc], axis=2)
+    # Shift the azimuth and range coordinates by offset
+    ds_stack = ds_stack.assign_coords(
+        azimuth=ds_stack["azimuth"] + metadata["first_line_number"],
+        range=ds_stack["range"] + metadata["first_pixel_number"],
+    )
 
-    ds_stack = ds_stack.assign({"complex": (("azimuth", "range", "time"), slcs)})
+    # Assign complex
+    ds_stack = ds_stack.assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})
 
-    # retain the additional layers in the daughter znaps (which are time-variant)
-    if len(daughter_epochs) > 0:
-        for layer in full_data[daughter_epochs[0]]["cleaned_data_layers"].keys():
-            if layer in ["i", "q"]:
-                continue  # these are handled separately above
-            layer_data = None
-            for epoch in sorted_epochs:
-                if layer_data is None:
-                    if layer not in full_data[epoch]["cleaned_data_layers"].keys():
-                        # e.g. it does not exist in the mother epoch, so we add zeros
-                        layer_data = da.zeros(
-                            (
-                                metadata["number_of_lines"],
-                                metadata["number_of_pixels"],
-                                1,
-                            )
-                        )
-                    else:
-                        layer_data = full_data[epoch]["data"][
-                            full_data[epoch]["cleaned_data_layers"][layer]
-                        ].data
-                        layer_data = layer_data.reshape(
-                            (
-                                metadata["number_of_lines"],
-                                metadata["number_of_pixels"],
-                                1,
-                            )
-                        )
-                else:
-                    if layer not in full_data[epoch]["cleaned_data_layers"].keys():
-                        # e.g. it does not exist in the mother epoch, so we add zeros
-                        cur_layer_data = da.zeros(
-                            (
-                                metadata["number_of_lines"],
-                                metadata["number_of_pixels"],
-                                1,
-                            )
-                        )
-                    else:
-                        cur_layer_data = full_data[epoch]["data"][
-                            full_data[epoch]["cleaned_layer_names"][layer]
-                        ].data
-                        cur_layer_data = cur_layer_data.reshape(
-                            (
-                                metadata["number_of_lines"],
-                                metadata["number_of_pixels"],
-                                1,
-                            )
-                        )
-                    layer_data = da.concatenate([layer_data, cur_layer_data], axis=2)
-
-            ds_stack = ds_stack.assign(
-                {layer: (("azimuth", "range", "time"), layer_data)}
-            )
-
-    # retain the additional layers in the mother znap (which is time-invariant)
-    for layer in full_data[mother_epoch]["cleaned_data_layers"].keys():
-        if layer in ds_stack.data_vars.keys() or layer in ["i", "q"]:
-            continue  # these are already included
-        ds_stack = ds_stack.assign(
-            {
-                layer: (
-                    ("azimuth", "range"),
-                    full_data[mother_epoch]["data"][
-                        full_data[mother_epoch]["cleaned_data_layers"][layer]
-                    ].data,
-                )
-            }
-        )
-
+    # Calculate amplitude and phase from complex
     ds_stack = ds_stack.slcstack._get_amplitude()
     ds_stack = ds_stack.slcstack._get_phase()
+
+    # Drop the original i and q variables, as they are no longer needed
+    ds_stack = ds_stack.drop_vars(["i", "q"])
 
     return ds_stack
 
@@ -928,8 +845,33 @@ def _regulate_metadata(metadata, driver):
     return metadata
 
 
-# def _regulate_znap_layer_name(orig_name:str, cleaned_name:str):
-#     cleaned_name = orig_name
-#     cleaned_name = cleaned_name.replace(f"_{cur_epoch}", "")
-#     for pol in ["VV", "VH", "HH", "HV"]:
-#         cleaned_name = cleaned_name.replace(f"_{pol}", "")
+def _read_one_znap_archive(file: str | Path) -> (xr.Dataset, bool):
+    """Read a single ZNAP archive produced by SNAP and flag if mother."""
+    # Initialize is_mother flag
+    is_mother = False
+
+    # open one ZNAP archive
+    data = xr.open_zarr(file, consolidated=False)
+
+    # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
+    # we only preserve the full data layers, as the others cannot be placed
+    # drop all non-x/y dims, this also drops tiepoint vars
+    dims_non_xy = [dim for dim in data.dims if dim not in ["x", "y"]]
+    data = data.drop_dims(dims_non_xy)
+
+    # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
+    for layer in data.data_vars.keys():
+        for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
+            if re.match(pattern, layer):
+                data = data.rename({layer: key})
+        # Check if mother epoch
+        if any(layer in data.data_vars.keys() for layer in ZNAP_DATA_VAR_MOTHER):
+            is_mother = True
+
+    # Assign indices as coordinates to x and y
+    # This facilitates the concatenation
+    data = data.assign_coords(
+        {"x": range(data.sizes["x"]), "y": range(data.sizes["y"])}
+    )
+
+    return data, is_mother

@@ -226,3 +226,7 @@ TIME_FORMAT_SNAP = "timestamp"
 
 # Time stamp key
 TIME_STAMP_KEY = "first_azimuth_time"
+
+# SNAP Znap file data variable names
+ZNAP_DATA_VAR_MOTHER = ["longitude", "latitude", "elevation"]
+ZNAP_DATA_VAR_DAUGHTERS = ["i", "q", "h2ph"]
