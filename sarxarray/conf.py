@@ -143,11 +143,14 @@ RE_PATTERNS_SNAP = {
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
 }
 
-# Regular expressions for renaming SNAP Zarr file (ZNAP) datalayers.
+# Regular expressions for reading SNAP Zarr file (ZNAP) datalayers.
 RE_PATTERNS_SNAP_DATALAYER = {
     "i": r"^i_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
     "q": r"^q_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., q_VV_19Mar2023
     "h2ph": r"^h2ph_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., h2ph_VV_19Mar2023
+    "longitude": r"^longitude_(VV|VH|HH|HV)$",  # e.g., longitude_VV
+    "latitude": r"^latitude_(VV|VH|HH|HV)$",  # e.g., latitude_VV
+    "elevation": r"^elevation_(VV|VH|HH|HV)$",  # e.g., elevation_VV
 }
 
 # Float keys in metadata. They are used to regulate the metadata read as strings

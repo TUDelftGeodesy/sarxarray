@@ -245,24 +245,26 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     mother_epoch = None
 
     for file in snap_znap_archives:
+        # open one ZNAP archive
         data = xr.open_zarr(file, consolidated=False)
+
+        # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
+        # we only preserve the full data layers, as the others cannot be placed
+        dims_non_xy = [dim for dim in data.dims if dim not in ["x", "y"]]
+        data = data.drop_dims(dims_non_xy)  # Drop all non-x/y dims
+
         cur_epoch = data.attrs["time_coverage_start"]
         time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
         epoch = time_stamp.strftime("%Y%m%d")
 
-        # there are two types of layers: full data layers [x, y], and tiepoint [xt, yt]
-        # we only preserve the full data layers, as the others cannot be placed
-        data_layers = data.attrs["original_raster_data_node_order"]
+        # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
         cleaned_data_layer = {}
-        for layer in data_layers:
-            dims = data[layer].dims
-            if "x" in dims and "y" in dims and len(dims) == 2:
-                # clean the layer name as RE_PATTERNS_SNAP_DATALAYER
-                for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
-                    if re.match(pattern, layer):
-                        cleaned_name = key
-
-                cleaned_data_layer[cleaned_name] = layer
+        for layer in data.data_vars.keys():
+            cleaned_name = layer
+            for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
+                if re.match(pattern, layer):
+                    cleaned_name = key
+            cleaned_data_layer[cleaned_name] = layer
 
         full_data[epoch] = {
             "data": data,
