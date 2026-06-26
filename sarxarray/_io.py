@@ -244,6 +244,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     # xt and yt are interpolated values at coarse resolution
     ds_stack = None
     is_mother = False
+    data_mother = None
 
     # Loop over all ZNAP archives and read into ds_stack
     for file in snap_znap_archives:
@@ -285,7 +286,15 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             ds_stack = ds_stack.assign_attrs({"mother_epoch": epoch})
 
     # Assign the mother epoch data to ds_stack
-    ds_stack = ds_stack.assign(data_mother)
+    if data_mother is not None:
+        ds_stack = ds_stack.assign(data_mother)
+    else:
+        warning_msg = (
+            "Mother epoch has not been identified. "
+            f"The following variables {ZNAP_DATA_VAR_MOTHER} "
+            "are not present in any of the ZNAP archives. "
+        )
+        logger.warning(warning_msg)
 
     # Read the metadata from the mother epoch if it exists
     if ds_stack.attrs["mother_epoch"] is not None:
