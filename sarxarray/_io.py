@@ -876,11 +876,6 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     for layer in list(data.data_vars):
         for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
             if re.match(pattern, layer):
-                if key in data.data_vars and key != layer:
-                    raise ValueError(
-                        f"Multiple ZNAP datalayers match '{key}' after renaming (e.g. '{layer}'). "
-                        "Please provide a single polarisation/epoch per archive."
-                    )
                 data = data.rename({layer: key})
                 break
 
