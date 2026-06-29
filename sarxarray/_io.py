@@ -243,6 +243,8 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     # Loop over all ZNAP archives and read into ds_stack
     ds_stack = None
     data_mother = None
+    metadata_file = None
+    epoch_file_dict = {}
     for file in snap_znap_archives:
         # Read the ZNAP archive and check if it is a mother epoch
         data, is_mother = _read_one_znap_archive(file)
@@ -251,6 +253,9 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         cur_epoch = data.attrs["time_coverage_start"]
         time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
         epoch = time_stamp.strftime("%Y%m%d")
+
+        # register the epoch and file in a dictionary for later use
+        epoch_file_dict[epoch] = file
 
         # If mother epoch
         # keep variables ZNAP_DATA_VAR_MOTHER separately
@@ -261,6 +266,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             data = data.assign(
                 {"h2ph": (("y", "x"), np.zeros((data.sizes["y"], data.sizes["x"])))}
             )
+            metadata_file = f"{file}/SNAP/product_metadata.json"
 
         # Assign to ds_stack along the time dimension
         if ds_stack is None:  # first epoch, initialize ds_stack
@@ -281,6 +287,9 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         if is_mother:
             ds_stack = ds_stack.assign_attrs({"mother_epoch": epoch})
 
+    # order epoch_file_dict by epoch
+    epoch_file_dict = dict(sorted(epoch_file_dict.items()))
+
     # Assign the mother epoch data to ds_stack
     if data_mother is not None:
         ds_stack = ds_stack.assign(data_mother)
@@ -293,9 +302,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         logger.warning(warning_msg)
 
     # Read the metadata from the mother epoch if it exists
-    if ds_stack.attrs["mother_epoch"] is not None:
-        ds_stack.attrs["mother_epoch"] = epoch
-        metadata_file = f"{file}/SNAP/product_metadata.json"
+    if metadata_file is not None:
         metadata = read_metadata(metadata_file, driver="snap")
     else:
         warning_msg = (
@@ -303,7 +310,8 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             "Using first epoch for metadata instead."
         )
         logger.warning(warning_msg)
-        metadata_file = f"{snap_znap_archives[0]}/SNAP/product_metadata.json"
+        file_first_epoch = list(epoch_file_dict.values())[0]
+        metadata_file = f"{file_first_epoch}/SNAP/product_metadata.json"
         metadata = read_metadata(metadata_file, driver="snap")
     # Assign the metadata to ds_stack.attrs["metadata_mother"]
     ds_stack = ds_stack.assign_attrs({"metadata_mother": metadata})
