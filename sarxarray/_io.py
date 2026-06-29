@@ -240,13 +240,9 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     if len(snap_znap_archives) == 0:
         raise ValueError("snap_znap_archives should be a non-empty Iterable.")
 
-    # in the .znaps, the dimension x is range, y is azimuth
-    # xt and yt are interpolated values at coarse resolution
-    ds_stack = None
-    is_mother = False
-    data_mother = None
-
     # Loop over all ZNAP archives and read into ds_stack
+    ds_stack = None
+    data_mother = None
     for file in snap_znap_archives:
         # Read the ZNAP archive and check if it is a mother epoch
         data, is_mother = _read_one_znap_archive(file)
@@ -309,31 +305,31 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         logger.warning(warning_msg)
         metadata_file = f"{snap_znap_archives[0]}/SNAP/product_metadata.json"
         metadata = read_metadata(metadata_file, driver="snap")
-
-    # Assign the metadata to the ds_stack attributes
+    # Assign the metadata to ds_stack.attrs["metadata_mother"]
     ds_stack = ds_stack.assign_attrs({"metadata_mother": metadata})
 
-    # Rename the coordinates to azimuth and range
-    ds_stack = ds_stack.rename({"y": "azimuth", "x": "range"})
-
-    # Re-order dimensions to community preferred ("azimuth", "range", "time") order
-    ds_stack = ds_stack.transpose("azimuth", "range", "time")
-
-    # Shift the azimuth and range coordinates by offset
-    ds_stack = ds_stack.assign_coords(
-        azimuth=ds_stack["azimuth"] + metadata["first_line_number"],
-        range=ds_stack["range"] + metadata["first_pixel_number"],
+    # Rename and enforce the order of dimensions
+    ds_stack = (
+        ds_stack.rename(
+            {"y": "azimuth", "x": "range"}
+        ).transpose(  # rename the dimensions
+            "azimuth", "range", "time"
+        )  # enforce the order of dimensions
     )
 
-    # Assign complex
-    ds_stack = ds_stack.assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})
+    # Get the complex data variable
+    ds_stack = (
+        ds_stack.assign_coords(
+            azimuth=ds_stack["azimuth"] + metadata["first_line_number"],
+            range=ds_stack["range"] + metadata["first_pixel_number"],
+        )  # shift the azimuth and range coordinates by offset
+        .assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})  # assign complex
+        .drop_vars(["i", "q"])  # drop the original i and q variables
+    )
 
     # Calculate amplitude and phase from complex
     ds_stack = ds_stack.slcstack._get_amplitude()
     ds_stack = ds_stack.slcstack._get_phase()
-
-    # Drop the original i and q variables, as they are no longer needed
-    ds_stack = ds_stack.drop_vars(["i", "q"])
 
     return ds_stack
 
