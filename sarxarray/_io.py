@@ -261,6 +261,15 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         # keep variables ZNAP_DATA_VAR_MOTHER separately
         # Assign an all zero h2ph variable
         if is_mother:
+            # check if mother epoch has already been found
+            if data_mother is not None:
+                raise ValueError(
+                    "Multiple mother epochs found. "
+                    "Please check the ZNAP archives."
+                    "Only one mother epoch can have the following variables: "
+                    f"{ZNAP_DATA_VAR_MOTHER}. "
+                )
+
             data_mother = data[ZNAP_DATA_VAR_MOTHER]
             data = data.drop_vars(ZNAP_DATA_VAR_MOTHER)
             data = data.assign(
