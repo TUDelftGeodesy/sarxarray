@@ -26,6 +26,7 @@ RE_PATTERNS_DORIS4 = {
     "weighting_range": r"Weighting_range:\s+(.+)",
     "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
 }
+
 # Regular expressions for reading metadata from DORIS5 files
 RE_PATTERNS_DORIS5 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
@@ -64,19 +65,19 @@ RE_PATTERNS_DORIS5 = {
         r"\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)"
     ),
     "scene_centre_latitude": (
-        r"Scene_centre_latitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+        r"Scene_centre_latitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
     ),
     "scene_centre_longitude": (
-        r"Scene_centre_longitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
-    )
+        r"Scene_centre_longitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+    ),
 }
+
 # Regular expressions for reading metadata from DORIS5 interferogram files
 RE_PATTERNS_DORIS5_IFG = {
     "number_of_lines": r"Number of lines \(multilooked\):\s+(\d+)",
     "number_of_pixels": r"Number of pixels \(multilooked\):\s+(\d+)",
 }
+
 # Regular expressions for reading metadata from SNAP
 RE_PATTERNS_SNAP = {
     "sar_processor": (
@@ -141,6 +142,17 @@ RE_PATTERNS_SNAP = {
     ),
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
 }
+
+# Regular expressions for reading SNAP Zarr file (ZNAP) datalayers.
+RE_PATTERNS_SNAP_DATALAYER = {
+    "i": r"^i_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
+    "q": r"^q_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., q_VV_19Mar2023
+    "h2ph": r"^h2ph_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., h2ph_VV_19Mar2023
+    "longitude": r"^longitude_(VV|VH|HH|HV)$",  # e.g., longitude_VV
+    "latitude": r"^latitude_(VV|VH|HH|HV)$",  # e.g., latitude_VV
+    "elevation": r"^elevation_(VV|VH|HH|HV)$",  # e.g., elevation_VV
+}
+
 # Float keys in metadata. They are used to regulate the metadata read as strings
 # Some of these are from DORIS5 only
 META_FLOAT_KEYS = [
@@ -156,8 +168,9 @@ META_FLOAT_KEYS = [
     "pulse_repetition_frequency_raw",
     "azimuth_time_interval",
     "scene_centre_latitude",
-    "scene_centre_longitude"
+    "scene_centre_longitude",
 ]
+
 # Integer keys in metadata. They are used to regulate the metadata read as strings
 META_INT_KEYS = [
     "deramp",  # from here DORIS5 only
@@ -168,6 +181,7 @@ META_INT_KEYS = [
     "first_pixel_number",  # from here SNAP
     "first_line_number",
 ]
+
 # Array keys in metadata and their format. Requires re.findall instead of re.match
 # Expects 2D arrays, and a callable variable type as value associated with each key
 META_ARRAY_KEYS = {
@@ -177,6 +191,7 @@ META_ARRAY_KEYS = {
     "orbit_velocity": float,
     "polarisations": str,
 }
+
 # SNAP returns flattened 1D arrays, so we need to tell it the shapes. The auto
 # dimension gets expanded to the total number of inputs, and is required
 META_ARRAY_SHAPES_SNAP = {
@@ -185,6 +200,7 @@ META_ARRAY_SHAPES_SNAP = {
     "orbit_velocity": ("auto", 3),
     "polarisations": ("auto", 1),
 }
+
 # Some keys are not read in in SI units. The following dictionary specifies those
 # keys, and the factor they should be multiplied by to restore them to SI units
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4 = {
@@ -200,12 +216,17 @@ META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
 }
 
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP = {
-    "radar_frequency": 1_000_000, # originally MHz
+    "radar_frequency": 1_000_000,  # originally MHz
 }
 
 # Time formats for DORIS metadata
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
 TIME_FORMAT_SNAP = "timestamp"
+
 # Time stamp key
 TIME_STAMP_KEY = "first_azimuth_time"
+
+# SNAP Znap file data variable names
+ZNAP_DATA_VAR_MOTHER = ["longitude", "latitude", "elevation"]
+ZNAP_DATA_VAR_DAUGHTERS = ["i", "q", "h2ph"]
