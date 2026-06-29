@@ -858,7 +858,7 @@ def _regulate_metadata(metadata, driver):
     return metadata
 
 
-def _read_one_znap_archive(file: str | Path) -> (xr.Dataset, bool):
+def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     """Read a single ZNAP archive produced by SNAP and flag if mother."""
     # Initialize is_mother flag
     is_mother = False
