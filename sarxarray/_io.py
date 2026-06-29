@@ -241,10 +241,10 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         raise ValueError("snap_znap_archives should be a non-empty Iterable.")
 
     # Loop over all ZNAP archives and read into ds_stack
-    ds_stack = None
-    data_mother = None
-    metadata_file = None
-    epoch_file_dict = {}
+    ds_stack = None  # Stack of all epochs as xr.Dataset
+    data_mother = None  # Mother epoch specific xr.Dataset
+    metadata_file = None  # Metadata file, read from mother epoch
+    epoch_file_dict = {}  # Map of epoch to file. snap_znap_archives may not be sorted
     for file in snap_znap_archives:
         # Read the ZNAP archive and check if it is a mother epoch
         data, is_mother = _read_one_znap_archive(file)
