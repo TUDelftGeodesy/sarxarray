@@ -287,6 +287,9 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         if is_mother:
             ds_stack = ds_stack.assign_attrs({"mother_epoch": epoch})
 
+    # sort ds_stack by time
+    ds_stack = ds_stack.sortby("time")
+
     # order epoch_file_dict by epoch
     epoch_file_dict = dict(sorted(epoch_file_dict.items()))
 
