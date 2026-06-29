@@ -873,14 +873,19 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     data = data.drop_dims(dims_non_xy)
 
     # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
-    for layer in data.data_vars.keys():
+    for layer in list(data.data_vars):
         for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
             if re.match(pattern, layer):
+                if key in data.data_vars and key != layer:
+                    raise ValueError(
+                        f"Multiple ZNAP datalayers match '{key}' after renaming (e.g. '{layer}'). "
+                        "Please provide a single polarisation/epoch per archive."
+                    )
                 data = data.rename({layer: key})
-        # Check if mother epoch
-        if any(layer in data.data_vars.keys() for layer in ZNAP_DATA_VAR_MOTHER):
-            is_mother = True
+                break
 
+    # Check if mother epoch
+    is_mother = any(v in data.data_vars for v in ZNAP_DATA_VAR_MOTHER)
     # Assign indices as coordinates to x and y
     # This facilitates the concatenation
     data = data.assign_coords(
