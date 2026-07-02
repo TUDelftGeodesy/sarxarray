@@ -54,7 +54,7 @@ A similar open-source library [`xarray-sentinel`](https://github.com/bopen/xarra
 
 The software has three main components: 
 
-- an I/O module that lazily loads binary SLCs and related metadata
+- an I/O module that lazily loads/writes binary SLCs and related metadata
 - a Stack accessor that provides basic SAR-specific operations (amplitude/phase extraction and Mean-Reflection-Map generation)
 - a utility module that provides functions for multi-Looking and coherence calculation. 
 
