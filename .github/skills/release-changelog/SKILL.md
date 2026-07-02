@@ -11,7 +11,7 @@ Use this skill to generate a changelog section and insert it into docs/CHANGELOG
 
 ## When To Use
 
-- You just created a new release tag and want changelog content.
+- You are preparing a new release and want to generate a new section in the changelog.
 - You want consistent release-note sections across versions.
 
 ## Inputs
@@ -34,9 +34,6 @@ Use this skill to generate a changelog section and insert it into docs/CHANGELOG
   - bash .github/skills/release-changelog/scripts/generate_release_section.sh vX.Y.Z
 - Generate with explicit range:
   - bash .github/skills/release-changelog/scripts/generate_release_section.sh vX.Y.Z vX.Y.(Z-1)
-
-Notes:
-- This supports changelog-first workflows where docs are built from release-triggered actions.
 
 ## Output Style Rules
 
