@@ -50,7 +50,13 @@ A similar open-source library [`xarray-sentinel`](https://github.com/bopen/xarra
 
 ## Software design
 
-`SARXarray` is designed as an extension of Xarray using accessors. This design is motivated by [Xarray community’s recommendation](https://docs.xarray.dev/en/stable/internals/extending-xarray.html), in order to isolate the extension from API changes of the core Xarray library. The software has three main components: an I/O module that lazily loads binary SLCs and related metadata, a Stack accessor that provides SAR-specific operations (amplitude/phase extraction, multi-looking, Mean-Reflection-Map generation, coherence calculation), and utility functions.
+`SARXarray` is designed as an extension of Xarray using accessors. This design is motivated by [Xarray community’s recommendation](https://docs.xarray.dev/en/stable/internals/extending-xarray.html), in order to isolate the extension from API changes of the core Xarray library. 
+
+The software has three main components: 
+
+- an I/O module that lazily loads binary SLCs and related metadata
+- a Stack accessor that provides basic SAR-specific operations (amplitude/phase extraction and Mean-Reflection-Map generation)
+- a utility module that provides functions for multi-Looking and coherence calculation. 
 
 ## Research impact statement
 
