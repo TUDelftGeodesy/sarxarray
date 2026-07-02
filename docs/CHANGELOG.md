@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarxarray repository for more details.
 
-The information in this file can be generated automatically by LLM using the [release-changelog skill](.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
+The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
 ## [v1.2.3] - 2026-01-21
 
