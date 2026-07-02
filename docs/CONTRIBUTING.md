@@ -62,8 +62,9 @@ Alternatively, an [agent skill](../.github/skills/release-changelog/SKILL.md) ha
 - Step 1: Open the AI prompt such as GitHub Copilot, make sure the sarxarray repository is in the context, and then execute:
 
 ```
-release-changelog <NEW_VERSION> # e.g. release-changelog v1.2.4
+release-changelog vX.Y.Z # e.g. release-changelog v1.2.4
 ```
+Alternatively, you can run the helper script `bash .github/skills/release-changelog/scripts/generate_release_section.sh vX.Y.Z` to get bullets for the new release section.
 
 - Step 2: The agent will automatically update the version number in `pyproject.toml` and the changelog in `docs/CHANGELOG.md` **without saving the changes**. You need to review the changes, accept/reject/revise them, and then save the changes.
 
