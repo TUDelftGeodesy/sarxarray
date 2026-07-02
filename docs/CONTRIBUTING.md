@@ -44,3 +44,29 @@ to see if someone already filed the same issue;
 - create the pull request, e.g. following [the instructions: creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
+
+## Making a release (only relevant for maintainers)
+
+For maintainers, please follow these steps:
+
+- Step1: Update version in pyproject.toml
+- Step2: Update `docs/CHANGELOG.md` with new change information
+- Step3: Create release/tag at https://github.com/TUDelftGeodesy/sarxarray/releases
+
+### Using agent skill to make a release
+
+**NOTE: using the agent skill is optional and with cost tokens.**
+
+Alternatively, an [agent skill](../.github/skills/release-changelog/SKILL.md) has been implemented to help maintainers to automatically update the version number in `pyproject.toml` and the changelog in `docs/CHANGELOG.md`. If you want to use this skill, please follow these steps:
+
+- Step 1: Open the AI prompt such as GitHub Copilot, make sure the sarxarray repository is in the context, and then execute:
+
+```
+release-changelog <NEW_VERSION> # e.g. release-changelog v1.2.4
+```
+
+- Step 2: The agent will automatically update the version number in `pyproject.toml` and the changelog in `docs/CHANGELOG.md` **without saving the changes**. You need to review the changes, accept/reject/revise them, and then save the changes.
+
+- Step 3: Commit the changes and push to the repository.
+
+- Step 4: Create a new release/tag.
