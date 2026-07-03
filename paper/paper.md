@@ -39,7 +39,7 @@ Satellite-based SAR generates data stacks with long temporal coverage, wide spat
 
 To facilitate efficient processing of SLC SAR stacks and minimize code customization, we developed `SARXarray`. 
 
-`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of computational infrastructures. 
+`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
 
 ## State of the field
 
