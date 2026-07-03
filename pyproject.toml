@@ -16,7 +16,8 @@ dependencies = [
 ]
 description = "Xarray extension for Synthetic Aperture Radar (SAR) data"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
     {name = "Ou Ku", email = "o.ku@esciencecenter.nl"},
     {name = "Fakhereh Sarah Alidoost"},
@@ -29,7 +30,6 @@ keywords = ["radar", "sar", "insar", "earth observation", "distributed computing
 classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: Apache Software License',
     'Natural Language :: English',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',

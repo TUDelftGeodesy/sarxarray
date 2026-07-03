@@ -31,7 +31,7 @@ bibliography: paper.bib
 
 ## Summary
 
-Satellite-based Synthetic Aperture Radar (SAR) provides invaluable data for Earth Observation. The Interferometric SAR (InSAR) technique [@hanssen01], which utilizes a stack of SAR images in Single Look Complex (SLC) format, plays a significant role in various surface motion monitoring applications, e.g. civil-infrastructure stability [@chang2014detection; @chang2017railway; @ozer2018applicability], and hydrocarbons extraction [@fokker2016application; @ZHANG2022102847]. To facilitate advanced data processing for InSAR communities, we developed `SARXarray`, a Xarray extension for handling co-registered SLC SAR stacks. 
+Satellite-based Synthetic Aperture Radar (SAR) provides invaluable data for Earth Observation. The Interferometric SAR (InSAR) technique [@hanssen01], which utilizes a stack of SAR images in Single Look Complex (SLC) format, plays a significant role in various surface motion monitoring applications, e.g. civil-infrastructure stability [@chang2014detection; @chang2017railway; @ozer2018applicability], and hydrocarbon extraction [@fokker2016application; @ZHANG2022102847]. To facilitate advanced data processing for InSAR communities, we developed `SARXarray`, a Xarray extension for handling co-registered SLC SAR stacks. 
 
 ## Statement of Need
 
@@ -39,7 +39,7 @@ Satellite-based SAR generates data stacks with long temporal coverage, wide spat
 
 To facilitate efficient processing of SLC SAR stacks and minimize code customization, we developed `SARXarray`. 
 
-`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of computational infrastructures. 
+`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
 
 ## State of the field
 
@@ -54,7 +54,7 @@ A similar open-source library [`xarray-sentinel`](https://github.com/bopen/xarra
 
 The software has three main components: 
 
-- an I/O module that lazily loads binary SLCs and related metadata
+- an I/O module that lazily loads/writes binary SLCs and related metadata
 - a Stack accessor that provides basic SAR-specific operations (amplitude/phase extraction and Mean-Reflection-Map generation)
 - a utility module that provides functions for multi-Looking and coherence calculation. 
 
