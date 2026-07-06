@@ -141,7 +141,10 @@ RE_PATTERNS_SNAP = {
         r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_x"
     ),
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
-    "daughter_file": r"[\d]+.Slave_Metadata.elements.[\d]+.*_Orb_[\d]{2}[A-Z][a-z]{2}[\d]{4}.attributes.[\d]+.PRODUCT$",
+    "daughter_file": (
+        r"[\d]+.Slave_Metadata.elements.[\d]+.*_Orb_[\d]{2}[A-Z][a-z]{2}[\d]{4}."
+        r"attributes.[\d]+.PRODUCT$"
+    ),
     "mother_file": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PRODUCT$",
 }
 
