@@ -141,6 +141,8 @@ RE_PATTERNS_SNAP = {
         r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_x"
     ),
     "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
+    "daughter_file": r"[\d]+.Slave_Metadata.elements.[\d]+.*_Orb_[\d]{2}[A-Z][a-z]{2}[\d]{4}.attributes.[\d]+.PRODUCT$",
+    "mother_file": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PRODUCT$",
 }
 
 # Regular expressions for reading SNAP Zarr file (ZNAP) datalayers.
@@ -190,6 +192,7 @@ META_ARRAY_KEYS = {
     "orbit_position": float,
     "orbit_velocity": float,
     "polarisations": str,
+    "daughter_file": str,
 }
 
 # SNAP returns flattened 1D arrays, so we need to tell it the shapes. The auto
@@ -199,6 +202,7 @@ META_ARRAY_SHAPES_SNAP = {
     "orbit_position": ("auto", 3),
     "orbit_velocity": ("auto", 3),
     "polarisations": ("auto", 1),
+    "daughter_file": ("auto", 1),
 }
 
 # Some keys are not read in in SI units. The following dictionary specifies those

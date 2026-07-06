@@ -227,6 +227,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     ------
     ValueError
         If `snap_znap_archives` is empty or not iterable
+        If the timestamp of the image cannot be found in the metadata
     """
     # Check if snap_znap_archives is a non empty Iterable and not a string
     if not hasattr(snap_znap_archives, "__iter__") or isinstance(
@@ -250,8 +251,19 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         data, is_mother = _read_one_znap_archive(file)
 
         # Get current epoch
-        cur_epoch = data.attrs["time_coverage_start"]
-        time_stamp = datetime.strptime(cur_epoch, "%Y-%m-%dT%H:%M:%S.%fZ")
+        metadata = read_metadata(f"{file}/SNAP/product_metadata.json", driver="snap")
+        if is_mother:
+            cur_epoch_raw = metadata["mother_file"]
+        else:
+            cur_epoch_raw = metadata["daughter_file"][0][0]  # pick the first one
+        cur_epochs = cur_epoch_raw.split("_")
+        # Match on YYYYMMDDTHHMMSS, 8 digits, letter T, 6 digits
+        matches = list(filter(re.compile(r"^[\d]{8}T[\d]{6}$").match, cur_epochs))
+        if len(matches) == 0:
+            raise ValueError(
+                f"Could not find epoch timestamp YYYYMMDDTHHMMSS in {cur_epoch_raw}."
+            )
+        time_stamp = datetime.strptime(matches[0], "%Y%m%dT%H%M%S")
         epoch = time_stamp.strftime("%Y%m%d")
 
         # register the epoch and file in a dictionary for later use
@@ -696,7 +708,7 @@ def _parse_metadata(file, driver, ifg_file_name):
         raw_keys = [key for key in raw_results.keys()]
         for key, pattern in patterns.items():
             matches = list(filter(re.compile(pattern).match, raw_keys))
-            if len(matches) == 1:
+            if len(matches) == 1 and key not in array_shapes.keys():
                 results[key] = raw_results[matches[0]]
             else:
                 results[key] = [raw_results[match] for match in matches]
