@@ -39,7 +39,7 @@ Satellite-based SAR generates data stacks with long temporal coverage, wide spat
 
 To facilitate efficient processing of SLC SAR stacks and minimize code customization, we developed `SARXarray`. 
 
-`SARXarray` leverages two well-established Python libraries `Xarray` and `Dask` from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
+`SARXarray` leverages two well-established Python libraries `Xarray` [@hoyer2017xarray] and `Dask` [@rocklin2015] from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
 
 ## State of the field
 
@@ -62,7 +62,7 @@ The software has three main components:
 
 `SARXarray` is a dependency of [CAROLINE](https://github.com/TUDelftGeodesy/caroline) (Contextual and Autonomous processing of satellite Radar Observations for Learning and Interpreting the Natural and built Environment), which is an InSAR processing framework developed by the InSAR group of Delft University of Technology. It has facilitated the data processing of multiple InSAR research projects [@LUMBANGAOL2025117551; @brouwer11131159; @conroy10642504].  
 
-`SARXarray` is a recognized related project of the Xarray ecosystem, see the [Xarray user-guide page](https://docs.xarray.dev/en/stable/user-guide/extensions.html).
+`SARXarray` is a recognized related project of the Xarray ecosystem, see the [Xarray user-guide page](https://docs.xarray.dev/en/stable/user-guide/ecosystem.html#geosciences).
 
 ## Tutorial
 
