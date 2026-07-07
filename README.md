@@ -1,6 +1,6 @@
 # SARXarray
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7717027.svg)](https://doi.org/10.5281/zenodo.7717027)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.7717027-blue.svg)](https://doi.org/10.5281/zenodo.7717027)
 [![PyPI](https://img.shields.io/pypi/v/sarxarray.svg?colorB=blue)](https://pypi.python.org/project/sarxarray/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TUDelftGeodesy_sarxarray&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=TUDelftGeodesy_sarxarray)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7980/badge)](https://www.bestpractices.dev/projects/7980)
