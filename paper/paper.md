@@ -62,7 +62,7 @@ The software has three main components:
 
 `SARXarray` is a dependency of [CAROLINE](https://github.com/TUDelftGeodesy/caroline) (Contextual and Autonomous processing of satellite Radar Observations for Learning and Interpreting the Natural and built Environment), which is an InSAR processing framework developed by the InSAR group of Delft University of Technology. It has facilitated the data processing of multiple InSAR research projects [@LUMBANGAOL2025117551; @brouwer11131159; @conroy10642504].  
 
-`SARXarray` is a recognized related project of the Xarray ecosystem, see the [Xarray user-guide page](https://docs.xarray.dev/en/stable/user-guide/extensions.html).
+`SARXarray` is a recognized related project of the Xarray ecosystem, see the [Xarray user-guide page](https://docs.xarray.dev/en/stable/user-guide/ecosystem.html#geosciences).
 
 ## Tutorial
 
