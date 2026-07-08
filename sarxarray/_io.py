@@ -332,7 +332,6 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         )
         ds_stack = ds_stack.assign(data_mother_no_time_dims)
         ds_stack = ds_stack.assign_attrs({"mother_epoch": mother_epoch})
-        import pdb; pdb.set_trace()
     else:
         warning_msg = (
             "Mother epoch has not been identified. "
