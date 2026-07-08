@@ -430,8 +430,8 @@ class TestReadMetadata:
         assert np.isclose(metadata["total_azimuth_bandwidth"], 327.0)
         assert np.isclose(metadata["weighting_azimuth"], 1.0)
         assert np.isclose(metadata["first_range_time"], 0.003016875156393297)
-        assert np.isclose(metadata["range_sampling_rate"], 64.34523812571427)
-        assert np.isclose(metadata["total_range_bandwidth"], 56.5)
+        assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
+        assert np.isclose(metadata["total_range_bandwidth"], 56500000)
         assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
         assert np.allclose(
             metadata["orbit_position"][0],

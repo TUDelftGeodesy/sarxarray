@@ -244,6 +244,8 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     # Loop over all ZNAP archives and read into ds_stack
     ds_stack = None  # Stack of all epochs as xr.Dataset
     data_mother = None  # Mother epoch specific xr.Dataset
+    mother_epoch = None  # Mother epoch
+    mother_timestamp = None  # Mother timestamp
     metadata_file = None  # Metadata file, read from mother epoch
     epoch_file_dict = {}  # Map of epoch to file. snap_znap_archives may not be sorted
     for file in snap_znap_archives:
@@ -282,15 +284,13 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                     f"{ZNAP_DATA_VAR_MOTHER}. "
                 )
 
-            data_mother = data[ZNAP_DATA_VAR_MOTHER]
-            data = data.drop_vars(ZNAP_DATA_VAR_MOTHER)
-            data = data.assign(
-                {"h2ph": (("y", "x"), np.zeros((data.sizes["y"], data.sizes["x"])))}
-            )
+            data_mother = data
+            mother_epoch = epoch
+            mother_timestamp = time_stamp
             metadata_file = f"{file}/SNAP/product_metadata.json"
 
         # Assign to ds_stack along the time dimension
-        if ds_stack is None:  # first epoch, initialize ds_stack
+        elif ds_stack is None:  # first epoch, initialize ds_stack
             ds_stack = data.expand_dims(time=[time_stamp])
             # Drop attrs inherited from the first epoch
             ds_stack.attrs = {}
@@ -304,19 +304,35 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
                 combine_attrs="override",  # override the attrs of the first epoch
             )
 
-        # Modify the ds_stack if mother epoch
-        if is_mother:
-            ds_stack = ds_stack.assign_attrs({"mother_epoch": epoch})
-
-    # sort ds_stack by time
-    ds_stack = ds_stack.sortby("time")
-
-    # order epoch_file_dict by epoch
-    epoch_file_dict = dict(sorted(epoch_file_dict.items()))
-
-    # Assign the mother epoch data to ds_stack
-    if data_mother is not None:
-        ds_stack = ds_stack.assign(data_mother)
+    # If it exists, add the mother epoch data to ds_stack, separated by variables
+    # with and without time dimension. For those that only exist at daughter epochs
+    # layers of zeros are added
+    if mother_epoch is not None:
+        data_mother_no_time_dims = data_mother
+        data_mother_time_dims = data_mother
+        for layer in ds_stack.data_vars:
+            if layer not in data_mother_time_dims.data_vars:
+                data_mother_time_dims = data_mother_time_dims.assign(
+                   {layer: (
+                       ("y", "x"),
+                       da.zeros((ds_stack.sizes["y"], ds_stack.sizes["x"])),
+                   )}
+                )
+            else:
+                # it exists already, so we need to remove it from the no time dimension
+                # part of the dataset
+                data_mother_no_time_dims = data_mother_no_time_dims.drop_vars([layer])
+        data_mother_time_dims = data_mother_time_dims.drop_vars(
+            data_mother_no_time_dims.data_vars
+        )
+        ds_stack = xr.concat(
+            [ds_stack, data_mother_time_dims.expand_dims(time=[mother_timestamp])],
+            dim="time",
+            combine_attrs="override",  # override the attrs of the first epoch
+        )
+        ds_stack = ds_stack.assign(data_mother_no_time_dims)
+        ds_stack = ds_stack.assign_attrs({"mother_epoch": mother_epoch})
+        import pdb; pdb.set_trace()
     else:
         warning_msg = (
             "Mother epoch has not been identified. "
@@ -324,6 +340,12 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             "are not present in any of the ZNAP archives. "
         )
         logger.warning(warning_msg)
+
+    # sort ds_stack by time
+    ds_stack = ds_stack.sortby("time")
+
+    # order epoch_file_dict by epoch
+    epoch_file_dict = dict(sorted(epoch_file_dict.items()))
 
     # Read the metadata from the mother epoch if it exists
     if metadata_file is not None:
@@ -900,7 +922,12 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     for layer in list(data.data_vars):
         for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
             if re.match(pattern, layer):
-                data = data.rename({layer: key})
+                if key == "pol_date":
+                    use_key = "_".join(layer.split("_")[:-2])
+                    data = data.rename({layer: use_key})
+                elif key == "pol":
+                    use_key = "_".join(layer.split("_")[:-1])
+                    data = data.rename({layer: use_key})
                 break
 
     # Check if mother epoch

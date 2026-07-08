@@ -150,12 +150,8 @@ RE_PATTERNS_SNAP = {
 
 # Regular expressions for reading SNAP Zarr file (ZNAP) datalayers.
 RE_PATTERNS_SNAP_DATALAYER = {
-    "i": r"^i_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
-    "q": r"^q_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., q_VV_19Mar2023
-    "h2ph": r"^h2ph_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., h2ph_VV_19Mar2023
-    "longitude": r"^longitude_(VV|VH|HH|HV)$",  # e.g., longitude_VV
-    "latitude": r"^latitude_(VV|VH|HH|HV)$",  # e.g., latitude_VV
-    "elevation": r"^elevation_(VV|VH|HH|HV)$",  # e.g., elevation_VV
+    "pol_date": r"^.+_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
+    "pol": r"^.+_(VV|VH|HH|HV)$",  # e.g., latitude_VV
 }
 
 # Float keys in metadata. They are used to regulate the metadata read as strings
@@ -223,6 +219,8 @@ META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
 }
 
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP = {
+    "range_sampling_rate": 1_000_000,  # originally MHz
+    "total_range_bandwidth": 1_000_000,  # originally MHz17
     "radar_frequency": 1_000_000,  # originally MHz
 }
 
@@ -236,4 +234,3 @@ TIME_STAMP_KEY = "first_azimuth_time"
 
 # SNAP Znap file data variable names
 ZNAP_DATA_VAR_MOTHER = ["longitude", "latitude", "elevation"]
-ZNAP_DATA_VAR_DAUGHTERS = ["i", "q", "h2ph"]
