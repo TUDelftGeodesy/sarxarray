@@ -228,6 +228,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
     ValueError
         If `snap_znap_archives` is empty or not iterable
         If the timestamp of the image cannot be found in the metadata
+        If multiple mother images are identified
     """
     # Check if snap_znap_archives is a non empty Iterable and not a string
     if not hasattr(snap_znap_archives, "__iter__") or isinstance(
