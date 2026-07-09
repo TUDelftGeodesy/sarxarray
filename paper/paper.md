@@ -43,9 +43,9 @@ To facilitate efficient processing of SLC SAR stacks and minimize code customiza
 
 ## State of the field
 
-A similar open-source library `xarray-sentinel`[@xarray-sentinel] exists for handling raw Sentinel-1 GRD and SLC data as lazy-loaded Xarray Datasets. Despite the similar goals of digesting SAR data into lazy-loaded Xarray Datasets, `SARXarray` and `xarray-sentinel` are designed for different applications:
+A similar open-source library [`xarray-sentinel`](https://github.com/bopen/xarray-sentinel) exists for handling raw Sentinel-1 GRD and SLC data as lazy-loaded Xarray Datasets. Despite the similar goals of digesting SAR data into lazy-loaded Xarray Datasets, `SARXarray` and `xarray-sentinel` are designed for different applications:
 
-- `SARXarray` is designed to handle co-registered SLC stacks, instead of raw Sentinel-1 data products from European Space Agency (ESA). It is able to lazily read the output of two common SLC co-registration tools: [`DORIS`](https://doris.tudelft.nl/) and [`SNAP`](https://step.esa.int/main/download/snap-download/) into Xarray objects. The two tools perform the necessary coregistration step, which aligns the SLCs in a stack to a common reference frame. The generated outputs can be further used in Time-Series InSAR (TS-InSAR) processing.
+- `SARXarray` is designed to handle co-registered SLC stacks, instead of raw Sentinel-1 data. It supports the output of two common SLC co-registration tools: [`DORIS`](https://doris.tudelft.nl/) and [`SNAP`](https://step.esa.int/main/download/snap-download/), instead of raw Sentinel-1 data products from European Space Agency (ESA).
 - `SARXarray` supports interferometric stacks from other sensors than Sentinel-1, as long as they can be co-registered by SNAP or DORIS. It reads the output from the two co-registration tools, and relies on them to handle the specificities of different sensors.
 
 ## Software design
@@ -82,7 +82,7 @@ The tutorial includes the following steps:
 
 ## Acknowledgements
 
-The authors express sincere gratitude to the Dutch Research Council (Nederlandse Organisatie voor Wetenschappelijk Onderzoek, NWO) for their generous funding of the `SARXarray` development through the Collaboration in Innovative Technologies (CIT 2021) Call, grant NLESC.CIT.2021.006. We would like to extend special thanks to SURF for providing valuable computational resources for `SARXarray` testing via grants EINF-2051, EINF-4287 and EINF-6883.
+The authors express sincere gratitude to the Dutch Research Council (Nederlandse Organisatie voor Wetenschappelijk Onderzoek, NWO) for their generous funding of the `SARXarray` development through the Collaboration in Innovative Technologies (CIT 2021) Call, grant NLESC.CIT.2021.006. Special thanks to SURF for providing valuable computational resources for `SARXarray` testing via grants EINF-2051, EINF-4287 and EINF-6883.
 
 We would also like to thank Dr. Francesco Nattino and Dr. Meiert Willem Grootes of the Netherlands eScience Center for the insightful discussions, which are important contributions to this work.
 
