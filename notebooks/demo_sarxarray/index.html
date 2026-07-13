@@ -2114,6 +2114,21 @@ Data variables:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The loaded <code>stack</code> variable is an <code>xarray.Dataset</code> object, which contains three data variables: <code>complex</code>, <code>amplitude</code>, and <code>phase</code>. The three variables are read as Dask arrays, which is not loaded into memory until you explicitly call methods like <code>compute()</code> or <code>persist()</code>. There are two advantages of using Dask arrays:</p>
+<ul>
+<li>This allows you to work with larger-than-memory datasets.</li>
+<li>It allows easy parallelization of computations, since Dask arrays are chunked by default.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="append-georeferenced-coordinates">Append georeferenced coordinates<a class="anchor-link" href="#append-georeferenced-coordinates">¶</a></h2><p>The <code>sarxarray</code> is implemented as an extension of <code>Xarray.Dataset</code>, which means we can modify the <code>stack</code> variable as a normal <code>Dataset</code> object. For example, we can append geo-coordinates to the loaded stack.</p>
 </div>
 </div>

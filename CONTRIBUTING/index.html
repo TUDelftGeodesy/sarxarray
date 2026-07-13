@@ -758,6 +758,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#making-a-release-only-relevant-for-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making a release (only relevant for maintainers)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making a release (only relevant for maintainers)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-agent-skill-to-make-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using agent skill to make a release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -879,6 +907,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#making-a-release-only-relevant-for-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making a release (only relevant for maintainers)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making a release (only relevant for maintainers)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-agent-skill-to-make-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using agent skill to make a release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -945,6 +1001,33 @@ to see if someone already filed the same issue;</li>
 <li>create the pull request, e.g. following <a href="https://help.github.com/articles/creating-a-pull-request/">the instructions: creating a pull request</a>.</li>
 </ul>
 <p>In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.</p>
+<h2 id="making-a-release-only-relevant-for-maintainers">Making a release (only relevant for maintainers)</h2>
+<p>For maintainers, please follow these steps:</p>
+<ul>
+<li>Step1: Update version in pyproject.toml</li>
+<li>Step2: Update <code>docs/CHANGELOG.md</code> with new change information</li>
+<li>Step3: Create release/tag at https://github.com/TUDelftGeodesy/sarxarray/releases</li>
+</ul>
+<h3 id="using-agent-skill-to-make-a-release">Using agent skill to make a release</h3>
+<p><strong>NOTE: using the agent skill is optional and with cost tokens.</strong></p>
+<p>Alternatively, an <a href="../.github/skills/release-changelog/SKILL.md">agent skill</a> has been implemented to help maintainers to automatically update the version number in <code>pyproject.toml</code> and the changelog in <code>docs/CHANGELOG.md</code>. If you want to use this skill, please follow these steps:</p>
+<ul>
+<li>Step 1: Open the AI prompt such as GitHub Copilot, make sure the sarxarray repository is in the context, and then execute:</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>release-changelog vX.Y.Z # e.g. release-changelog v1.2.4
+</code></pre></div>
+Alternatively, you can run the helper script <code>bash .github/skills/release-changelog/scripts/generate_release_section.sh vX.Y.Z</code> to get bullets for the new release section.</p>
+<ul>
+<li>
+<p>Step 2: The agent will automatically update the version number in <code>pyproject.toml</code> and the changelog in <code>docs/CHANGELOG.md</code> <strong>without saving the changes</strong>. You need to review the changes, accept/reject/revise them, and then save the changes.</p>
+</li>
+<li>
+<p>Step 3: Commit the changes and push to the repository.</p>
+</li>
+<li>
+<p>Step 4: Create a new release/tag.</p>
+</li>
+</ul>
 
 
 
