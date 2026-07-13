@@ -11,7 +11,7 @@ authors:
   - name: Ou Ku
     orcid: 0000-0002-5373-5209
     affiliation: 1 
-  - name: Fakhereh Alidoost
+  - name: Fakhereh (Sarah) Alidoost
     orcid: 0000-0001-8407-6472
     affiliation: 1
   - name: Simon van Diepen
