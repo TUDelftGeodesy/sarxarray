@@ -677,7 +677,7 @@ def _parse_metadata(file, driver, ifg_file_name):
             content = json.load(f)
 
         raw_results = _flatten_snap_json_metadata(content)
-        raw_keys = [key for key in raw_results.keys()]
+        raw_keys = list(raw_results.keys())
         for key, pattern in patterns.items():
             matches = list(filter(re.compile(pattern).match, raw_keys))
             if len(matches) == 1 and key not in array_shapes.keys():
