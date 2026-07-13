@@ -7,6 +7,11 @@ See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarx
 
 The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
+## [v1.3.1] - 2026-07-13
+
+## Changed
+- Removed `.zenodo.json` from the repository to unify the citation information with the `CITATION.cff` file.
+
 ## [v1.3.0] - 2026-07-10
 
 ### Added
