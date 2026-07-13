@@ -78,7 +78,7 @@ The tutorial includes the following steps:
 - Applying common SAR operations on the loaded stack such as:
   - Multi-Looking 
   - Creation of a Mean-Reflectivity-Map (MRM)
-  - Calculation of coherence
+  - Estimation of coherence
 
 ## Acknowledgements
 
