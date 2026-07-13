@@ -699,50 +699,39 @@ def _parse_metadata(file, driver, ifg_file_name):
 
 
 def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
-    """Extract all values in a nested dict/list into a dict with as key the path."""
-    all_values = []
+    """Extract all values in nested SNAP metadata into `path -> value` mappings."""
+    flattened_values = []
+
     if isinstance(content, list):
-        for key in range(len(content)):
-            cur_keys_loop = cur_keys + (str(key),)
-            part_values = _flatten_snap_json_metadata(content[key], cur_keys_loop)
-            all_values = [*all_values, *part_values]
+        for index, item in enumerate(content):
+            list_item_keys = cur_keys + (str(index),)
+            flattened_values.extend(_flatten_snap_json_metadata(item, list_item_keys))
+
     elif isinstance(content, dict):
-        if "data" in content.keys():  # we have hit a data entry
-            if content["data"]["type"] == "utc":  # in MJD
-                val = datetime(2000, 1, 1) + timedelta(
-                    days=content["data"]["elems"][0],
-                    seconds=content["data"]["elems"][1],
-                    microseconds=content["data"]["elems"][2],
-                )
-                val = val.timestamp()
-            elif len(content["data"]["elems"]) == 1:
-                val = content["data"]["elems"][0]
-            else:
-                val = content["data"]["elems"]
-            cur_keys_save = cur_keys + (content["name"],)
-            all_values.append([val, cur_keys_save])
+        node_name = content["name"]
+        node_keys = cur_keys + (node_name,)
 
+        if "data" in content:
+            value = _parse_snap_data_entry_value(content["data"])
+            flattened_values.append([value, node_keys])
         else:
-            cur_keys_loop = cur_keys + (content["name"],)
-            if "elements" in content.keys():
-                cur_keys_loop_el = cur_keys_loop + ("elements",)
-                part_values = _flatten_snap_json_metadata(
-                    content["elements"], cur_keys_loop_el
+            for child_key in ("elements", "attributes"):
+                child_content = content.get(child_key)
+                if child_content is None:
+                    continue
+                child_keys = node_keys + (child_key,)
+                flattened_values.extend(
+                    _flatten_snap_json_metadata(child_content, child_keys)
                 )
-                all_values = [*all_values, *part_values]
-            if "attributes" in content.keys():
-                cur_keys_loop_at = cur_keys_loop + ("attributes",)
-                part_values = _flatten_snap_json_metadata(
-                    content["attributes"], cur_keys_loop_at
-                )
-                all_values = [*all_values, *part_values]
 
-    if cur_keys != ():  # we're still in a recursive call
-        return all_values
-    results = {}
-    for val in all_values:
-        results[".".join(val[1])] = val[0]
-    return results
+    # Recursive calls return (value, key_path) pairs for their parent to aggregate.
+    if cur_keys:
+        return flattened_values
+
+    result = {}
+    for value, key_path in flattened_values:
+        result[".".join(key_path)] = value
+    return result
 
 
 def _regulate_metadata(metadata, driver):
@@ -975,3 +964,21 @@ def _append_mother(
     )
     ds_stack = ds_stack.assign(data_mother_no_time_dims)
     return ds_stack.assign_attrs({"mother_epoch": mother_epoch})
+
+
+def _parse_snap_data_entry_value(data: dict):
+    """Convert one SNAP metadata `data` block to a scalar/list value."""
+    elems = data["elems"]
+
+    if data["type"] == "utc":
+        # SNAP stores UTC as [days, seconds, microseconds] since 2000-01-01.
+        dt = datetime(2000, 1, 1) + timedelta(
+            days=elems[0],
+            seconds=elems[1],
+            microseconds=elems[2],
+        )
+        return dt.timestamp()
+
+    if len(elems) == 1:
+        return elems[0]
+    return elems
