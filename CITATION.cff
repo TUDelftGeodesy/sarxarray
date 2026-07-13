@@ -16,14 +16,16 @@ authors:
     orcid: 'https://orcid.org/0000-0002-5373-5209'
   - given-names: Fakhereh (Sarah)
     family-names: Alidoost
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0001-8407-6472'
   - given-names: Simon
     family-names: van Diepen
-  - given-names: Pranav
-    family-names: Chandramouli
-  - given-names: Francesco 
-    family-names: Nattino
+    affiliation: Delft University of Technology
+    orcid: 'https://orcid.org/0000-0002-9350-3779'
   - given-names: Freek
     family-names: van Leijen
+    affiliation: Delft University of Technology
+    orcid: 'https://orcid.org/0000-0002-2582-9267'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7717112

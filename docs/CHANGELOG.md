@@ -7,6 +7,25 @@ See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarx
 
 The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
+## [v1.3.0] - 2026-07-10
+
+### Added
+- Added `crop` for slicing radar datasets and data arrays by polygon or bounding box.
+- Added `to_binary` for exporting data arrays and dataset variables to raw binary files.
+- Added an agent skill `.github/skills/release-changelog` for generating changelog entries from GitHub release notes and commit messages.
+
+### Changed
+- Hardened binary and metadata I/O validation, including clearer handling of empty input file lists and malformed Doris metadata.
+- Added a deprecation warning on `slcstack.point_selection` and directed users to `depsi.ps_selection`.
+- Expanded API and notebook documentation around new I/O and processing workflows.
+
+### Fixed
+- Avoided failures in metadata parsing when optional interferogram fields are missing.
+- Added regression coverage for overwrite protection, crop edge cases, and metadata-reader error paths.
+
+### Docs
+- Added the JOSS paper manuscript, "SARXarray: Xarray extension for Synthetic Aperture Radar data".
+
 ## [v1.2.3] - 2026-01-21
 
 ### Changed

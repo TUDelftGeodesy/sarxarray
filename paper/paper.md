@@ -11,7 +11,7 @@ authors:
   - name: Ou Ku
     orcid: 0000-0002-5373-5209
     affiliation: 1 
-  - name: Fakhereh Alidoost
+  - name: Fakhereh (Sarah) Alidoost
     orcid: 0000-0001-8407-6472
     affiliation: 1
   - name: Simon van Diepen
@@ -78,13 +78,13 @@ The tutorial includes the following steps:
 - Applying common SAR operations on the loaded stack such as:
   - Multi-Looking 
   - Creation of a Mean-Reflectivity-Map (MRM)
-  - Calculation of coherence
+  - Estimation of coherence
 
 ## Acknowledgements
 
 The authors express sincere gratitude to the Dutch Research Council (Nederlandse Organisatie voor Wetenschappelijk Onderzoek, NWO) for their generous funding of the `SARXarray` development through the Collaboration in Innovative Technologies (CIT 2021) Call, grant NLESC.CIT.2021.006. We would like to extend special thanks to SURF for providing valuable computational resources for `SARXarray` testing via grants EINF-2051, EINF-4287 and EINF-6883.
 
-We would also like to thank Dr. Francesco Nattino and Dr. Meiert Willem Grootes of the Netherlands eScience Center for the insightful discussions, which are important contributions to this work.
+We would also like to thank Dr. Francesco Nattino, Dr. Meiert Willem Grootes and Dr. Pranav Chandramouli of the Netherlands eScience Center for the insightful discussions, which are important contributions to this work.
 
 ## AI usage disclosure
 
