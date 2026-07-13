@@ -305,7 +305,7 @@ def from_snap_dataset(snap_znap_archives: list[str | Path]) -> xr.Dataset:
             "Using first epoch for metadata instead."
         )
         logger.warning(warning_msg)
-        file_first_epoch = list(epoch_file_dict.values())[0]
+        file_first_epoch = next(iter(epoch_file_dict.values()))
         metadata_file = f"{file_first_epoch}/SNAP/product_metadata.json"
         metadata = read_metadata(metadata_file, driver="snap")
 
@@ -869,7 +869,7 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     data = data.drop_dims(dims_non_xy)
 
     # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
-    for layer in list(data.data_vars):
+    for layer in data.data_vars:
         for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
             if re.match(pattern, layer):
                 if key == "pol_date":
