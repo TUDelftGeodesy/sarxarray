@@ -932,15 +932,28 @@ def _append_one_daughter(
 
 
 def _append_mother(
-    ds_stack: xr.Dataset,
+    ds_stack: xr.Dataset | None,
     data_mother: xr.Dataset,
     mother_timestamp: datetime,
     mother_epoch: str,
 ) -> xr.Dataset:
     """Merge mother-epoch variables into the daughter stack."""
+    if ds_stack is None:
+        # there are no daughter epochs, we still need to initialize
+        # we do this by creating an empty ds_stack with x/y coordinates
+        ds_stack = data_mother.drop_vars(data_mother.data_vars)
+        ds_stack = ds_stack.expand_dims(time=np.array([], dtype="datetime64[ns]"))
+        ds_stack.attrs = {}
+        # assign only the expected layers to x/y grid, the rest to x/y/time
+        time_dim_layers = list(set(data_mother.data_vars) - set(ZNAP_DATA_VAR_MOTHER))
+    else:
+        # we do have daughter epochs, so we can check which x/y/time grids
+        # exist, and create zero layers for those not present in the mother epoch
+        time_dim_layers = ds_stack.data_vars
+
     data_mother_no_time_dims = data_mother
     data_mother_time_dims = data_mother
-    for layer in ds_stack.data_vars:
+    for layer in time_dim_layers:
         if layer not in data_mother_time_dims.data_vars:
             data_mother_time_dims = data_mother_time_dims.assign(
                 {

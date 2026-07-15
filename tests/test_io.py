@@ -123,6 +123,13 @@ def znap_files_snap():
         f"{os.path.dirname(__file__)}/data/zarrs/20230319-coreg.znap",
     ]
 
+
+@pytest.fixture()
+def znap_files_snap_only_mother():
+    return [
+        f"{os.path.dirname(__file__)}/data/zarrs/20230331-coreg.znap",
+    ]
+
 class TestFromDS:
     """from_dataset in _io.py"""
 
@@ -463,6 +470,24 @@ class TestFromSnapDataset:
             [k for k in stack.coords.keys()]
         )
         assert stack.sizes == {"azimuth": 84, "range": 338, "time": 2}
+        assert len(stack["latitude"].dims) == 2
+        assert len(stack["complex"].dims) == 3
+
+        # Test data can be loaded without error
+        _ = stack.compute()
+
+    def test_only_mother(self, znap_files_snap_only_mother):
+        stack = sarxarray.from_snap_dataset(znap_files_snap_only_mother)
+        assert set(["complex", "amplitude", "phase"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["elevation", "latitude", "longitude"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["azimuth", "range", "time"]).issubset(
+            [k for k in stack.coords.keys()]
+        )
+        assert stack.sizes == {"azimuth": 84, "range": 338, "time": 1}
         assert len(stack["latitude"].dims) == 2
         assert len(stack["complex"].dims) == 3
 
