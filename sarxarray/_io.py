@@ -181,7 +181,7 @@ def from_binary(
     return ds_stack
 
 
-def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
+def from_snap_dataset(snap_znap_archives: list[str | Path]) -> xr.Dataset:
     """Read an SLC stack from a list of ZNAP archives produced by SNAP.
 
     SNAP produces .znap-archives, which are very similar to the .zarr
@@ -208,7 +208,7 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
 
     Parameters
     ----------
-    snap_znap_archives: list[str, Path]
+    snap_znap_archives: list[str | Path]
         List of .znap archives to be read into an xarray Dataset
 
     Returns
@@ -230,17 +230,8 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         If the timestamp of the image cannot be found in the metadata
         If multiple mother images are identified
     """
-    # Check if snap_znap_archives is a non empty Iterable and not a string
-    if not hasattr(snap_znap_archives, "__iter__") or isinstance(
-        snap_znap_archives, str
-    ):
-        raise ValueError(
-            "snap_znap_archives should be a non-empty Iterable and not a string."
-            "If you have only one file, please put it in a list, e.g. "
-            "snap_znap_archives=[file]."
-        )
-    if len(snap_znap_archives) == 0:
-        raise ValueError("snap_znap_archives should be a non-empty Iterable.")
+    # Validate input for from_snap_dataset
+    _validate_snap_znap_archives(snap_znap_archives)
 
     # Loop over all ZNAP archives and read into ds_stack
     ds_stack = None  # Stack of all epochs as xr.Dataset
@@ -254,29 +245,20 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
         data, is_mother = _read_one_znap_archive(file)
 
         # Get current epoch
+        # Mother and daughter epochs need to be treated differently
         metadata = read_metadata(f"{file}/SNAP/product_metadata.json", driver="snap")
-        if is_mother:
-            cur_epoch_raw = metadata["mother_file"]
-        else:
-            cur_epoch_raw = metadata["daughter_file"][0][0]  # pick the first one
-        cur_epochs = cur_epoch_raw.split("_")
-        # Match on YYYYMMDDTHHMMSS, 8 digits, letter T, 6 digits
-        matches = list(filter(re.compile(r"^[\d]{8}T[\d]{6}$").match, cur_epochs))
-        if len(matches) == 0:
-            raise ValueError(
-                f"Could not find epoch timestamp YYYYMMDDTHHMMSS in {cur_epoch_raw}."
-            )
-        time_stamp = datetime.strptime(matches[0], "%Y%m%dT%H%M%S")
-        epoch = time_stamp.strftime("%Y%m%d")
+        time_stamp, epoch = _extract_snap_epoch(metadata, is_mother)
 
         # register the epoch and file in a dictionary for later use
         epoch_file_dict[epoch] = file
 
-        # If mother epoch
-        # keep variables ZNAP_DATA_VAR_MOTHER separately
-        # Assign an all zero h2ph variable
-        if is_mother:
-            # check if mother epoch has already been found
+        # Append all daughter epochs to ds_stack
+        # Mother epoch will be added later
+        if not is_mother:
+            ds_stack = _append_one_daughter(ds_stack, data, time_stamp)
+        else:
+            # If mother epoch, keep variables ZNAP_DATA_VAR_MOTHER separately
+            # Assign an all zero h2ph variable
             if data_mother is not None:
                 raise ValueError(
                     "Multiple mother epochs found. "
@@ -290,49 +272,16 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             mother_timestamp = time_stamp
             metadata_file = f"{file}/SNAP/product_metadata.json"
 
-        # Assign to ds_stack along the time dimension
-        elif ds_stack is None:  # first epoch, initialize ds_stack
-            ds_stack = data.expand_dims(time=[time_stamp])
-            # Drop attrs inherited from the first epoch
-            ds_stack.attrs = {}
-            # Always initialize mother_epoch to None
-            # If first epoch is mother, it will be set to epoch below
-            ds_stack = ds_stack.assign_attrs({"mother_epoch": None})
-        else:
-            ds_stack = xr.concat(
-                [ds_stack, data.expand_dims(time=[time_stamp])],
-                dim="time",
-                combine_attrs="override",  # override the attrs of the first epoch
-            )
-
     # If it exists, add the mother epoch data to ds_stack, separated by variables
     # with and without time dimension. For those that only exist at daughter epochs
     # layers of zeros are added
     if mother_epoch is not None:
-        data_mother_no_time_dims = data_mother
-        data_mother_time_dims = data_mother
-        for layer in ds_stack.data_vars:
-            if layer not in data_mother_time_dims.data_vars:
-                data_mother_time_dims = data_mother_time_dims.assign(
-                   {layer: (
-                       ("y", "x"),
-                       da.zeros((ds_stack.sizes["y"], ds_stack.sizes["x"])),
-                   )}
-                )
-            else:
-                # it exists already, so we need to remove it from the no time dimension
-                # part of the dataset
-                data_mother_no_time_dims = data_mother_no_time_dims.drop_vars([layer])
-        data_mother_time_dims = data_mother_time_dims.drop_vars(
-            data_mother_no_time_dims.data_vars
+        ds_stack = _append_mother(
+            ds_stack,
+            data_mother,
+            mother_timestamp,
+            mother_epoch,
         )
-        ds_stack = xr.concat(
-            [ds_stack, data_mother_time_dims.expand_dims(time=[mother_timestamp])],
-            dim="time",
-            combine_attrs="override",  # override the attrs of the first epoch
-        )
-        ds_stack = ds_stack.assign(data_mother_no_time_dims)
-        ds_stack = ds_stack.assign_attrs({"mother_epoch": mother_epoch})
     else:
         warning_msg = (
             "Mother epoch has not been identified. "
@@ -356,9 +305,10 @@ def from_snap_dataset(snap_znap_archives: list[str, Path]) -> xr.Dataset:
             "Using first epoch for metadata instead."
         )
         logger.warning(warning_msg)
-        file_first_epoch = list(epoch_file_dict.values())[0]
+        file_first_epoch = next(iter(epoch_file_dict.values()))
         metadata_file = f"{file_first_epoch}/SNAP/product_metadata.json"
         metadata = read_metadata(metadata_file, driver="snap")
+
     # Assign the metadata to ds_stack.attrs["metadata_mother"]
     ds_stack = ds_stack.assign_attrs({"metadata_mother": metadata})
 
@@ -727,7 +677,7 @@ def _parse_metadata(file, driver, ifg_file_name):
             content = json.load(f)
 
         raw_results = _flatten_snap_json_metadata(content)
-        raw_keys = [key for key in raw_results.keys()]
+        raw_keys = list(raw_results.keys())
         for key, pattern in patterns.items():
             matches = list(filter(re.compile(pattern).match, raw_keys))
             if len(matches) == 1 and key not in array_shapes.keys():
@@ -749,50 +699,39 @@ def _parse_metadata(file, driver, ifg_file_name):
 
 
 def _flatten_snap_json_metadata(content: dict | list, cur_keys: tuple = ()):
-    """Extract all values in a nested dict/list into a dict with as key the path."""
-    all_values = []
+    """Extract all values in nested SNAP metadata into `path -> value` mappings."""
+    flattened_values = []
+
     if isinstance(content, list):
-        for key in range(len(content)):
-            cur_keys_loop = cur_keys + (str(key),)
-            part_values = _flatten_snap_json_metadata(content[key], cur_keys_loop)
-            all_values = [*all_values, *part_values]
+        for index, item in enumerate(content):
+            list_item_keys = cur_keys + (str(index),)
+            flattened_values.extend(_flatten_snap_json_metadata(item, list_item_keys))
+
     elif isinstance(content, dict):
-        if "data" in content.keys():  # we have hit a data entry
-            if content["data"]["type"] == "utc":  # in MJD
-                val = datetime(2000, 1, 1) + timedelta(
-                    days=content["data"]["elems"][0],
-                    seconds=content["data"]["elems"][1],
-                    microseconds=content["data"]["elems"][2],
-                )
-                val = val.timestamp()
-            elif len(content["data"]["elems"]) == 1:
-                val = content["data"]["elems"][0]
-            else:
-                val = content["data"]["elems"]
-            cur_keys_save = cur_keys + (content["name"],)
-            all_values.append([val, cur_keys_save])
+        node_name = content["name"]
+        node_keys = cur_keys + (node_name,)
 
+        if "data" in content:
+            value = _parse_snap_data_entry_value(content["data"])
+            flattened_values.append([value, node_keys])
         else:
-            cur_keys_loop = cur_keys + (content["name"],)
-            if "elements" in content.keys():
-                cur_keys_loop_el = cur_keys_loop + ("elements",)
-                part_values = _flatten_snap_json_metadata(
-                    content["elements"], cur_keys_loop_el
+            for child_key in ("elements", "attributes"):
+                child_content = content.get(child_key)
+                if child_content is None:
+                    continue
+                child_keys = node_keys + (child_key,)
+                flattened_values.extend(
+                    _flatten_snap_json_metadata(child_content, child_keys)
                 )
-                all_values = [*all_values, *part_values]
-            if "attributes" in content.keys():
-                cur_keys_loop_at = cur_keys_loop + ("attributes",)
-                part_values = _flatten_snap_json_metadata(
-                    content["attributes"], cur_keys_loop_at
-                )
-                all_values = [*all_values, *part_values]
 
-    if cur_keys != ():  # we're still in a recursive call
-        return all_values
-    results = {}
-    for val in all_values:
-        results[".".join(val[1])] = val[0]
-    return results
+    # Recursive calls return (value, key_path) pairs for their parent to aggregate.
+    if cur_keys:
+        return flattened_values
+
+    result = {}
+    for value, key_path in flattened_values:
+        result[".".join(key_path)] = value
+    return result
 
 
 def _regulate_metadata(metadata, driver):
@@ -919,7 +858,7 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     data = data.drop_dims(dims_non_xy)
 
     # Rename the data variables according to RE_PATTERNS_SNAP_DATALAYER
-    for layer in list(data.data_vars):
+    for layer in data.data_vars:
         for key, pattern in RE_PATTERNS_SNAP_DATALAYER.items():
             if re.match(pattern, layer):
                 if key == "pol_date":
@@ -939,3 +878,107 @@ def _read_one_znap_archive(file: str | Path) -> tuple[xr.Dataset, bool]:
     )
 
     return data, is_mother
+
+
+def _validate_snap_znap_archives(snap_znap_archives: list[str | Path]) -> None:
+    """Check if snap_znap_archives is a non empty Iterable and not a string."""
+    if not hasattr(snap_znap_archives, "__iter__") or isinstance(
+        snap_znap_archives, str
+    ):
+        raise ValueError(
+            "snap_znap_archives should be a non-empty Iterable and not a string."
+            "If you have only one file, please put it in a list, e.g. "
+            "snap_znap_archives=[file]."
+        )
+    if len(snap_znap_archives) == 0:
+        raise ValueError("snap_znap_archives should be a non-empty Iterable.")
+
+
+def _extract_snap_epoch(metadata: dict, is_mother: bool) -> tuple[datetime, str]:
+    """Extract timestamp and epoch label from SNAP metadata."""
+    if is_mother:
+        cur_epoch_raw = metadata["mother_file"]
+    else:
+        cur_epoch_raw = metadata["daughter_file"][0][0]  # pick the first one
+    cur_epochs = cur_epoch_raw.split("_")
+    # Match on YYYYMMDDTHHMMSS, 8 digits, letter T, 6 digits
+    matches = list(filter(re.compile(r"^[\d]{8}T[\d]{6}$").match, cur_epochs))
+    if len(matches) == 0:
+        raise ValueError(
+            f"Could not find epoch timestamp YYYYMMDDTHHMMSS in {cur_epoch_raw}."
+        )
+    time_stamp = datetime.strptime(matches[0], "%Y%m%dT%H%M%S")
+    epoch = time_stamp.strftime("%Y%m%d")
+    return time_stamp, epoch
+
+
+def _append_one_daughter(
+    ds_stack: xr.Dataset | None, data: xr.Dataset, time_stamp: datetime
+) -> xr.Dataset:
+    """Append a daughter epoch to the stack, initializing the stack if needed."""
+    if ds_stack is None:  # first epoch, initialize ds_stack
+        ds_stack = data.expand_dims(time=[time_stamp])
+        # Drop attrs inherited from the first epoch
+        ds_stack.attrs = {}
+        # Always initialize mother_epoch to None
+        # If first epoch is mother, it will be set to epoch below
+        return ds_stack.assign_attrs({"mother_epoch": None})
+
+    return xr.concat(
+        [ds_stack, data.expand_dims(time=[time_stamp])],
+        dim="time",
+        combine_attrs="override",  # override the attrs of the first epoch
+    )
+
+
+def _append_mother(
+    ds_stack: xr.Dataset,
+    data_mother: xr.Dataset,
+    mother_timestamp: datetime,
+    mother_epoch: str,
+) -> xr.Dataset:
+    """Merge mother-epoch variables into the daughter stack."""
+    data_mother_no_time_dims = data_mother
+    data_mother_time_dims = data_mother
+    for layer in ds_stack.data_vars:
+        if layer not in data_mother_time_dims.data_vars:
+            data_mother_time_dims = data_mother_time_dims.assign(
+                {
+                    layer: (
+                        ("y", "x"),
+                        da.zeros((ds_stack.sizes["y"], ds_stack.sizes["x"])),
+                    )
+                }
+            )
+        else:
+            # it exists already, so we need to remove it from the no time dimension
+            # part of the dataset
+            data_mother_no_time_dims = data_mother_no_time_dims.drop_vars([layer])
+    data_mother_time_dims = data_mother_time_dims.drop_vars(
+        data_mother_no_time_dims.data_vars
+    )
+    ds_stack = xr.concat(
+        [ds_stack, data_mother_time_dims.expand_dims(time=[mother_timestamp])],
+        dim="time",
+        combine_attrs="override",  # override the attrs of the first epoch
+    )
+    ds_stack = ds_stack.assign(data_mother_no_time_dims)
+    return ds_stack.assign_attrs({"mother_epoch": mother_epoch})
+
+
+def _parse_snap_data_entry_value(data: dict):
+    """Convert one SNAP metadata `data` block to a scalar/list value."""
+    elems = data["elems"]
+
+    if data["type"] == "utc":
+        # SNAP stores UTC as [days, seconds, microseconds] since 2000-01-01.
+        dt = datetime(2000, 1, 1) + timedelta(
+            days=elems[0],
+            seconds=elems[1],
+            microseconds=elems[2],
+        )
+        return dt.timestamp()
+
+    if len(elems) == 1:
+        return elems[0]
+    return elems
