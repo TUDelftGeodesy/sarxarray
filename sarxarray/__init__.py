@@ -2,7 +2,7 @@ from sarxarray import stack
 from sarxarray._io import (
     from_binary,
     from_dataset,
-    from_snap_dataset,
+    from_znap,
     read_metadata,
     to_binary,
 )
@@ -13,7 +13,7 @@ __all__ = (
     "from_binary",
     "to_binary",
     "from_dataset",
-    "from_snap_dataset",
+    "from_znap",
     "read_metadata",
     "multi_look",
     "complex_coherence",

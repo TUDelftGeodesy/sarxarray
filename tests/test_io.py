@@ -457,9 +457,9 @@ class TestReadMetadata:
 
 
 class TestFromSnapDataset:
-    """from_snap_dataset in _io.py"""
+    """from_znap in _io.py"""
     def test_loading_vars_and_coords(self, znap_files_snap):
-        stack = sarxarray.from_snap_dataset(znap_files_snap)
+        stack = sarxarray.from_znap(znap_files_snap)
         assert set(["complex", "amplitude", "phase"]).issubset(
             [k for k in stack.data_vars.keys()]
         )
@@ -477,7 +477,7 @@ class TestFromSnapDataset:
         _ = stack.compute()
 
     def test_only_mother(self, znap_files_snap_only_mother):
-        stack = sarxarray.from_snap_dataset(znap_files_snap_only_mother)
+        stack = sarxarray.from_znap(znap_files_snap_only_mother)
         assert set(["complex", "amplitude", "phase"]).issubset(
             [k for k in stack.data_vars.keys()]
         )

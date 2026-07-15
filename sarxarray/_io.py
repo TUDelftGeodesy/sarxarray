@@ -181,7 +181,7 @@ def from_binary(
     return ds_stack
 
 
-def from_snap_dataset(snap_znap_archives: list[str | Path]) -> xr.Dataset:
+def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
     """Read an SLC stack from a list of ZNAP archives produced by SNAP.
 
     SNAP produces .znap-archives, which are very similar to the .zarr
@@ -230,7 +230,7 @@ def from_snap_dataset(snap_znap_archives: list[str | Path]) -> xr.Dataset:
         If the timestamp of the image cannot be found in the metadata
         If multiple mother images are identified
     """
-    # Validate input for from_snap_dataset
+    # Validate input for from_znap
     _validate_snap_znap_archives(snap_znap_archives)
 
     # Loop over all ZNAP archives and read into ds_stack
