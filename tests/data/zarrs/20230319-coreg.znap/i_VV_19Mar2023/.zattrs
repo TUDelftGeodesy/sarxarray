@@ -1,0 +1,39 @@
+{
+  "znap_format" : "0.1",
+  "_ARRAY_DIMENSIONS" : [ "y", "x" ],
+  "units" : "real",
+  "geocoding" : {
+    "TiePointGeoCoding" : {
+      "___persistence_id___" : "TiePointGC:1",
+      "Coordinate_Reference_System" : {
+        "Horizontal_CS" : {
+          "HORIZONTAL_CS_TYPE" : "GEOGRAPHIC",
+          "Geographic_CS" : {
+            "Horizontal_Datum" : {
+              "HORIZONTAL_DATUM_NAME" : "WGS-84",
+              "Ellipsoid" : {
+                "ELLIPSOID_NAME" : "WGS-84",
+                "Ellipsoid_Parameters" : {
+                  "ELLIPSOID_MAJ_AXIS" : {
+                    "unit" : "M",
+                    "value" : "6378137.0"
+                  },
+                  "ELLIPSOID_MIN_AXIS" : {
+                    "unit" : "M",
+                    "value" : "6356752.3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Geoposition" : {
+        "Geoposition_Points" : {
+          "TIE_POINT_GRID_NAME_LAT" : "latitude",
+          "TIE_POINT_GRID_NAME_LON" : "longitude"
+        }
+      }
+    }
+  }
+}

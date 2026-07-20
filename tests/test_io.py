@@ -16,6 +16,7 @@ from sarxarray.conf import (
     RE_PATTERNS_DORIS4,
     RE_PATTERNS_DORIS5,
     RE_PATTERNS_DORIS5_IFG,
+    RE_PATTERNS_SNAP,
 )
 
 
@@ -105,6 +106,29 @@ def res_files_doris5_onefile():
         f"{os.path.dirname(__file__)}/data/metadata/meta_doris5/20180312/metadata.res"
     )
 
+
+@pytest.fixture()
+def metadata_files_snap():
+    # only one file
+    return (
+        f"{os.path.dirname(__file__)}/data/zarrs/20230331-coreg.znap/SNAP/"
+        "product_metadata.json"
+    )
+
+
+@pytest.fixture()
+def znap_files_snap():
+    return [
+        f"{os.path.dirname(__file__)}/data/zarrs/20230331-coreg.znap",
+        f"{os.path.dirname(__file__)}/data/zarrs/20230319-coreg.znap",
+    ]
+
+
+@pytest.fixture()
+def znap_files_snap_only_mother():
+    return [
+        f"{os.path.dirname(__file__)}/data/zarrs/20230331-coreg.znap",
+    ]
 
 class TestFromDS:
     """from_dataset in _io.py"""
@@ -392,6 +416,83 @@ class TestReadMetadata:
             [62569, 4954320.931616273, 78580.69269184131, 5042109.736565054],
         )
 
+    def test_read_metadata_snap(self, metadata_files_snap):
+        metadata = sarxarray.read_metadata(metadata_files_snap, driver="snap")
+        for key in RE_PATTERNS_SNAP.keys():
+            assert key in metadata.keys()
+        assert metadata["sar_processor"] == "ESA Sentinel-1 IPF 003.61"
+        assert metadata["product_type"] == "SLC"
+        assert np.isclose(metadata["orbit"], 37)
+        assert metadata["pass_direction"] == "DESCENDING"
+        assert metadata["swath"] == "IW3"
+        assert metadata["image_mode"] == "IW"
+        assert metadata["polarisations"][0][0] == "VV"
+        assert np.isclose(metadata["range_pixel_spacing"], 2.329562)
+        assert np.isclose(metadata["azimuth_pixel_spacing"], 13.85861)
+        assert np.isclose(metadata["radar_frequency"], 5405000454.33435)
+        assert metadata["sensor_platform"] == "SENTINEL-1A"
+        assert np.isclose(metadata["pulse_repetition_frequency"], 1717.128973878037)
+        assert isinstance(metadata["first_azimuth_time"], np.datetime64)
+        assert np.isclose(metadata["azimuth_time_interval"], 0.0020555563)
+        assert np.isclose(metadata["total_azimuth_bandwidth"], 327.0)
+        assert np.isclose(metadata["weighting_azimuth"], 1.0)
+        assert np.isclose(metadata["first_range_time"], 0.003016875156393297)
+        assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
+        assert np.isclose(metadata["total_range_bandwidth"], 56500000)
+        assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
+        assert np.allclose(
+            metadata["orbit_position"][0],
+            [4253655.79892349, 1003705.06147766, 5555298.3297348]
+        )
+        assert np.allclose(
+            metadata["orbit_velocity"][0],
+            [6065.43043092,  -672.84948517, -4511.67494788]
+        )
+        assert np.isclose(metadata["scene_centre_latitude"], 51.66414303479558)
+        assert np.isclose(metadata["scene_centre_longitude"], 5.826507373182644)
+        assert np.isclose(metadata["number_of_lines"], 84)
+        assert np.isclose(metadata["number_of_pixels"], 338)
+        assert np.isclose(metadata["first_pixel_number"], 9178)
+        assert np.isclose(metadata["first_line_number"], 912)
+
+
+class TestFromSnapDataset:
+    """from_znap in _io.py"""
+    def test_loading_vars_and_coords(self, znap_files_snap):
+        stack = sarxarray.from_znap(znap_files_snap)
+        assert set(["complex", "amplitude", "phase"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["elevation", "latitude", "longitude", "h2ph"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["azimuth", "range", "time"]).issubset(
+            [k for k in stack.coords.keys()]
+        )
+        assert stack.sizes == {"azimuth": 84, "range": 338, "time": 2}
+        assert len(stack["latitude"].dims) == 2
+        assert len(stack["complex"].dims) == 3
+
+        # Test data can be loaded without error
+        _ = stack.compute()
+
+    def test_only_mother(self, znap_files_snap_only_mother):
+        stack = sarxarray.from_znap(znap_files_snap_only_mother)
+        assert set(["complex", "amplitude", "phase"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["elevation", "latitude", "longitude"]).issubset(
+            [k for k in stack.data_vars.keys()]
+        )
+        assert set(["azimuth", "range", "time"]).issubset(
+            [k for k in stack.coords.keys()]
+        )
+        assert stack.sizes == {"azimuth": 84, "range": 338, "time": 1}
+        assert len(stack["latitude"].dims) == 2
+        assert len(stack["complex"].dims) == 3
+
+        # Test data can be loaded without error
+        _ = stack.compute()
 
 class TestToBinary:
     """to_binary in _io.py"""

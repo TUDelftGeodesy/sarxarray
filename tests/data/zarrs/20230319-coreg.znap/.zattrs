@@ -1,0 +1,45 @@
+{
+  "znap_format" : "0.1",
+  "product_name" : "Subset_S1A_IW_SLC__1SDV_20230331T055032_20230331T055059_047884_05C0F4_3703_Orb_Stack_Deb_BandMath_subset",
+  "product_type" : "Derived from (BandMath)",
+  "product_description" : "Sentinel-1 IW Level-1 SLC Product",
+  "product_scene_raster_width" : 338,
+  "product_scene_raster_height" : 84,
+  "time_coverage_start" : "2023-03-31T05:50:35.812250Z",
+  "time_coverage_end" : "2023-03-31T05:50:35.983086Z",
+  "geocoding" : {
+    "TiePointGeoCoding" : {
+      "___persistence_id___" : "TiePointGC:1",
+      "Coordinate_Reference_System" : {
+        "Horizontal_CS" : {
+          "HORIZONTAL_CS_TYPE" : "GEOGRAPHIC",
+          "Geographic_CS" : {
+            "Horizontal_Datum" : {
+              "HORIZONTAL_DATUM_NAME" : "WGS-84",
+              "Ellipsoid" : {
+                "ELLIPSOID_NAME" : "WGS-84",
+                "Ellipsoid_Parameters" : {
+                  "ELLIPSOID_MAJ_AXIS" : {
+                    "unit" : "M",
+                    "value" : "6378137.0"
+                  },
+                  "ELLIPSOID_MIN_AXIS" : {
+                    "unit" : "M",
+                    "value" : "6356752.3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Geoposition" : {
+        "Geoposition_Points" : {
+          "TIE_POINT_GRID_NAME_LAT" : "latitude",
+          "TIE_POINT_GRID_NAME_LON" : "longitude"
+        }
+      }
+    }
+  },
+  "original_raster_data_node_order" : [ "i_VV_19Mar2023", "q_VV_19Mar2023", "h2ph_VV_19Mar2023", "latitude", "longitude", "slant_range_time", "incident_angle" ]
+}

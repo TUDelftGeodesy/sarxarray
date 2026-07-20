@@ -26,6 +26,7 @@ RE_PATTERNS_DORIS4 = {
     "weighting_range": r"Weighting_range:\s+(.+)",
     "first_azimuth_time": r"First_pixel_azimuth_time \(UTC\):\s+(.+)",
 }
+
 # Regular expressions for reading metadata from DORIS5 files
 RE_PATTERNS_DORIS5 = {
     "sar_processor": r"SAR_PROCESSOR:\s+(.+)",
@@ -64,19 +65,95 @@ RE_PATTERNS_DORIS5 = {
         r"\.\d+(?:\.\d+)?)\s+([-+]?\d+\.\d+(?:\.\d+)?)"
     ),
     "scene_centre_latitude": (
-        r"Scene_centre_latitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+        r"Scene_centre_latitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
     ),
     "scene_centre_longitude": (
-        r"Scene_centre_longitude:"
-        r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
-    )
+        r"Scene_centre_longitude:" r"\s+([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
+    ),
 }
+
 # Regular expressions for reading metadata from DORIS5 interferogram files
 RE_PATTERNS_DORIS5_IFG = {
     "number_of_lines": r"Number of lines \(multilooked\):\s+(\d+)",
     "number_of_pixels": r"Number of pixels \(multilooked\):\s+(\d+)",
 }
+
+# Regular expressions for reading metadata from SNAP
+RE_PATTERNS_SNAP = {
+    "sar_processor": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.Processing_system_identifier"
+    ),
+    "product_type": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PRODUCT_TYPE",
+    "orbit": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.REL_ORBIT",
+    "pass_direction": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PASS",
+    "swath": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.SWATH",
+    "image_mode": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.ACQUISITION_MODE",
+    "polarisations": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.mds[\d]+_tx_rx_polar"
+    ),
+    "range_pixel_spacing": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_spacing",
+    "azimuth_pixel_spacing": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_spacing"
+    ),
+    "radar_frequency": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.radar_frequency",
+    "sensor_platform": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.MISSION",
+    "pulse_repetition_frequency": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.pulse_repetition_frequency"
+    ),
+    "first_azimuth_time": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.first_line_time"
+    ),
+    "azimuth_time_interval": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.line_time_interval"
+    ),
+    "total_azimuth_bandwidth": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_bandwidth"
+    ),
+    "weighting_azimuth": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.azimuth_looks",
+    "first_range_time": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.slrTimeToFirstValidPixel"
+    ),
+    "range_sampling_rate": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_sampling_rate"
+    ),
+    "total_range_bandwidth": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_bandwidth"
+    ),
+    "orbit_time": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.time"
+    ),
+    "orbit_position": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_pos"
+    ),
+    "orbit_velocity": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.Orbit_State_Vectors.elements."
+        r"[\d]+.orbit_vector[\d]+.attributes.[\d]+.[xyz]_vel"
+    ),
+    "scene_centre_latitude": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.centre_lat",
+    "scene_centre_longitude": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.centre_lon",
+    "number_of_lines": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.num_output_lines",
+    "number_of_pixels": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.num_samples_per_line"
+    ),
+    "first_pixel_number": (
+        r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_x"
+    ),
+    "first_line_number": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.subset_offset_y",
+    "daughter_file": (
+        r"[\d]+.Slave_Metadata.elements.[\d]+.*_Orb_[\d]{2}[A-Z][a-z]{2}[\d]{4}."
+        r"attributes.[\d]+.PRODUCT$"
+    ),
+    "mother_file": r"[\d]+.Abstracted_Metadata.attributes.[\d]+.PRODUCT$",
+}
+
+# Regular expressions for reading SNAP Zarr file (ZNAP) datalayers.
+RE_PATTERNS_SNAP_DATALAYER = {
+    "pol_date": r"^.+_(VV|VH|HH|HV)_\d{1,2}[A-Za-z]{3}\d{4}$",  # e.g., i_VV_19Mar2023
+    "pol": r"^.+_(VV|VH|HH|HV)$",  # e.g., latitude_VV
+}
+
 # Float keys in metadata. They are used to regulate the metadata read as strings
 # Some of these are from DORIS5 only
 META_FLOAT_KEYS = [
@@ -92,8 +169,9 @@ META_FLOAT_KEYS = [
     "pulse_repetition_frequency_raw",
     "azimuth_time_interval",
     "scene_centre_latitude",
-    "scene_centre_longitude"
+    "scene_centre_longitude",
 ]
+
 # Integer keys in metadata. They are used to regulate the metadata read as strings
 META_INT_KEYS = [
     "deramp",  # from here DORIS5 only
@@ -101,12 +179,31 @@ META_INT_KEYS = [
     "number_of_lines",
     "number_of_pixels",
     "esd_correct",
+    "first_pixel_number",  # from here SNAP
+    "first_line_number",
 ]
+
 # Array keys in metadata and their format. Requires re.findall instead of re.match
 # Expects 2D arrays, and a callable variable type as value associated with each key
 META_ARRAY_KEYS = {
-    "orbit_txyz": float  # DORIS5 only
+    "orbit_txyz": float,  # DORIS5 only
+    "orbit_time": float,  # from here SNAP only
+    "orbit_position": float,
+    "orbit_velocity": float,
+    "polarisations": str,
+    "daughter_file": str,
 }
+
+# SNAP returns flattened 1D arrays, so we need to tell it the shapes. The auto
+# dimension gets expanded to the total number of inputs, and is required
+META_ARRAY_SHAPES_SNAP = {
+    "orbit_time": ("auto", 1),
+    "orbit_position": ("auto", 3),
+    "orbit_velocity": ("auto", 3),
+    "polarisations": ("auto", 1),
+    "daughter_file": ("auto", 1),
+}
+
 # Some keys are not read in in SI units. The following dictionary specifies those
 # keys, and the factor they should be multiplied by to restore them to SI units
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS4 = {
@@ -120,8 +217,20 @@ META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
     "total_range_bandwidth": 1_000_000,  # originally MHz
     "first_range_time": 0.001,  # originally ms
 }
+
+META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP = {
+    "range_sampling_rate": 1_000_000,  # originally MHz
+    "total_range_bandwidth": 1_000_000,  # originally MHz17
+    "radar_frequency": 1_000_000,  # originally MHz
+}
+
 # Time formats for DORIS metadata
 TIME_FORMAT_DORIS4 = "%d-%b-%Y %H:%M:%S.%f"
 TIME_FORMAT_DORIS5 = "%Y-%b-%d %H:%M:%S.%f"
+TIME_FORMAT_SNAP = "timestamp"
+
 # Time stamp key
 TIME_STAMP_KEY = "first_azimuth_time"
+
+# SNAP Znap file data variable names
+ZNAP_DATA_VAR_MOTHER = ["longitude", "latitude", "elevation"]

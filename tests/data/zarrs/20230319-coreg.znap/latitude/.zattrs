@@ -1,0 +1,9 @@
+{
+  "_ARRAY_DIMENSIONS" : [ "yt", "xt" ],
+  "subsampling_y" : 304.0,
+  "subsampling_x" : 1279.0,
+  "units" : "degree",
+  "offset_x" : -225.0,
+  "offset_y" : -0.0,
+  "znap_format" : "0.1"
+}
