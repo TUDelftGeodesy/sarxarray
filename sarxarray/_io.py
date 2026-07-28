@@ -329,8 +329,8 @@ def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
         )  # shift the azimuth and range coordinates by offset
     )
     # split the call to ensure the coordinate reassignment is fully realized
-    ds_stack = (
-        ds_stack.assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})  # assign complex
+    ds_stack = (  # assign complex
+        ds_stack.assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})
         .drop_vars(["i", "q"])  # drop the original i and q variables
     )
 
