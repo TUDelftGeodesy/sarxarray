@@ -327,7 +327,10 @@ def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
             azimuth=ds_stack["azimuth"] + metadata["first_line_number"],
             range=ds_stack["range"] + metadata["first_pixel_number"],
         )  # shift the azimuth and range coordinates by offset
-        .assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})  # assign complex
+    )
+    # split the call to ensure the coordinate reassignment is fully realized
+    ds_stack = (
+        ds_stack.assign({"complex": ds_stack["i"] + 1j * ds_stack["q"]})  # assign complex
         .drop_vars(["i", "q"])  # drop the original i and q variables
     )
 
