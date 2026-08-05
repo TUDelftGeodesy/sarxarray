@@ -456,7 +456,7 @@ class TestReadMetadata:
         assert np.isclose(metadata["first_line_number"], 912)
 
 
-class TestFromSnapDataset:
+class TestFromZnap:
     """from_znap in _io.py"""
     def test_loading_vars_and_coords(self, znap_files_snap):
         stack = sarxarray.from_znap(znap_files_snap)
@@ -475,6 +475,8 @@ class TestFromSnapDataset:
 
         # Test data can be loaded without error
         _ = stack.compute()
+        complex_vals = stack.complex.values
+        assert not np.isnan(complex_vals[0, 0, 0])
 
     def test_only_mother(self, znap_files_snap_only_mother):
         stack = sarxarray.from_znap(znap_files_snap_only_mother)
