@@ -31,7 +31,7 @@ bibliography: paper.bib
 
 ## Summary
 
-Satellite-based Synthetic Aperture Radar (SAR) provides invaluable data for Earth Observation. The Interferometric SAR (InSAR) technique [@hanssen01], which utilizes a stack of SAR images in Single Look Complex (SLC) format, plays a significant role in various surface motion monitoring applications, e.g. civil-infrastructure stability [@chang2014detection; @chang2017railway; @ozer2018applicability], and hydrocarbon extraction [@fokker2016application; @ZHANG2022102847]. To facilitate advanced data processing for InSAR communities, we developed `SARXarray`, a Xarray extension for handling co-registered SLC SAR stacks. 
+Satellite-based Synthetic Aperture Radar (SAR) provides invaluable data for Earth Observation. The Interferometric SAR (InSAR) technique [@hanssen01], which utilizes a stack of SAR images in Single Look Complex (SLC) format, plays a significant role in various surface motion monitoring applications, e.g., civil-infrastructure stability [@chang2014detection; @chang2017railway; @ozer2018applicability], and hydrocarbon extraction [@fokker2016application; @ZHANG2022102847]. To facilitate advanced data processing for InSAR communities, we developed `SARXarray`, an Xarray extension for handling co-registered SLC SAR stacks. 
 
 ## Statement of Need
 
@@ -39,18 +39,18 @@ Satellite-based SAR generates data stacks with long temporal coverage, wide spat
 
 To facilitate efficient processing of SLC SAR stacks and minimize code customization, we developed `SARXarray`. 
 
-`SARXarray` leverages two well-established Python libraries `Xarray` [@hoyer2017xarray] and `Dask` [@rocklin2015] from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
+`SARXarray` leverages two well-established Python libraries, `Xarray` [@hoyer2017xarray] and `Dask` [@rocklin2015] from the [Pangeo community](https://www.pangeo.io/). It utilizes Xarray’s support on labeled multi-dimensional datasets to stress the space-time character of an SLC SAR stack. `Dask` is used to perform lazy evaluation of operations and block-wise computations. SARXarray can be integrated into existing Python workflows of InSAR processing and deployed on a variety of compute infrastructures. 
 
 ## State of the field
 
-A similar open-source library `xarray-sentinel`[@xarray-sentinel] exists for handling raw Sentinel-1 GRD and SLC data as lazy-loaded Xarray Datasets. Despite the similar goals of digesting SAR data into lazy-loaded Xarray Datasets, `SARXarray` and `xarray-sentinel` are designed for different applications:
+A similar open-source library `xarray-sentinel` [@xarray-sentinel] exists for handling raw Sentinel-1 GRD and SLC data as lazy-loaded Xarray Datasets. Despite the similar goals of digesting SAR data into lazy-loaded Xarray Datasets, `SARXarray` and `xarray-sentinel` are designed for different applications:
 
 - `SARXarray` is designed to handle co-registered SLC stacks, instead of raw Sentinel-1 data products from European Space Agency (ESA). It is able to lazily read the output of two common SLC co-registration tools: [`DORIS`](https://doris.tudelft.nl/) and [`SNAP`](https://step.esa.int/main/download/snap-download/) into Xarray objects. The two tools perform the necessary coregistration step, which aligns the SLCs in a stack to a common reference frame. The generated outputs can be further used in Time-Series InSAR (TS-InSAR) processing.
 - `SARXarray` supports interferometric stacks from other sensors than Sentinel-1, as long as they can be co-registered by SNAP or DORIS. It reads the output from the two co-registration tools, and relies on them to handle the specificities of different sensors.
 
 ## Software design
 
-`SARXarray` is designed as an extension of Xarray using accessors. This design is motivated by [Xarray community’s recommendation](https://docs.xarray.dev/en/stable/internals/extending-xarray.html), in order to isolate the extension from API changes of the core Xarray library. 
+`SARXarray` is designed as an extension of Xarray using accessors. This design is motivated by [the Xarray community’s recommendation](https://docs.xarray.dev/en/stable/internals/extending-xarray.html), in order to isolate the extension from API changes of the core Xarray library. 
 
 The software has three main components: 
 
@@ -92,6 +92,6 @@ In writing the software documentation and the JOSS paper, GPT-5 was used for lan
 
 Specifically, in the documentation process, an agent skill (under path `../.github/skills/release-changelog`) is used to generate changelog entries from git tags and commit history. The generated content was always reviewed and edited by a human before being committed to the repository.
 
-Additionally, various language models were used via [GitHub Copilot](https://copilot.github.com/) in Pull Requests reviews, for pre-filtering obvious issues such as typos, small logical errors, and for suggesting code improvements. All suggestions from AI were reviewed and verified by the authors before merging into the codebase. The correctness of the code was ensured by the unit tests.
+Additionally, various language models were used via [GitHub Copilot](https://copilot.github.com/) in Pull Request reviews, for pre-filtering obvious issues such as typos, small logical errors, and for suggesting code improvements. All suggestions from AI were reviewed and verified by the authors before merging into the codebase. The correctness of the code was ensured by the unit tests.
 
 ## References
