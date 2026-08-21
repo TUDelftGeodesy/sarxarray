@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sarxarray"
-version = "1.4.0b2"
+version = "1.4.0"
 requires-python = ">=3.10"
 dependencies = [
     "dask[complete]",
