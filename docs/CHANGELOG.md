@@ -7,6 +7,17 @@ See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarx
 
 The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
+## [v1.4.0] - 2026-08-21
+
+### Added
+- Added support for reading SNAP metadata and ZNAP products, including mother/child dataset handling and wildcard name stripping.
+- JOSS paper published. Included DOI badge in README.
+
+### Changed
+- Refined coordinate assignment and timestamp handling for metadata-driven datasets.
+- Improved internal handling of SNAP layer naming, epoch detection, and non-x/y dimension logic.
+- Updated zarr metadata normalization and the beta release/version workflow.
+
 ## [v1.3.1] - 2026-07-13
 
 ## Changed
