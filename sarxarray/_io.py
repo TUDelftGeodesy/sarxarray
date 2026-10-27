@@ -613,7 +613,18 @@ def read_metadata(
     for file in files:
         res = _parse_metadata(file, driver, ifg_file_name)
         for key, value in res.items():
-            metadata[key].append(value)
+            if isinstance(value, list):
+                if len(value) == 0:  # null reading
+                    warning_msg = (
+                        f"Key {key} was not found in metadata file {file}."
+                        f"Its value will be set to None."
+                    )
+                    logger.warning(warning_msg)
+                    metadata[key].append(None)
+                else:  # no null reading, proceed as normal
+                    metadata[key].append(value)
+            else:  # no null reading, proceed as normal
+                metadata[key].append(value)
 
     # Regulate metadata for all files
     metadata = _regulate_metadata(metadata, driver)
@@ -811,7 +822,13 @@ def _regulate_metadata(metadata, driver):
                 metadata[key] = next(iter(metadata[key]))
 
             # if float, take the average unless std is larger than 1% of the mean
-            if key in META_FLOAT_KEYS:
+            if metadata[key] is None:
+                warning_msg = (
+                    f"Cannot perform metadata regulation for key {key} as it was "
+                    "not found in the metadata."
+                )
+                logger.warning(warning_msg)
+            elif key in META_FLOAT_KEYS:
                 # Convert to float
                 arr = np.array(value, dtype=np.float64)
                 if np.std(arr) / np.mean(arr) < 0.01:
@@ -823,7 +840,7 @@ def _regulate_metadata(metadata, driver):
                     )
                 if key in unit_conversions.keys():
                     metadata[key] *= unit_conversions[key]
-            if key in META_INT_KEYS:
+            elif key in META_INT_KEYS:
                 if isinstance(metadata[key], str):
                     metadata[key] = int(metadata[key])
                     if key in unit_conversions.keys():
