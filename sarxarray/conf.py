@@ -113,6 +113,10 @@ RE_PATTERNS_SNAP = {
     "first_range_time": (
         r"[\d]+.Abstracted_Metadata.attributes.[\d]+.slrTimeToFirstValidPixel"
     ),
+    "first_range_time_burstwise": (
+        r"[\d]+.Abstracted_Metadata.elements.[\d]+.BurstBoundary.elements."
+        r"[\d]+.IW[\d]+.elements.[\d]+.Burst[\d]+.attributes.[\d]+.FirstValidPixelTime"
+    ),
     "range_sampling_rate": (
         r"[\d]+.Abstracted_Metadata.attributes.[\d]+.range_sampling_rate"
     ),
@@ -192,6 +196,7 @@ META_ARRAY_KEYS = {
     "orbit_velocity": float,
     "polarisations": str,
     "daughter_file": str,
+    "first_range_time_burstwise": float,
 }
 
 # SNAP returns flattened 1D arrays, so we need to tell it the shapes. The auto
@@ -202,6 +207,7 @@ META_ARRAY_SHAPES_SNAP = {
     "orbit_velocity": ("auto", 3),
     "polarisations": ("auto", 1),
     "daughter_file": ("auto", 1),
+    "first_range_time_burstwise": ("auto", 1),
 }
 
 # Some keys are not read in in SI units. The following dictionary specifies those

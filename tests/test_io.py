@@ -117,6 +117,14 @@ def metadata_files_snap():
 
 
 @pytest.fixture()
+def metadata_files_snap_missing_field():
+    return (
+        f"{os.path.dirname(__file__)}/data/metadata/broken_meta_snap/"
+        "product_metadata.json"
+    )
+
+
+@pytest.fixture()
 def znap_files_snap():
     return [
         f"{os.path.dirname(__file__)}/data/zarrs/20230331-coreg.znap",
@@ -437,6 +445,53 @@ class TestReadMetadata:
         assert np.isclose(metadata["total_azimuth_bandwidth"], 327.0)
         assert np.isclose(metadata["weighting_azimuth"], 1.0)
         assert np.isclose(metadata["first_range_time"], 0.003016875156393297)
+        assert np.isclose(
+            metadata["first_range_time_burstwise"][0][0], 0.003016875156393297
+        )
+        assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
+        assert np.isclose(metadata["total_range_bandwidth"], 56500000)
+        assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
+        assert np.allclose(
+            metadata["orbit_position"][0],
+            [4253655.79892349, 1003705.06147766, 5555298.3297348]
+        )
+        assert np.allclose(
+            metadata["orbit_velocity"][0],
+            [6065.43043092,  -672.84948517, -4511.67494788]
+        )
+        assert np.isclose(metadata["scene_centre_latitude"], 51.66414303479558)
+        assert np.isclose(metadata["scene_centre_longitude"], 5.826507373182644)
+        assert np.isclose(metadata["number_of_lines"], 84)
+        assert np.isclose(metadata["number_of_pixels"], 338)
+        assert np.isclose(metadata["first_pixel_number"], 9178)
+        assert np.isclose(metadata["first_line_number"], 912)
+
+    def test_read_metadata_snap_missing_field(self, metadata_files_snap_missing_field):
+        metadata = sarxarray.read_metadata(
+            metadata_files_snap_missing_field, driver="snap"
+        )
+        for key in RE_PATTERNS_SNAP.keys():
+            assert key in metadata.keys()
+        assert metadata["sar_processor"] == "ESA Sentinel-1 IPF 003.61"
+        assert metadata["product_type"] == "SLC"
+        assert np.isclose(metadata["orbit"], 37)
+        assert metadata["pass_direction"] == "DESCENDING"
+        assert metadata["swath"] == "IW3"
+        assert metadata["image_mode"] == "IW"
+        assert metadata["polarisations"][0][0] == "VV"
+        assert np.isclose(metadata["range_pixel_spacing"], 2.329562)
+        assert np.isclose(metadata["azimuth_pixel_spacing"], 13.85861)
+        assert np.isclose(metadata["radar_frequency"], 5405000454.33435)
+        assert metadata["sensor_platform"] == "SENTINEL-1A"
+        assert np.isclose(metadata["pulse_repetition_frequency"], 1717.128973878037)
+        assert isinstance(metadata["first_azimuth_time"], np.datetime64)
+        assert np.isclose(metadata["azimuth_time_interval"], 0.0020555563)
+        assert np.isclose(metadata["total_azimuth_bandwidth"], 327.0)
+        assert np.isclose(metadata["weighting_azimuth"], 1.0)
+        assert metadata["first_range_time"] is None
+        assert np.isclose(
+            metadata["first_range_time_burstwise"][0][0], 0.003016875156393297
+        )
         assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
         assert np.isclose(metadata["total_range_bandwidth"], 56500000)
         assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
