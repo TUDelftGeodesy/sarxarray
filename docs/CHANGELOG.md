@@ -7,6 +7,14 @@ See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarx
 
 The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
+## [v1.4.1] - 2026-10-29
+
+### Added
+- Added support for reading burstwise reading of the timing to the first valid pixel (first_range_time_burstwise)
+
+### Fixed
+- Metadata reader no longer crashes on nonexistent fields, and returns `None` for these instead
+
 ## [v1.4.0] - 2026-08-21
 
 ### Added
