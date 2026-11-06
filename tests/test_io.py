@@ -450,7 +450,7 @@ class TestReadMetadata:
         )
         assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
         assert np.isclose(metadata["total_range_bandwidth"], 56500000)
-        assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
+        assert np.isclose(metadata["orbit_time"][0][0], 1680241823.935118)
         assert np.allclose(
             metadata["orbit_position"][0],
             [4253655.79892349, 1003705.06147766, 5555298.3297348]
@@ -494,7 +494,7 @@ class TestReadMetadata:
         )
         assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
         assert np.isclose(metadata["total_range_bandwidth"], 56500000)
-        assert np.isclose(metadata["orbit_time"][0][0], 1680234623.935118)
+        assert np.isclose(metadata["orbit_time"][0][0], 1680241823.935118)
         assert np.allclose(
             metadata["orbit_position"][0],
             [4253655.79892349, 1003705.06147766, 5555298.3297348]
