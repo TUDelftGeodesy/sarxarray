@@ -4,7 +4,7 @@ import math
 import os
 import re
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -771,7 +771,7 @@ def _regulate_metadata(metadata, driver):
     for time in metadata[TIME_STAMP_KEY]:
         try:
             if time_format == "timestamp":  # SNAP returns timestamps
-                dt = datetime.fromtimestamp(time, tz=timezone.utc)
+                dt = datetime.fromtimestamp(time, tz=UTC)
             else:
                 dt = datetime.strptime(time, time_format)
             list_time.append(np.datetime64(dt).astype("datetime64[ns]"))
@@ -1005,7 +1005,7 @@ def _parse_snap_data_entry_value(data: dict):
 
     if data["type"] == "utc":
         # SNAP stores UTC as [days, seconds, microseconds] since 2000-01-01.
-        dt = datetime(2000, 1, 1, tzinfo=timezone.utc) + timedelta(
+        dt = datetime(2000, 1, 1, tzinfo=UTC) + timedelta(
             days=elems[0],
             seconds=elems[1],
             microseconds=elems[2],
