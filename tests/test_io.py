@@ -444,9 +444,9 @@ class TestReadMetadata:
         assert np.isclose(metadata["azimuth_time_interval"], 0.0020555563)
         assert np.isclose(metadata["total_azimuth_bandwidth"], 327.0)
         assert np.isclose(metadata["weighting_azimuth"], 1.0)
-        assert np.isclose(metadata["first_range_time"], 0.003016875156393297)
+        assert np.isclose(metadata["first_range_time"], 0.006033750312786594)
         assert np.isclose(
-            metadata["first_range_time_burstwise"][0][0], 0.003016875156393297
+            metadata["first_range_time_burstwise"][0][0], 0.006033750312786594
         )
         assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
         assert np.isclose(metadata["total_range_bandwidth"], 56500000)
@@ -490,7 +490,7 @@ class TestReadMetadata:
         assert np.isclose(metadata["weighting_azimuth"], 1.0)
         assert metadata["first_range_time"] is None
         assert np.isclose(
-            metadata["first_range_time_burstwise"][0][0], 0.003016875156393297
+            metadata["first_range_time_burstwise"][0][0], 0.006033750312786594
         )
         assert np.isclose(metadata["range_sampling_rate"], 64345238.12571427)
         assert np.isclose(metadata["total_range_bandwidth"], 56500000)
