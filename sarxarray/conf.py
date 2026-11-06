@@ -226,8 +226,10 @@ META_UNIT_CONVERSION_MULTIPLICATION_KEYS_DORIS5 = {
 
 META_UNIT_CONVERSION_MULTIPLICATION_KEYS_SNAP = {
     "range_sampling_rate": 1_000_000,  # originally MHz
-    "total_range_bandwidth": 1_000_000,  # originally MHz17
+    "total_range_bandwidth": 1_000_000,  # originally MHz
     "radar_frequency": 1_000_000,  # originally MHz
+    "first_range_time": 2,  # originally one-way instead of two-way
+    "first_range_time_burstwise": 2,  # originally one-way instead of two-way
 }
 
 # Time formats for DORIS metadata
