@@ -7,6 +7,12 @@ See [releases](https://github.com/TUDelftGeodesy/sarxarray/releases) in the sarx
 
 The information in this file can be generated automatically by LLM using the [release-changelog skill](../.github/skills/release-changelog/SKILL.md). However, the generated content has always been reviewed and if necessary, edited by a human.
 
+## [v1.4.2] - 2026-11-06
+
+### Fixed
+- Metadata reader now reads SNAP timestamps in UTC instead of in local timezone
+- Metadata reader now converts `first_range_time` output from SNAP from one-way timing to two-way timing
+
 ## [v1.4.1] - 2026-10-29
 
 ### Added
