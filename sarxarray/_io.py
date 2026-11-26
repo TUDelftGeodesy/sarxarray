@@ -240,6 +240,7 @@ def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
     mother_timestamp = None  # Mother timestamp
     metadata_file = None  # Metadata file, read from mother epoch
     epoch_file_dict = {}  # Map of epoch to file. snap_znap_archives may not be sorted
+    daughter_datasets = []
     for file in snap_znap_archives:
         # Read the ZNAP archive and check if it is a mother epoch
         data, is_mother = _read_one_znap_archive(file)
@@ -255,7 +256,7 @@ def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
         # Append all daughter epochs to ds_stack
         # Mother epoch will be added later
         if not is_mother:
-            ds_stack = _append_one_daughter(ds_stack, data, time_stamp)
+            daughter_datasets.append(data.expand_dims(time=[time_stamp]))
         else:
             # If mother epoch, keep variables ZNAP_DATA_VAR_MOTHER separately
             # Assign an all zero h2ph variable
@@ -272,6 +273,15 @@ def from_znap(snap_znap_archives: list[str | Path]) -> xr.Dataset:
             mother_timestamp = time_stamp
             metadata_file = f"{file}/SNAP/product_metadata.json"
 
+    # Concatenate the daughter datasets in time, and set mother_epoch to None
+    # mother_epoch will be set by _append_mother below
+    if daughter_datasets:
+        ds_stack = xr.concat(
+            daughter_datasets,
+            dim="time",
+            combine_attrs="override",
+        )
+        ds_stack.attrs = {"mother_epoch": None}
     # If it exists, add the mother epoch data to ds_stack, separated by variables
     # with and without time dimension. For those that only exist at daughter epochs
     # layers of zeros are added
@@ -930,25 +940,6 @@ def _extract_snap_epoch(metadata: dict, is_mother: bool) -> tuple[datetime, str]
     time_stamp = datetime.strptime(matches[0], "%Y%m%dT%H%M%S")
     epoch = time_stamp.strftime("%Y%m%d")
     return time_stamp, epoch
-
-
-def _append_one_daughter(
-    ds_stack: xr.Dataset | None, data: xr.Dataset, time_stamp: datetime
-) -> xr.Dataset:
-    """Append a daughter epoch to the stack, initializing the stack if needed."""
-    if ds_stack is None:  # first epoch, initialize ds_stack
-        ds_stack = data.expand_dims(time=[time_stamp])
-        # Drop attrs inherited from the first epoch
-        ds_stack.attrs = {}
-        # Always initialize mother_epoch to None
-        # If first epoch is mother, it will be set to epoch below
-        return ds_stack.assign_attrs({"mother_epoch": None})
-
-    return xr.concat(
-        [ds_stack, data.expand_dims(time=[time_stamp])],
-        dim="time",
-        combine_attrs="override",  # override the attrs of the first epoch
-    )
 
 
 def _append_mother(
